@@ -808,6 +808,35 @@ public class CcrisReportRetrievalService {
 							}
 						}
 					}
+					
+					//banking_info
+					
+					list = doc.getElementsByTagName("banking_info");
+					boolean entity_key = false;
+					boolean entity_id = false;
+					node = list.item(0);
+
+					if (list.getLength() > 0 && IsEmpty(list)) {
+						Node nNode = list.item(0);
+						NodeList nestedList = nNode.getChildNodes();
+						for (int j = 0; j < nestedList.getLength(); j++) {
+
+							if (nestedList.item(j).getNodeType() == Node.TEXT_NODE
+									&& nestedList.item(j).getNextSibling() != null) {
+								Node sibling = nestedList.item(j).getNextSibling();
+
+								if (sibling.getNodeName() != null && sibling.getNodeName() == "ccris_selected_by_you") {
+									Element element = (Element) node;
+									entity_key = element.getElementsByTagName("entity_key").item(0)
+											.getTextContent() != null;
+									entity_id = element.getElementsByTagName("entity_id").item(0)
+											.getTextContent() != null;
+								}
+							}
+						}
+					}
+
+					
 					/*
 					 * myWriter.close(); myWriter.flush();
 					 */
@@ -822,7 +851,7 @@ public class CcrisReportRetrievalService {
 							.bankingCreditPendingAmount(Banking_credit_pending_amount).xmlString(xmlResponse)
 							.Criss(ccris)/* .jsonString(xmlResponse) */.casesettled(casesettled)
 							.casewithdrawn(casewithdraw).paymentaging(dueDateInfo).PendingStatus(pendingstatus)
-							.LegalstatusCount(legalsuitcount).downaloadfilepath(filepaths)// *
+							.LegalstatusCount(legalsuitcount).downaloadfilepath(filepaths).entityId(entity_id).entityKey(entity_key)// *
 																							// .InvalidUserFlag(InvalidFlag)
 																							// */
 							.build();
@@ -1241,6 +1270,35 @@ public class CcrisReportRetrievalService {
 							}
 						}
 					}
+					
+					//banking_info
+					
+					list = doc.getElementsByTagName("banking_info");
+					boolean entity_key = false;
+					boolean entity_id = false;
+					node = list.item(0);
+
+					if (list.getLength() > 0 && IsEmpty(list)) {
+						Node nNode = list.item(0);
+						NodeList nestedList = nNode.getChildNodes();
+						for (int j = 0; j < nestedList.getLength(); j++) {
+
+							if (nestedList.item(j).getNodeType() == Node.TEXT_NODE
+									&& nestedList.item(j).getNextSibling() != null) {
+								Node sibling = nestedList.item(j).getNextSibling();
+
+								if (sibling.getNodeName() != null && sibling.getNodeName() == "ccris_selected_by_you") {
+									Element element = (Element) node;
+									entity_key = element.getElementsByTagName("entity_key").item(0)
+											.getTextContent() != null;
+									entity_id = element.getElementsByTagName("entity_id").item(0)
+											.getTextContent() != null;
+								}
+							}
+						}
+					}
+
+					
 					/*
 					 * myWriter.close(); myWriter.flush();
 					 */
@@ -1255,7 +1313,7 @@ public class CcrisReportRetrievalService {
 							.bankingCreditPendingAmount(Banking_credit_pending_amount).xmlString(xmlResponse)
 							/* .jsonString(xmlResponse) */.casesettled(casesettled).casewithdrawn(casewithdraw)
 							.paymentaging(dueDateInfo).PendingStatus(pendingstatus).LegalstatusCount(legalsuitcount)
-							.downaloadfilepath(filepaths).Criss(ccris)// * .InvalidUserFlag(InvalidFlag) */
+							.downaloadfilepath(filepaths).Criss(ccris).entityId(entity_id).entityKey(entity_key)// * .InvalidUserFlag(InvalidFlag) */
 							.build();
 					// System.out.println(report.toString() + "===========================");
 

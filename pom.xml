@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>my.mobypay</groupId>
 	<artifactId>creditScore</artifactId>
-	<version>3.0.2-SNAPSHOT</version>
+	<version>3.0.3-SNAPSHOT</version>
 	<name>creditScore</name>
 	<description>Demo for retrieve credit score</description>
 	<properties>
@@ -177,6 +177,11 @@
             <artifactId>mailgun</artifactId>
             <version>1.10.0</version>
         </dependency>
+        <dependency>
+  <groupId>de.dentrassi.crypto</groupId>
+  <artifactId>pem-keystore</artifactId>
+  <version>2.0.0</version>
+</dependency>
 	</dependencies>
 
 	<build>

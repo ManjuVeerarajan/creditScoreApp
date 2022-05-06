@@ -64,7 +64,7 @@ public class CcrisUnifiedService {
 	@SuppressWarnings("unused")
 	public CreditCheckResponse getCreditScore(Integer iscore, String caseSettled, String casewithdraw,
 			String paymentaging, boolean pendingflag, Integer legalsuitcount, Integer bankruptcycount,
-			boolean crissFlag, Integer tradeBureauCount) {
+			boolean crissFlag, Integer tradeBureauCount,boolean entityKey, boolean entityId) {
 		log.info("Inside getCreditScore ");
 		log.info("caseSettled " +caseSettled);
 		log.info("casewithdraw " +casewithdraw);
@@ -74,6 +74,8 @@ public class CcrisUnifiedService {
 		log.info("bankruptcycount " +bankruptcycount);
 		log.info("crissFlag " +crissFlag);
 		log.info("tradeBureauCount " +tradeBureauCount);
+		log.info("entityKey " +entityKey);
+		log.info("entityId " +entityId);
 		
 		System.out.println(paymentaging);
 		String messageStatus = null;
@@ -107,7 +109,8 @@ public class CcrisUnifiedService {
 				&& paymentaging != null && !paymentaging.equalsIgnoreCase("DEFAULTED / ACCOUNT TERMINATED")
 				&& paymentAmountcalculation < 90) {
 			log.info("Inside caseSettled != null ");
-			if ((iscore == 0 || iscore == null) && crissFlag == true) {
+			//if ((iscore == 0 || iscore == null) && crissFlag == true) {
+			if ((iscore == 0 || iscore == null) && entityId == false  && entityKey == false) {
 				log.info("criss info condition with iscore = = 0");
 				System.out.println("iscore = = 0");
 				maximumAllowedInstallments = 3;
@@ -116,7 +119,7 @@ public class CcrisUnifiedService {
 				isNricExist = true;
 				creditscoreless = true;
 				messageStatus = "No Ccris Info found";
-			} else if (iscore <= 420 && crissFlag == false) {
+			} else if (iscore <= 420 && entityId == true  && entityKey == true) {
 				log.info("iscore <= 420");
 				maximumAllowedInstallments = 0;
 				maximumSpendingLimit = 0;
@@ -124,54 +127,54 @@ public class CcrisUnifiedService {
 				isNricExist = true;
 				messageStatus = "Low Credit Score";
 				lowcreditScore = true;
-			} else if (iscore >= 421 && iscore <= 460 && crissFlag == false) {
+			} else if (iscore >= 421 && iscore <= 460 && entityId == true  && entityKey == true) {
 				log.info("iscore >= 421 && iscore <= 460");
 				maximumAllowedInstallments = 3;
 				maximumSpendingLimit = 300;
 				registrationallowed = true;
 				isNricExist = true;
-			} else if (iscore >= 461 && iscore <= 540 && crissFlag == false) {
+			} else if (iscore >= 461 && iscore <= 540 && entityId == true  && entityKey == true) {
 				log.info("iscore >= 461 && iscore <= 540");
 				maximumAllowedInstallments = 3;
 				maximumSpendingLimit = 500;
 				registrationallowed = true;
 				isNricExist = true;
 
-			} else if ((iscore >= 541) && (iscore <= 580) && crissFlag == false) {
+			} else if ((iscore >= 541) && (iscore <= 580) && entityId == true  && entityKey == true) {
 				log.info("iscore >= 541) && (iscore <= 580");
 				maximumAllowedInstallments = 6;
 				maximumSpendingLimit = 1000;
 				registrationallowed = true;
 				isNricExist = true;
 
-			} else if ((iscore >= 581) && (iscore <= 620) && crissFlag == false) {
+			} else if ((iscore >= 581) && (iscore <= 620) && entityId == true  && entityKey == true) {
 				log.info("iscore >= 581) && (iscore <= 620");
 				maximumAllowedInstallments = 6;
 				maximumSpendingLimit = 1500;
 				registrationallowed = true;
 				isNricExist = true;
 
-			} else if ((iscore >= 621) && (iscore <= 660) && crissFlag == false) {
+			} else if ((iscore >= 621) && (iscore <= 660) && entityId == true  && entityKey == true) {
 				log.info("iscore >= 621) && (iscore <= 660");
 				maximumAllowedInstallments = 6;
 				maximumSpendingLimit = 2000;
 				registrationallowed = true;
 				isNricExist = true;
 
-			} else if ((iscore >= 661) && (iscore <= 700) && crissFlag == false) {
+			} else if ((iscore >= 661) && (iscore <= 700) && entityId == true  && entityKey == true) {
 				log.info("iscore >= 661) && (iscore <= 700");
 				maximumAllowedInstallments = 6;
 				maximumSpendingLimit = 2500;
 				registrationallowed = true;
 				isNricExist = true;
-			} else if (iscore >= 701 && crissFlag == false) {
+			} else if (iscore >= 701 && entityId == true  && entityKey == true) {
 				log.info("iscore >= 701");
 				maximumAllowedInstallments = 6;
 				maximumSpendingLimit = 3000;
 				registrationallowed = true;
 				isNricExist = true;
-			} else if (iscore > 0 && crissFlag == true) {
-				log.info("iscore > 0 && crissFlag == true");
+			} else if (iscore > 0 && entityId == false  && entityKey == false) {
+				log.info("iscore > 0 && entityId == true  && entityKey == true");
 				System.out.println("iscore > = 0");
 				maximumAllowedInstallments = 3;
 				maximumSpendingLimit = 150;
@@ -186,7 +189,7 @@ public class CcrisUnifiedService {
 				&& paymentaging != null && !paymentaging.equalsIgnoreCase("DEFAULTED / ACCOUNT TERMINATED")
 				&& paymentAmountcalculation < 90) {
 			log.info("Inside (caseSettled == null) || (casewithdraw == null) ");
-			if ((iscore == 0 || iscore == null) && crissFlag == true) {
+			if ((iscore == 0 || iscore == null) && entityId == false  && entityKey == false) {
 				log.info("criss info condition with iscore = = 0");
 				System.out.println("iscore = = 0");
 				maximumAllowedInstallments = 3;
@@ -195,7 +198,7 @@ public class CcrisUnifiedService {
 				isNricExist = true;
 				creditscoreless = true;
 				messageStatus = "No Ccris Info found";
-			} else if (iscore <= 420 && crissFlag == false) {
+			} else if (iscore <= 420 && entityId == true  && entityKey == true) {
 				log.info("iscore <= 420");
 				maximumAllowedInstallments = 0;
 				maximumSpendingLimit = 0;
@@ -203,54 +206,54 @@ public class CcrisUnifiedService {
 				isNricExist = true;
 				messageStatus = "Low Credit Score";
 				lowcreditScore = true;
-			} else if (iscore >= 421 && iscore <= 460 && crissFlag == false) {
+			} else if (iscore >= 421 && iscore <= 460 && entityId == true  && entityKey == true) {
 				log.info("iscore >= 421 && iscore <= 460");
 				maximumAllowedInstallments = 3;
 				maximumSpendingLimit = 300;
 				registrationallowed = true;
 				isNricExist = true;
-			} else if (iscore >= 461 && iscore <= 540 && crissFlag == false) {
+			} else if (iscore >= 461 && iscore <= 540 && entityId == true  && entityKey == true) {
 				log.info("iscore >= 461 && iscore <= 540");
 				maximumAllowedInstallments = 3;
 				maximumSpendingLimit = 500;
 				registrationallowed = true;
 				isNricExist = true;
 
-			} else if ((iscore >= 541) && (iscore <= 580) && crissFlag == false) {
+			} else if ((iscore >= 541) && (iscore <= 580) && entityId == true  && entityKey == true) {
 				log.info("iscore >= 541) && (iscore <= 580");
 				maximumAllowedInstallments = 6;
 				maximumSpendingLimit = 1000;
 				registrationallowed = true;
 				isNricExist = true;
 
-			} else if ((iscore >= 581) && (iscore <= 620) && crissFlag == false) {
+			} else if ((iscore >= 581) && (iscore <= 620) && entityId == true  && entityKey == true) {
 				log.info("iscore >= 581) && (iscore <= 620");
 				maximumAllowedInstallments = 6;
 				maximumSpendingLimit = 1500;
 				registrationallowed = true;
 				isNricExist = true;
 
-			} else if ((iscore >= 621) && (iscore <= 660) && crissFlag == false) {
+			} else if ((iscore >= 621) && (iscore <= 660) && entityId == true  && entityKey == true) {
 				log.info("iscore >= 621) && (iscore <= 660");
 				maximumAllowedInstallments = 6;
 				maximumSpendingLimit = 2000;
 				registrationallowed = true;
 				isNricExist = true;
 
-			} else if ((iscore >= 661) && (iscore <= 700) && crissFlag == false) {
+			} else if ((iscore >= 661) && (iscore <= 700) && entityId == true  && entityKey == true) {
 				log.info("iscore >= 661) && (iscore <= 700");
 				maximumAllowedInstallments = 6;
 				maximumSpendingLimit = 2500;
 				registrationallowed = true;
 				isNricExist = true;
-			} else if (iscore >= 701 && crissFlag == false) {
+			} else if (iscore >= 701 && entityId == true  && entityKey == true) {
 				log.info("iscore >= 701");
 				maximumAllowedInstallments = 6;
 				maximumSpendingLimit = 3000;
 				registrationallowed = true;
 				isNricExist = true;
-			} else if (iscore > 0 && crissFlag == true) {
-				log.info("iscore > 0 && crissFlag == true");
+			} else if (iscore > 0 && entityId == false  && entityKey == false) {
+				log.info("iscore > 0 && entityId == true  && entityKey == true");
 				System.out.println("iscore > = 0");
 				maximumAllowedInstallments = 3;
 				maximumSpendingLimit = 150;
@@ -264,8 +267,8 @@ public class CcrisUnifiedService {
 						&& casewithdraw == null && pendingflag == false)
 				&& paymentaging == null
 				&& paymentAmountcalculation < 90) {
-			log.info("Inside caseSettled != null ");
-			if ((iscore == 0 || iscore == null) && crissFlag == true) {
+			log.info("Inside caseSettled == null ");
+			if ((iscore == 0 || iscore == null) && entityId == false  && entityKey == false) {
 				log.info("criss info condition with iscore = = 0");
 				System.out.println("iscore = = 0");
 				maximumAllowedInstallments = 3;
@@ -274,7 +277,7 @@ public class CcrisUnifiedService {
 				isNricExist = true;
 				creditscoreless = true;
 				messageStatus = "No Ccris Info found";
-			} else if (iscore <= 420 && crissFlag == false) {
+			} else if (iscore <= 420 && entityId == true  && entityKey == true) {
 				log.info("iscore <= 420");
 				maximumAllowedInstallments = 0;
 				maximumSpendingLimit = 0;
@@ -282,54 +285,54 @@ public class CcrisUnifiedService {
 				isNricExist = true;
 				messageStatus = "Low Credit Score";
 				lowcreditScore = true;
-			} else if (iscore >= 421 && iscore <= 460 && crissFlag == false) {
+			} else if (iscore >= 421 && iscore <= 460 && entityId == true  && entityKey == true) {
 				log.info("iscore >= 421 && iscore <= 460");
 				maximumAllowedInstallments = 3;
 				maximumSpendingLimit = 300;
 				registrationallowed = true;
 				isNricExist = true;
-			} else if (iscore >= 461 && iscore <= 540 && crissFlag == false) {
+			} else if (iscore >= 461 && iscore <= 540 && entityId == true  && entityKey == true) {
 				log.info("iscore >= 461 && iscore <= 540");
 				maximumAllowedInstallments = 3;
 				maximumSpendingLimit = 500;
 				registrationallowed = true;
 				isNricExist = true;
 
-			} else if ((iscore >= 541) && (iscore <= 580) && crissFlag == false) {
+			} else if ((iscore >= 541) && (iscore <= 580) && entityId == true  && entityKey == true) {
 				log.info("iscore >= 541) && (iscore <= 580");
 				maximumAllowedInstallments = 6;
 				maximumSpendingLimit = 1000;
 				registrationallowed = true;
 				isNricExist = true;
 
-			} else if ((iscore >= 581) && (iscore <= 620) && crissFlag == false) {
+			} else if ((iscore >= 581) && (iscore <= 620) && entityId == true  && entityKey == true) {
 				log.info("iscore >= 581) && (iscore <= 620");
 				maximumAllowedInstallments = 6;
 				maximumSpendingLimit = 1500;
 				registrationallowed = true;
 				isNricExist = true;
 
-			} else if ((iscore >= 621) && (iscore <= 660) && crissFlag == false) {
+			} else if ((iscore >= 621) && (iscore <= 660) && entityId == true  && entityKey == true) {
 				log.info("iscore >= 621) && (iscore <= 660");
 				maximumAllowedInstallments = 6;
 				maximumSpendingLimit = 2000;
 				registrationallowed = true;
 				isNricExist = true;
 
-			} else if ((iscore >= 661) && (iscore <= 700) && crissFlag == false) {
+			} else if ((iscore >= 661) && (iscore <= 700) && entityId == true  && entityKey == true) {
 				log.info("iscore >= 661) && (iscore <= 700");
 				maximumAllowedInstallments = 6;
 				maximumSpendingLimit = 2500;
 				registrationallowed = true;
 				isNricExist = true;
-			} else if (iscore >= 701 && crissFlag == false) {
+			} else if (iscore >= 701 && entityId == true  && entityKey == true) {
 				log.info("iscore >= 701");
 				maximumAllowedInstallments = 6;
 				maximumSpendingLimit = 3000;
 				registrationallowed = true;
 				isNricExist = true;
-			} else if (iscore > 0 && crissFlag == true) {
-				log.info("iscore > 0 && crissFlag == true");
+			} else if (iscore > 0 && entityId == false  && entityKey == false) {
+				log.info("iscore > 0 && entityId == true  && entityKey == true");
 				System.out.println("iscore > = 0");
 				maximumAllowedInstallments = 3;
 				maximumSpendingLimit = 150;
@@ -586,7 +589,15 @@ public class CcrisUnifiedService {
 					String code = report.getCode();
 					String error = report.getError();
 					int retrival = report.getRetrivalCount();
-					boolean Crissflag = report.isCriss();
+					//Updated to check ccris flag based on entity_id and entity_key
+					boolean Crissflag = false;
+					if(report.isEntityId() && report.isEntityKey()) {
+						Crissflag = true;
+					}else
+					{
+						Crissflag = false;
+					}
+				//	boolean Crissflag = report.isCriss();
 					utilityEntities.setCrissInfo(Crissflag);
 					utilityEntities.setCodes(code);
 					utilityEntities.setErrorMsg(error);

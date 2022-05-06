@@ -465,10 +465,12 @@ public class CcrisController {
 					Integer bankruptcycount = customercreditreportrequest.getBankruptcyCount();
 					Boolean CrissFlag=customercreditreportrequest.isCriss();
 					Integer tradeBureauCount = customercreditreportrequest.getTradeBureauCount();
+					boolean entityKey = customercreditreportrequest.isEntityKey();
+					boolean entityId = customercreditreportrequest.isEntityId();
 					log.info(CrissFlag + "checking the pending flagggggggggggg");
 					checkcreditscoreResponse = ccrisUnifiedService.getCreditScore(
 							customercreditreportrequest.getIScore(), caseSettled, casewithdraw, paymentaging,
-							pendingflag, legalsuitcount, bankruptcycount,CrissFlag,tradeBureauCount);
+							pendingflag, legalsuitcount, bankruptcycount,CrissFlag,tradeBureauCount,entityKey,entityId);
 					log.info("checking the credit score" + checkcreditscoreResponse.toString());
 					if (checkcreditscoreResponse.getIsBelowscoreFlag()!=null && checkcreditscoreResponse.getIsBelowscoreFlag() == false) {
 						boolean nricExist = checkcreditscoreResponse.getIsNricExist();
@@ -536,7 +538,7 @@ public class CcrisController {
 
 						checkcreditscoreResponse = ccrisUnifiedService.getCreditScore(
 								customercreditreportrequest.getIScore(), caseSettled, casewithdraw, paymentaging,
-								pendingflag, legalsuitcount, bankruptcycount,false,tradeBureauCount);
+								pendingflag, legalsuitcount, bankruptcycount,false,tradeBureauCount,entityKey,entityId);
                          
 						error.setErrorcode("404");
 						error.setErrormessage(checkcreditscoreResponse.getErrorMessage());
@@ -1187,11 +1189,13 @@ public class CcrisController {
 					Integer legalsuitcount = customercreditreportrequest.getLegalstatusCount();
 					Integer bankruptcycount = customercreditreportrequest.getBankruptcyCount();
 					Integer tradeBureauCount = customercreditreportrequest.getTradeBureauCount();
+					boolean entityKey = customercreditreportrequest.isEntityKey();
+					boolean entityId = customercreditreportrequest.isEntityId();
 					boolean CrissFlag=customercreditreportrequest.isCriss();
 					log.info(CrissFlag + "checking the pending Criss FLAG");
 					checkcreditscoreResponse = ccrisUnifiedService.getCreditScore(
 							customercreditreportrequest.getIScore(), caseSettled, casewithdraw, paymentaging,
-							pendingflag, legalsuitcount, bankruptcycount,CrissFlag,tradeBureauCount);
+							pendingflag, legalsuitcount, bankruptcycount,CrissFlag,tradeBureauCount,entityKey,entityId);
 					log.info("checking the credit score" + checkcreditscoreResponse.toString());
 
 					if (checkcreditscoreResponse.getIsBelowscoreFlag() == false
@@ -1555,4 +1559,8 @@ public class CcrisController {
 
 	}
 
+	@GetMapping(value = "/creditchecker/ping")
+	public String pingServer() {
+		return "Server is up";
+	}
 }

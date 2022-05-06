@@ -44,6 +44,8 @@ public class CustomerCreditReportRequest {
    	private String downaloadfilepath;
      private Integer RetrivalCount;
      private boolean Criss;
+     private boolean entityKey;
+     private boolean entityId;
    //	private Boolean InvalidUserFlag;
    
    	
