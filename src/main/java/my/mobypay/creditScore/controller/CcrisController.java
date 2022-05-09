@@ -36,6 +36,11 @@ import my.mobypay.creditScore.service.CcrisSearchService;
 import my.mobypay.creditScore.service.CcrisUnifiedService;
 import my.mobypay.creditScore.service.XmlFormatter;
 import my.mobypay.creditScore.utility.EmailUtility;
+import my.mobypay.ekyc.dao.CheckResultRequest;
+import my.mobypay.ekyc.dao.CheckResultResponse;
+import my.mobypay.ekyc.dao.InitializeRequest;
+import my.mobypay.ekyc.dao.InitializeResponse;
+import my.mobypay.ekyc.service.EkycService;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
@@ -43,8 +48,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.query.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -54,9 +57,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zoloz.api.sdk.client.OpenApiClient;
 
 import javassist.bytecode.stackmap.BasicBlock.Catch;
 
@@ -73,12 +79,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-//@Slf4j
+@Slf4j
 @RequestMapping(value = "/api")
 @RestController
 public class CcrisController {
 
-	private static Logger log = LoggerFactory.getLogger(CcrisController.class);
 	//@Autowired
 	//EmailSendingRepository emailSendingRepository;
 	
@@ -100,6 +105,11 @@ public class CcrisController {
 	CcrisUnifiedService ccrisUnifiedService;
 	@Autowired
 	CcrisReportRetrievalService ccrisReportRetrievalService;
+	
+	// @Autowired
+    private OpenApiClient openApiClient = new OpenApiClient();
+	// @Autowired
+	EkycService ekycService = new EkycService();
 	/*
 	 * @Autowired private CcrisReportRetrievalService ccrisReportRetrievalService;
 	 */
@@ -112,10 +122,27 @@ public class CcrisController {
 	@Autowired
 	ApplicationSettingsRepository appSettings;
 
+	@Value("${zolos.server}")
+	private String hostUrl;
+
+	@Value("${zolos.initialize}")
+	private String initializeApi;
+
+	@Value("${zolos.checkresult}")
+	private String checkResultApi;
+	
+	@Value("${clientId}")
+	private String clientId;
+	
+	@Value("${merchant.publickey}")
+	private String merchantPublicKey;
+	
+	@Value("${merchant.privatekey}")
+	private String merchantPrivatekey;
 	boolean ispresent = false;
     String ServerDownError="we are unable to process your application as our 3rd party services provider is not available at the moment. Please try again later.";
 	CustomerCreditReportRequest customercreditreportrequest = null;
-	// private static final Logger log = Logger.getLogger(CcrisController.class);
+	// private static final log log = log.getlog(CcrisController.class);
 	/*
 	 * @PostMapping("/ccris-search") public CcrisXml ccrisSearch(@RequestBody
 	 * UserSearchRequest userSearchRequest) throws Exception { CcrisSearchService
@@ -1562,5 +1589,68 @@ public class CcrisController {
 	@GetMapping(value = "/creditchecker/ping")
 	public String pingServer() {
 		return "Server is up";
+	}
+	
+	@RequestMapping(value = {"/ekyc/initialize"}, method = RequestMethod.POST)
+	public JSONObject realIdInit(@RequestBody JSONObject request) {
+
+		log.info("Inside initialize request=" + request);
+		JSONObject response = null;
+
+		ekycService.setValuesToOpenApiHardCoded();
+		setValuesToOpenApi();
+		String apiRespStr = ekycService.callInitializeOpenApi(request, initializeApi);
+		log.info("initializeApi=" + initializeApi);
+		if (apiRespStr != null) {
+			com.alibaba.fastjson.JSONObject apiResp = JSON.parseObject(apiRespStr);
+
+			response = new JSONObject(apiResp);
+			/*
+			 * response.put("rsaPubKey", openApiClient.getOpenApiPublicKey());
+			 * response.put("transactionId", apiResp.getString("transactionId"));
+			 * response.put("clientCfg", apiResp.getString("clientCfg"));
+			 */
+			log.info("response=" + apiRespStr);
+		} else {
+			response.put("errorMsg", "Zoloc response is null");
+
+		}
+		log.info("initialize request " + response);
+		return response;
+	}
+
+    @RequestMapping(value = "/ekyc/checkresult", method = RequestMethod.POST)
+	public JSONObject realIdCheck(@RequestBody JSONObject request) {
+    	JSONObject response = null;
+		log.info("Inside checkresult =" + request);
+		//setValuesToOpenApi();
+		ekycService.setValuesToOpenApiHardCoded();
+
+		String apiRespStr = ekycService.callCheckStatusOpenApi(request,checkResultApi);
+
+		if (apiRespStr != null) {
+		com.alibaba.fastjson.JSONObject apiResp = JSON.parseObject(apiRespStr);
+
+		response = new JSONObject(apiResp);
+		}else {
+			response.put("errorMsg", "Zoloc response is null");
+
+		}
+		log.info("response in checkresult =" + response);
+		return response;
+	}
+    
+	public void setValuesToOpenApi() {
+		openApiClient.setHostUrl(hostUrl);
+		openApiClient.setClientId(clientId);
+		openApiClient.setMerchantPrivateKey(merchantPrivatekey);
+		
+		openApiClient.setOpenApiPublicKey(merchantPublicKey);
+		
+		openApiClient.setSigned(true);
+		openApiClient.setEncrypted(true);
+		 
+		log.info("Host url set to openApi " + openApiClient.getHostUrl());	
+		log.info("clientId url set to openApi " + openApiClient.getClientId());	
 	}
 }
