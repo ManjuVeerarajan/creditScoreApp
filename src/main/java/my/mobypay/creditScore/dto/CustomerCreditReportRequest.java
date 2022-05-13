@@ -46,6 +46,8 @@ public class CustomerCreditReportRequest {
      private boolean Criss;
      private boolean entityKey;
      private boolean entityId;
+     private String specialAttentionAccount;
+     private String facility;
    //	private Boolean InvalidUserFlag;
    
    	

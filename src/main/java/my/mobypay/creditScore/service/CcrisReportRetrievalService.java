@@ -2,7 +2,7 @@ package my.mobypay.creditScore.service;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
-
+import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
 import my.mobypay.creditScore.dao.CustomerCreditReports;
 import my.mobypay.creditScore.dto.CreditCheckError;
 import my.mobypay.creditScore.dto.CustomerCreditReportRequest;
@@ -109,26 +109,30 @@ public class CcrisReportRetrievalService {
 
 	@Autowired
 	private HttpServletRequest request;
+	
+	@Autowired
+	CreditScoreConfigRepository creditScoreConfigRepository;
 
-	@Value("${ExperianURLXML}")
-	private String ExperianURLXML;
 
-	@Value("${ExperianUsername}")
+	//@Value("${ExperianURLXML}")
+	private String ExperianURLXML ;
+
+	// @Value("${ExperianUsername}")
 	private String ExperianUsername;
 
-	@Value("${ExperianPassword}")
+	//@Value("${ExperianPassword}")
 	private String ExperianPassword;
 
-	@Value("${Experianxmlfolder}")
+	//@Value("${Experianxmlfolder}")
 	private String Experianxmlfolder;
 
-	@Value("${Experianxslfolder}")
+	// @Value("${Experianxslfolder}")
 	private String Experianxslfolder;
 
-	@Value("${ExperianPDFFolder}")
+	//@Value("${ExperianPDFFolder}")
 	private String ExperianPDFFolder;
 
-	@Value("${ExperianHTMLfolder}")
+	//@Value("${ExperianHTMLfolder}")
 	private String ExperianHTMLfolder;
 
 	@Autowired
@@ -149,10 +153,11 @@ public class CcrisReportRetrievalService {
 	public CustomerCreditReportRequest retrieveReport(UserTokensRequest userTokensRequest, boolean reportFlag,
 			UserSearchRequest userSearchRequest, String triggerreconnectCount, String triggersleeptime, String to)
 			throws Exception {
-		System.out.println(Experianxmlfolder);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_XML);
 		// headers.setBasicAuth("MOBYUAT1", "Mobyuat.1");
+		ExperianUsername = creditScoreConfigRepository.findValueFromName("ExperianUsername");
+		ExperianPassword = creditScoreConfigRepository.findValueFromName("ExperianPassword");
 		headers.setBasicAuth(ExperianUsername, ExperianPassword);
 		ResponseEntity<String> response = null;
 		boolean ExperianServerDownFlag = false;
@@ -195,6 +200,7 @@ public class CcrisReportRetrievalService {
 			int count1 = 0;
 			CreditCheckError checkError = new CreditCheckError();
 			do {
+				ExperianURLXML = creditScoreConfigRepository.findValueFromName("ExperianURLXML");
 				response = restTemplate.postForEntity(ExperianURLXML, request, String.class);
 				System.out.println("***********response**************");
 				System.out.println(response.getBody());
@@ -233,7 +239,8 @@ public class CcrisReportRetrievalService {
 							try {
 								log.info("new Error Entry to ErrorTable");
 								CreditCheckError checkError1 = new CreditCheckError();
-								String message = "we are unable to process your application as our 3rd party services provider is not available at the moment. Please try again later.";
+							//	String message = "we are unable to process your application as our 3rd party services provider is not available at the moment. Please try again later.";
+								String message = "Experian API connection issue";
 								String code = "102";
 								checkError1.setErrorCode(code);
 								checkError1.setErrorStatus(message);
@@ -323,7 +330,6 @@ public class CcrisReportRetrievalService {
 	 */
 	public CustomerCreditReportRequest processReport(String content, boolean experianServerDownFlag, boolean reportFlag,
 			UserSearchRequest userSearchRequest, int count1, String to) throws Exception {
-		System.out.println(ExperianURLXML);
 
 		// System.out.println(content);
 		CustomerCreditReportRequest report = null;
@@ -394,8 +400,9 @@ public class CcrisReportRetrievalService {
 			//	boolean check = true;
 				 boolean check=userSearchRequest.getServiceName()!=null &&
 				 userSearchRequest.getServiceName().equalsIgnoreCase("GetReport");
-				System.out.println(check + "===============");
+				log.info("check " +check);
 				if ( reportFlag==true &&  check == true) {
+					log.info("Inside reportFlag==true &&  check == true ");
 					// System.out.println(userSearchRequest.getEntityId()+"new report
 					// nric============");
 					System.out.println(nricNumber + "new report nric============");
@@ -814,6 +821,8 @@ public class CcrisReportRetrievalService {
 					list = doc.getElementsByTagName("banking_info");
 					boolean entity_key = false;
 					boolean entity_id = false;
+					String special_attention_account = null ;
+					String facility = null;
 					node = list.item(0);
 
 					if (list.getLength() > 0 && IsEmpty(list)) {
@@ -829,10 +838,36 @@ public class CcrisReportRetrievalService {
 									Element element = (Element) node;
 									entity_key = element.getElementsByTagName("entity_key").item(0)
 											.getTextContent() != null;
+									log.info("#### entity_key " +entity_key + " value is " +element.getElementsByTagName("entity_key").item(0)
+											.getTextContent() );
 									entity_id = element.getElementsByTagName("entity_id").item(0)
 											.getTextContent() != null;
+									log.info("#### entity_id " +entity_id + " value is "+element.getElementsByTagName("entity_id").item(0)
+											.getTextContent());
 								}
 							}
+								if (nestedList.item(j).getNodeType() == Node.TEXT_NODE
+										&& nestedList.item(j).getNextSibling() != null) {
+									Node sibling = nestedList.item(j).getNextSibling();
+									System.out.println("sibling " +sibling );
+									//Node siblings = nestedList.item(3);
+									if (sibling.getNodeName() != null && sibling.getNodeName() == "ccris_banking_summary") {
+										System.out.println("summary_liabilities "  );
+										Element element = (Element) node;
+										special_attention_account = element.getElementsByTagName("special_attention_account").item(0)
+												.getTextContent() ;
+										System.out.println("special_attention_account " +special_attention_account );
+										
+									}
+									if (sibling.getNodeName() != null && sibling.getNodeName() == "ccris_banking_details") {
+										Element element = (Element) node;
+										facility = element.getElementsByTagName("facility").item(0)
+												.getTextContent();
+										System.out.println("#### facility " +facility);
+										
+									}
+								}
+							
 						}
 					}
 
@@ -851,7 +886,7 @@ public class CcrisReportRetrievalService {
 							.bankingCreditPendingAmount(Banking_credit_pending_amount).xmlString(xmlResponse)
 							.Criss(ccris)/* .jsonString(xmlResponse) */.casesettled(casesettled)
 							.casewithdrawn(casewithdraw).paymentaging(dueDateInfo).PendingStatus(pendingstatus)
-							.LegalstatusCount(legalsuitcount).downaloadfilepath(filepaths).entityId(entity_id).entityKey(entity_key)// *
+							.LegalstatusCount(legalsuitcount).downaloadfilepath(filepaths).entityId(entity_id).entityKey(entity_key).specialAttentionAccount(special_attention_account).facility(facility)// *
 																							// .InvalidUserFlag(InvalidFlag)
 																							// */
 							.build();
@@ -863,7 +898,7 @@ public class CcrisReportRetrievalService {
 					 * myWriter.write(names);
 					 */
 					String filepath = convertToPDF(nricNumber, xmlResponse);
-					System.out.println(filepath + "===========================");
+					log.info("filepath in else loop " +filepath);
 
 					String filename = awss3ServiceImpl.uploadFile(filepath);
 					String path = request.getRequestURL().toString();
@@ -1276,6 +1311,8 @@ public class CcrisReportRetrievalService {
 					list = doc.getElementsByTagName("banking_info");
 					boolean entity_key = false;
 					boolean entity_id = false;
+					String special_attention_account = null;
+					String facility = null;
 					node = list.item(0);
 
 					if (list.getLength() > 0 && IsEmpty(list)) {
@@ -1291,8 +1328,33 @@ public class CcrisReportRetrievalService {
 									Element element = (Element) node;
 									entity_key = element.getElementsByTagName("entity_key").item(0)
 											.getTextContent() != null;
+									log.info("entity_key " +entity_key + " value is " +element.getElementsByTagName("entity_key").item(0)
+											.getTextContent() );
 									entity_id = element.getElementsByTagName("entity_id").item(0)
 											.getTextContent() != null;
+									log.info("entity_id " +entity_id + " value is "+element.getElementsByTagName("entity_id").item(0)
+											.getTextContent());
+								}
+							}
+							if (nestedList.item(j).getNodeType() == Node.TEXT_NODE
+									&& nestedList.item(j).getNextSibling() != null) {
+								Node sibling = nestedList.item(j).getNextSibling();
+								//Node siblings = nestedList.item(3);
+								if (sibling.getNodeName() != null && sibling.getNodeName() == "ccris_banking_summary") {
+									Element element = (Element) node;
+									special_attention_account = element.getElementsByTagName("special_attention_account").item(0)
+											.getTextContent() ;
+									log.info("special_attention_account " +special_attention_account );
+									
+								}
+								if (sibling.getNodeName() != null && sibling.getNodeName() == "ccris_banking_details") {
+									Element element = (Element) node;
+									if(element.getElementsByTagName("facility").item(0) != null) {
+									facility = element.getElementsByTagName("facility").item(0)
+											.getTextContent();
+									log.info("facility " +facility);
+									}
+									
 								}
 							}
 						}
@@ -1313,7 +1375,7 @@ public class CcrisReportRetrievalService {
 							.bankingCreditPendingAmount(Banking_credit_pending_amount).xmlString(xmlResponse)
 							/* .jsonString(xmlResponse) */.casesettled(casesettled).casewithdrawn(casewithdraw)
 							.paymentaging(dueDateInfo).PendingStatus(pendingstatus).LegalstatusCount(legalsuitcount)
-							.downaloadfilepath(filepaths).Criss(ccris).entityId(entity_id).entityKey(entity_key)// * .InvalidUserFlag(InvalidFlag) */
+							.downaloadfilepath(filepaths).Criss(ccris).entityId(entity_id).entityKey(entity_key).specialAttentionAccount(special_attention_account).facility(facility)// * .InvalidUserFlag(InvalidFlag) */
 							.build();
 					// System.out.println(report.toString() + "===========================");
 
@@ -1324,7 +1386,8 @@ public class CcrisReportRetrievalService {
 				log.info("Experian Server Flag" + experianServerDownFlag);
 				log.info("sending count to controller " + count1);
 				// log.info("experian Retrival Count : "+retrivalCount);
-				String message = "we are unable to process your application as our 3rd party services provider is not available at the moment. Please try again later.";
+				//String message = "we are unable to process your application as our 3rd party services provider is not available at the moment. Please try again later.";
+				String message = "Experian API connection issue";
 				String code = "102";
 				report = CustomerCreditReportRequest.builder().error(message).code(code)
 						.ExperianServerFlag(experianServerDownFlag).RetrivalCount(count1).build();
@@ -1417,10 +1480,15 @@ public class CcrisReportRetrievalService {
 
 	public String convertToPDF(String nricNumber, String xmlResponse) throws Exception {
 
+		Experianxmlfolder = creditScoreConfigRepository.findValueFromName("Experianxmlfolder");
+		Experianxslfolder = creditScoreConfigRepository.findValueFromName("Experianxslfolder");
+		ExperianHTMLfolder = creditScoreConfigRepository.findValueFromName("ExperianHTMLfolder");
+		ExperianPDFFolder = creditScoreConfigRepository.findValueFromName("ExperianPDFFolder");
 		String path = Experianxmlfolder + "//data.xml";
 		TransformerFactory tFactory = TransformerFactory.newInstance();
 		// specify the input xsl file location to apply the styles for the pdf
 		// output file
+		
 		Transformer transformer = tFactory.newTransformer(new StreamSource(Experianxslfolder + "//spkccs.xsl"));
 		transformer.setOutputProperty("method", "xhtml");
 		// specify the input xml file location

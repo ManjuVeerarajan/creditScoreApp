@@ -64,7 +64,7 @@ public class CcrisUnifiedService {
 	@SuppressWarnings("unused")
 	public CreditCheckResponse getCreditScore(Integer iscore, String caseSettled, String casewithdraw,
 			String paymentaging, boolean pendingflag, Integer legalsuitcount, Integer bankruptcycount,
-			boolean crissFlag, Integer tradeBureauCount,boolean entityKey, boolean entityId) {
+			boolean crissFlag, Integer tradeBureauCount,boolean entityKey, boolean entityId,String specialAttentionAccount, String facility) {
 		log.info("Inside getCreditScore ");
 		log.info("caseSettled " +caseSettled);
 		log.info("casewithdraw " +casewithdraw);
@@ -76,6 +76,7 @@ public class CcrisUnifiedService {
 		log.info("tradeBureauCount " +tradeBureauCount);
 		log.info("entityKey " +entityKey);
 		log.info("entityId " +entityId);
+		log.info("specialAttentionAccount " +specialAttentionAccount);
 		
 		System.out.println(paymentaging);
 		String messageStatus = null;
@@ -107,10 +108,19 @@ public class CcrisUnifiedService {
 				&& ((caseSettled != null && caseSettled.equalsIgnoreCase("Y"))
 						|| (casewithdraw != null && casewithdraw.equalsIgnoreCase("Y")) || pendingflag == false)
 				&& paymentaging != null && !paymentaging.equalsIgnoreCase("DEFAULTED / ACCOUNT TERMINATED")
-				&& paymentAmountcalculation < 90) {
+				&& paymentAmountcalculation < 120 && (specialAttentionAccount == null || specialAttentionAccount.equals("N")) ) {
 			log.info("Inside caseSettled != null ");
 			//if ((iscore == 0 || iscore == null) && crissFlag == true) {
 			if ((iscore == 0 || iscore == null) && entityId == false  && entityKey == false) {
+				log.info("criss info condition with iscore = = 0");
+				System.out.println("iscore = = 0");
+				maximumAllowedInstallments = 3;
+				maximumSpendingLimit = 150;
+				registrationallowed = true;
+				isNricExist = true;
+				creditscoreless = true;
+				messageStatus = "No Ccris Info found";
+			} else if ((iscore == 0 || iscore == null) && entityId == true  && entityKey == true && facility.equals("NHEDFNCE")) {
 				log.info("criss info condition with iscore = = 0");
 				System.out.println("iscore = = 0");
 				maximumAllowedInstallments = 3;
@@ -174,7 +184,7 @@ public class CcrisUnifiedService {
 				registrationallowed = true;
 				isNricExist = true;
 			} else if (iscore > 0 && entityId == false  && entityKey == false) {
-				log.info("iscore > 0 && entityId == true  && entityKey == true");
+				log.info("iscore > 0 && entityId == false  && entityKey == false");
 				System.out.println("iscore > = 0");
 				maximumAllowedInstallments = 3;
 				maximumSpendingLimit = 150;
@@ -187,7 +197,7 @@ public class CcrisUnifiedService {
 		else if (bankruptcycount == 0
 				&& legalsuitcount == 0 && caseSettled == null && casewithdraw == null && pendingflag == false
 				&& paymentaging != null && !paymentaging.equalsIgnoreCase("DEFAULTED / ACCOUNT TERMINATED")
-				&& paymentAmountcalculation < 90) {
+				&& paymentAmountcalculation < 120 && (specialAttentionAccount == null || specialAttentionAccount.equals("N")) ) {
 			log.info("Inside (caseSettled == null) || (casewithdraw == null) ");
 			if ((iscore == 0 || iscore == null) && entityId == false  && entityKey == false) {
 				log.info("criss info condition with iscore = = 0");
@@ -198,7 +208,16 @@ public class CcrisUnifiedService {
 				isNricExist = true;
 				creditscoreless = true;
 				messageStatus = "No Ccris Info found";
-			} else if (iscore <= 420 && entityId == true  && entityKey == true) {
+			} else if ((iscore == 0 || iscore == null) && entityId == true  && entityKey == true && facility.equals("NHEDFNCE")) {
+				log.info("criss info condition with iscore = = 0");
+				System.out.println("iscore = = 0");
+				maximumAllowedInstallments = 3;
+				maximumSpendingLimit = 150;
+				registrationallowed = true;
+				isNricExist = true;
+				creditscoreless = true;
+				messageStatus = "No Ccris Info found";
+			}else if (iscore <= 420 && entityId == true  && entityKey == true) {
 				log.info("iscore <= 420");
 				maximumAllowedInstallments = 0;
 				maximumSpendingLimit = 0;
@@ -266,7 +285,7 @@ public class CcrisUnifiedService {
 				&& (caseSettled == null
 						&& casewithdraw == null && pendingflag == false)
 				&& paymentaging == null
-				&& paymentAmountcalculation < 90) {
+				&& paymentAmountcalculation < 120 && (specialAttentionAccount == null || specialAttentionAccount.equals("N")) ) {
 			log.info("Inside caseSettled == null ");
 			if ((iscore == 0 || iscore == null) && entityId == false  && entityKey == false) {
 				log.info("criss info condition with iscore = = 0");
@@ -277,7 +296,16 @@ public class CcrisUnifiedService {
 				isNricExist = true;
 				creditscoreless = true;
 				messageStatus = "No Ccris Info found";
-			} else if (iscore <= 420 && entityId == true  && entityKey == true) {
+			} else if ((iscore == 0 || iscore == null) && entityId == true  && entityKey == true && facility.equals("NHEDFNCE")) {
+				log.info("criss info condition with iscore = = 0");
+				System.out.println("iscore = = 0");
+				maximumAllowedInstallments = 3;
+				maximumSpendingLimit = 150;
+				registrationallowed = true;
+				isNricExist = true;
+				creditscoreless = true;
+				messageStatus = "No Ccris Info found";
+			}else if (iscore <= 420 && entityId == true  && entityKey == true) {
 				log.info("iscore <= 420");
 				maximumAllowedInstallments = 0;
 				maximumSpendingLimit = 0;
@@ -342,8 +370,8 @@ public class CcrisUnifiedService {
 				messageStatus = "No Ccris Info found";
 			}
 		}else if (bankruptcycount == 0 && legalsuitcount != 0 && pendingflag == true
-				&& paymentAmountcalculation < 90 && iscore > 421) {
-			log.info("Inside paymentAmountcalculation <= 90 && iscore > 421");
+				&& paymentAmountcalculation >=120 && iscore > 421) {
+			log.info("Inside paymentAmountcalculation > 90 && iscore > 421");
 			maximumAllowedInstallments = 3;
 			maximumSpendingLimit = 300;
 			registrationallowed = true;
@@ -360,7 +388,7 @@ public class CcrisUnifiedService {
 			flag = true;
 			registrationallowed = false;
 			isNricExist = true;
-		} else if (paymentAmountcalculation >= 90 && iscore > 0) {
+		} else if (paymentAmountcalculation >= 120 && iscore > 0) {
 			log.info("Inside paymentAmountcalculation >= 90 " + paymentAmountcalculation);
 			maximumSpendingLimit = 0;
 			messageStatus = "We are sorry,We are unable to provide AiraPay services to you. Upon our internal checks and verifications, we regret to inform you that you did not meet certain requirements we are looking for to enable the instalment payments under AiraPay for your account.";
@@ -570,7 +598,7 @@ public class CcrisUnifiedService {
 				delay(triggertime);
 				report = ccrisReportRetrievalService.retrieveReport(userTokensRequest, reportFlag, userSearchRequest,
 						triggerreconnectCount, triggersleeptime, emailSending); // //
-				log.info("=======================================" + report.getError());
+				log.info("report.getError()" + report.getError());
 				log.info("EXPERIAN FLAG IS PRESENT" + report.getExperianServerFlag());
 				if (report.getError() != null && report.getExperianServerFlag() == false) {
 					log.info("returning the error code");
@@ -584,8 +612,7 @@ public class CcrisUnifiedService {
 
 					return utilityEntities;
 				} else if (report.getError() != null && report.isCriss() == true) {
-					log.info("===============##################################======================="
-							+ report.isCriss());
+					log.info("isCriss "+ report.isCriss());
 					String code = report.getCode();
 					String error = report.getError();
 					int retrival = report.getRetrivalCount();
@@ -698,8 +725,9 @@ public class CcrisUnifiedService {
 		log.info("Experian is downnnnnnnnn");
 		CreditCheckResponse credit = CreditCheckResponse.builder().isNameNricMatched(false).isNricExist(false)
 				.isRegistrationAllowed(false).maximumAllowedInstallments(0).maximumSpendingLimit(0).statusCode("102")
-				.errorMessage(
-						"we are unable to process your application as our 3rd party services provider is not available at the moment. Please try again later.")
+				.errorMessage("Experian API connection issue")
+		//				"we are unable to process your application as our 3rd party services provider is not available at the moment. Please try again later.")
+						
 				.Score(0).build();
 
 		return credit;

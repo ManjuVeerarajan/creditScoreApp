@@ -14,7 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
@@ -33,6 +35,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
+// @EnableJpaRepositories("my.mobypay.creditScore.repository")
+// @EntityScan("my.mobypay.creditScore.dao")
 @SpringBootApplication
 public class CreditScoreApplication {
 	private static Logger logger = LoggerFactory.getLogger(CreditScoreApplication.class);

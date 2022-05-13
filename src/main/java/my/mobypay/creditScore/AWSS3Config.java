@@ -14,7 +14,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 
 import my.mobypay.creditScore.dao.AWSS3Details;
-import my.mobypay.creditScore.dao.AWSS3Repository;
+import my.mobypay.creditScore.repository.AWSS3Repository;
 
 @Configuration
 public class AWSS3Config {

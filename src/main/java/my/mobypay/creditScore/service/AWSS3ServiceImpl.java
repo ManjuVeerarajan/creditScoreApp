@@ -8,12 +8,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.scheduling.annotation.Async;
@@ -30,8 +33,10 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.util.IOUtils;
 
 import my.mobypay.creditScore.AWSS3Config;
+import my.mobypay.creditScore.DBConfig;
 import my.mobypay.creditScore.dto.UserSearchRequest;
 import my.mobypay.creditScore.repository.AWSS3Service;
+import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
 import my.mobypay.creditScore.utility.EmailUtility;
 
 @Service
@@ -41,11 +46,25 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 
 	@Autowired
 	private AmazonS3 amazonS3;
-	@Value("${aws.s3.bucket}")
+	
+	
+	// @Value("${aws.s3.bucket}")
 	private String bucketName;
+	
 	@Autowired
 	private AWSS3Config awss3Config;
 
+	@Autowired
+	CreditScoreConfigRepository creditScoreConfigRepository;
+	
+	@Bean
+	public String getS3BucketValueFromDB() {
+		//List<CreditScoreConfig> configValues = creditScoreConfigRepository.findAll();
+		String s3bucket = creditScoreConfigRepository.findValueFromName("aws.s3.bucket");
+		System.out.println("##### value s3 bucket " +s3bucket);
+		
+		return s3bucket;
+	}
 	
 	// @Async annotation ensures that the method is executed in a different background thread 
 	// but not consume the main thread.
@@ -96,7 +115,9 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 			InputStream stream =  new FileInputStream(file);
 			MockMultipartFile multipartFileToSend = new MockMultipartFile("file", file.getName(), "text/plain", stream);
 			final File files = convertMultiPartFileToFile(multipartFileToSend);
+			bucketName = getS3BucketValueFromDB();
 			LOGGER.info("File upload is completed."+bucketName+""+files+""+oUTPUT_DIR);
+			
 			filename=uploadFileToS3Bucket(bucketName, files,oUTPUT_DIR);
 			
 			//file.delete();	// To remove the file locally created in the project folder.
@@ -123,6 +144,7 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 	        LOGGER.info("Downloading an object with key= " + keyName);
 	       
 	        try {
+	        	bucketName = getS3BucketValueFromDB();
 	        ObjectListing listing = amazonS3.listObjects(bucketName, keyName);
 	        System.out.println(listing.toString());
 			List<S3ObjectSummary> summaries = listing.getObjectSummaries();

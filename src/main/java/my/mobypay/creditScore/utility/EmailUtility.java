@@ -11,7 +11,8 @@ import net.sargue.mailgun.Mail;
 public class EmailUtility {
 	private static final Logger log = LoggerFactory.getLogger(EmailUtility.class);
     public static void sentEmail(String message, String to){
-        try {
+    	log.info("Inside EmailUtility");     
+    	try {
             Configuration configuration = new Configuration()
                     .domain("mg2.airapay.my")
                     .apiKey("b61574e1f0e8b8d81e767fdd1c9481af-9776af14-e1d40911")

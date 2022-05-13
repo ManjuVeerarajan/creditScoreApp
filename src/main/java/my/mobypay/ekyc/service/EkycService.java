@@ -33,7 +33,7 @@ public class EkycService {
 	 
 	
 		
-		public void setValuesToOpenApiHardCoded() {
+		public OpenApiClient setValuesToOpenApiHardCoded() {
 			openApiClient.setHostUrl("https://sg-sandbox-api.zoloz.com");
 			openApiClient.setClientId("2188406896747744");
 			openApiClient.setMerchantPrivateKey("MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDaDCXtZWWjlOoKiKMCAZ5M8WTpMcBaL0fY0XXW106SYeI9Ox4Q2lsWb6MJMv7U/fIF+1YwvNVHOjJJrPFE2UpNUbvOfG3AQDmlLJKZh5qWivnzeWqfFOTzuO3Z62uK6pizm9VuFreIZ8Xts5y8SYqaGhVQKqELOiEfZmdlo2ERXdaa0cLjaiDcCOWc5O2WqBOP6MkgOLg+prnIMaUUm+6BrVRUhaJizxLHTaeAxlho9K/jj4R4HONtGpVnKSDJRlV0L17l5lfzHNQBJu5lCna1X24oFAvy9sQUx7ICbO0cOf29fNDavxsRPHqYPhmwCO+JpMiQ5b/c429xk1bxUMKFAgMBAAECggEAWAV/ag38scRzlj0CUNUGalkoO1ryI3XiswwbXdccyMrq4Xzz7im3i58VWalUZfb9tJx5dsND9bTwh/1giEKPVBcikYB5bZp/qsYLiB7NsOf5bugcuotcwWZt3gLDLxj0+8x0pDRXcqExrXtMUlX9tafB4tLSoA2fQWW9Z7JEhRV1tVXOWcmOUbQVe3TgBv3zM6tQMWtFXyzGDKOwsri/g7ZKQTwJ1m1oXfbCLkf/4aTilGYdJlZR5iesrfBllRxJKTi976Tp5/LBQJs5YSUmQJTUzEp0yEgLPwjDuO7jWRsAKx/lqMjNSxjM13Z5K1H5JJES5WbCTZJeU1GTzKCoIQKBgQDyIMMB5Px8VOt3iIKA/t6VtldwCe0nOuIt0VwqLiwRcZdP2c77F+PJEaCg2kMhnyksYJiWwix8qbRfBGF8VqeWCgcp8kWHMKRDuJA86cLNQSkNDpQFPu9ZKFg88F19PzF0Gf9PugjPptnx1d1q0lreqh9IN3bfucLLP0kveSH2PwKBgQDmijPgMdSZWVdrTBkU7PWYTxfGRN0I0vpMFgOQ0q7a2ibCEJlI53Pag5lcru3nqGJs5R2ejZL2oMf0r8FWhLdhnbHaTIvmO6b/uUGtGq8+khA9ol72CIQEIUTG4M0hmbOHBlgbZwREQYexPjQ+IypErPNGsUd51au2VUfXIjZ+OwKBgFPjSez0Gw4wlcw6PYzXwOJ55F1q8wFug0KAkMAEczwv8M63leCk7ESTmOVh+XRCoo8/gF5rM+KVIWryJ5xeoX14R/ceezxVe/QCk+amztkyRDjD3kDbBy4Krleep6VnKYkiILTMrZTUKBqDkE0cSGNw6ZmprcPhpj2o1YBfJYcdAoGBAN3yM5slnh28a3L7IjKJJrBphOP2rC2woBPcJbapfnloCGRRAqGzYk/+3gjiyFt8OrXHpkpc1h3mEFs7UZDv2HR8ExutEgqnZ1FOkzIKPKiqikQsK+wFqsMnHEWzawlsJfBaZTyMYwkrZW14C2e/BxRyxQtL5RogYV36oF03rOq9AoGAaZ+ybU+Lbm3heZaSNoxrJhvoEtt+87P5Wx9DXigIm3Nt2HsTK2Mo4TUJDzv52tp1r8Wmsxfr+9OA39juqOJTRWKjyJhDcPVB10JDG4vZOhSvovaDziaJegLPebz0uG2LtfDZ8jv0fhSS2BBxuKIr+MaFueHkSkc5l2/X15kbtWQ=");
@@ -41,6 +41,12 @@ public class EkycService {
 			openApiClient.setSigned(true);
 			openApiClient.setEncrypted(true);
 			
+			log.info("Host url set to openApi " + openApiClient.getHostUrl());	
+			log.info("clientId set to openApi " + openApiClient.getClientId());	
+			log.info("merchantPrivatekey url set to openApi " + openApiClient.getMerchantPrivateKey());
+			log.info("merchantPublicKey set to openApi " + openApiClient.getOpenApiPublicKey());
+			
+			return openApiClient;
 		}
 		
 		public String callInitializeOpenApi(JSONObject request,String url) {

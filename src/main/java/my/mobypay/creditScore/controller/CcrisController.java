@@ -3,6 +3,7 @@ package my.mobypay.creditScore.controller;
 import lombok.extern.slf4j.Slf4j;
 import my.mobypay.creditScore.dao.ApplicationSettings;
 import my.mobypay.creditScore.dao.ApplicationSettingsRepository;
+import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
 import my.mobypay.creditScore.dao.CustomerCreditReports;
 import my.mobypay.creditScore.dao.CustomerSpendingLimitResponse;
 import my.mobypay.creditScore.dao.CustomerTokenRequest;
@@ -107,7 +108,7 @@ public class CcrisController {
 	CcrisReportRetrievalService ccrisReportRetrievalService;
 	
 	// @Autowired
-    private OpenApiClient openApiClient = new OpenApiClient();
+    OpenApiClient openApiClient = new OpenApiClient();
 	// @Autowired
 	EkycService ekycService = new EkycService();
 	/*
@@ -121,6 +122,9 @@ public class CcrisController {
 	
 	@Autowired
 	ApplicationSettingsRepository appSettings;
+	
+	@Autowired
+	CreditScoreConfigRepository creditScoreConfigRepository;
 
 	@Value("${zolos.server}")
 	private String hostUrl;
@@ -139,8 +143,10 @@ public class CcrisController {
 	
 	@Value("${merchant.privatekey}")
 	private String merchantPrivatekey;
+	
 	boolean ispresent = false;
-    String ServerDownError="we are unable to process your application as our 3rd party services provider is not available at the moment. Please try again later.";
+  //  String ServerDownError="we are unable to process your application as our 3rd party services provider is not available at the moment. Please try again later.";
+	String ServerDownError="Experian API connection issue.";
 	CustomerCreditReportRequest customercreditreportrequest = null;
 	// private static final log log = log.getlog(CcrisController.class);
 	/*
@@ -219,9 +225,12 @@ public class CcrisController {
 		                .buildSessionFactory();
 			session = factory.openSession();
 			transaction = session.beginTransaction();
-			List<ApplicationSettings> inputDays = appSettings.findAll();
-			ApplicationSettings expireDays = inputDays.get(6);
-			String daysExpire = expireDays.getValue();
+			//TODO
+			// List<ApplicationSettings> inputDays = appSettings.findAll();
+			// ApplicationSettings expireDays = inputDays.get(6);
+			// String daysExpire = expireDays.getValue();
+			String daysExpire  = appSettings.findValueFromName("daysExpire");
+			
 			log.info("daysExpire " +daysExpire);
 			String hqlQuery = "SELECT p.nric from CustomerCreditReports p WHERE p.nric = " +nric +" AND p.UpdatedAt >= date_sub(now(),interval " +daysExpire + ")";
 			org.hibernate.query.Query query = session.createSQLQuery(hqlQuery);
@@ -341,6 +350,13 @@ public class CcrisController {
 					String responseName = splits[0].toString();
 					String responseNric = splits[1].toString();
 					userSearchRequest.setName(name);
+					
+					log.info("responseName " +responseName);
+					log.info("name " +name);
+					
+					log.info("responseNric " +responseNric);
+					log.info("regexexpression " +regexexpression);
+					
 					if (responseName.equalsIgnoreCase(name) && responseNric.equalsIgnoreCase(regexexpression)) {
 						log.info("name and nric matched!!");
 						String xmlresponse = customerCreditReportsRepository.findbyXMLpath(regexexpression);
@@ -381,9 +397,12 @@ public class CcrisController {
 						jsonresponse.setMaximumAllowedInstallments(0);
 						jsonresponse.setMaximumSpendingLimit(0);
 						jsonresponse.setStatusCode("404");
-						jsonresponse.setErrorMessage(
-								"Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.\"");
+						// jsonresponse.setErrorMessage(
+						//		"Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.\"");
+						
 						// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
+					
+						jsonresponse.setErrorMessage("Invalid Input"); //10-05	
 						SavetoCreditCheckError(jsonresponse.getStatusCode(), jsonresponse.getErrorMessage(), name,
 								regexexpression, 0);
 						return jsonresponse;
@@ -432,9 +451,10 @@ public class CcrisController {
 						jsonresponse.setMaximumAllowedInstallments(0);
 						jsonresponse.setMaximumSpendingLimit(0);
 						jsonresponse.setStatusCode("404");
-						jsonresponse.setErrorMessage(
-								"Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.");
+						// jsonresponse.setErrorMessage(
+						// 		"Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.");
 						// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
+						jsonresponse.setErrorMessage("Invalid Input"); //10-05	
 						SavetoCreditCheckError(jsonresponse.getStatusCode(), jsonresponse.getErrorMessage(), name,
 								regexexpression, 0);
 						return jsonresponse;
@@ -453,9 +473,10 @@ public class CcrisController {
 					jsonresponse.setMaximumAllowedInstallments(0);
 					jsonresponse.setMaximumSpendingLimit(0);
 					jsonresponse.setStatusCode("404");
-					jsonresponse.setErrorMessage(
-							"Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.");
+					// jsonresponse.setErrorMessage(
+					//		"Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.");
 					// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
+							jsonresponse.setErrorMessage("Invalid input"); //10-05
 					SavetoCreditCheckError(jsonresponse.getStatusCode(), jsonresponse.getErrorMessage(), name,
 							regexexpression, 0);
 					return jsonresponse;
@@ -494,10 +515,12 @@ public class CcrisController {
 					Integer tradeBureauCount = customercreditreportrequest.getTradeBureauCount();
 					boolean entityKey = customercreditreportrequest.isEntityKey();
 					boolean entityId = customercreditreportrequest.isEntityId();
+				    String specialAttentionAccount = customercreditreportrequest.getSpecialAttentionAccount();
+				    String facility = customercreditreportrequest.getFacility();
 					log.info(CrissFlag + "checking the pending flagggggggggggg");
 					checkcreditscoreResponse = ccrisUnifiedService.getCreditScore(
 							customercreditreportrequest.getIScore(), caseSettled, casewithdraw, paymentaging,
-							pendingflag, legalsuitcount, bankruptcycount,CrissFlag,tradeBureauCount,entityKey,entityId);
+							pendingflag, legalsuitcount, bankruptcycount,CrissFlag,tradeBureauCount,entityKey,entityId,specialAttentionAccount,facility);
 					log.info("checking the credit score" + checkcreditscoreResponse.toString());
 					if (checkcreditscoreResponse.getIsBelowscoreFlag()!=null && checkcreditscoreResponse.getIsBelowscoreFlag() == false) {
 						boolean nricExist = checkcreditscoreResponse.getIsNricExist();
@@ -565,7 +588,7 @@ public class CcrisController {
 
 						checkcreditscoreResponse = ccrisUnifiedService.getCreditScore(
 								customercreditreportrequest.getIScore(), caseSettled, casewithdraw, paymentaging,
-								pendingflag, legalsuitcount, bankruptcycount,false,tradeBureauCount,entityKey,entityId);
+								pendingflag, legalsuitcount, bankruptcycount,false,tradeBureauCount,entityKey,entityId,specialAttentionAccount,facility);
                          
 						error.setErrorcode("404");
 						error.setErrormessage(checkcreditscoreResponse.getErrorMessage());
@@ -591,6 +614,7 @@ public class CcrisController {
 						return error;
 					}
 				}else if (utilityEntities.getInvalidUserFlag() != null && utilityEntities.getInvalidUserFlag() == true) {
+					log.info("Inside else if to check InvalidUserFlag()");
 					customerSpendingLimitResponse.setIsNricExist(false);
 					customerSpendingLimitResponse.setIsNameNricMatched(false);
 					customerSpendingLimitResponse.setIsRegistrationAllowed(false);
@@ -1219,10 +1243,12 @@ public class CcrisController {
 					boolean entityKey = customercreditreportrequest.isEntityKey();
 					boolean entityId = customercreditreportrequest.isEntityId();
 					boolean CrissFlag=customercreditreportrequest.isCriss();
+					String specialAttentionAccount = customercreditreportrequest.getSpecialAttentionAccount();
+					String facility = customercreditreportrequest.getFacility();
 					log.info(CrissFlag + "checking the pending Criss FLAG");
 					checkcreditscoreResponse = ccrisUnifiedService.getCreditScore(
 							customercreditreportrequest.getIScore(), caseSettled, casewithdraw, paymentaging,
-							pendingflag, legalsuitcount, bankruptcycount,CrissFlag,tradeBureauCount,entityKey,entityId);
+							pendingflag, legalsuitcount, bankruptcycount,CrissFlag,tradeBureauCount,entityKey,entityId,specialAttentionAccount,facility);
 					log.info("checking the credit score" + checkcreditscoreResponse.toString());
 
 					if (checkcreditscoreResponse.getIsBelowscoreFlag() == false
@@ -1362,7 +1388,7 @@ public class CcrisController {
 					} else {
 						error.setErrorcode(utilityEntities.getCodes());
 						error.setErrormessage(utilityEntities.getErrorMsg());
-						// SavetoCreditCheckError(error,name,regexexpression);
+						// SavetoCreditCheckErrorR(error,name,regexexpression);
 						return error;
 					}
 				} else if (utilityEntities.getInvalidUserFlag() != null
@@ -1372,8 +1398,9 @@ public class CcrisController {
 						experianreportResponse.setResponseCode("500");
 						experianreportResponse.setResponseMsg(ServerDownError);
 					}else {
-						experianreportResponse.setResponseCode("02");
-						experianreportResponse.setResponseMsg(utilityEntities.getErrorMsg());
+						experianreportResponse.setResponseCode("404");
+					experianreportResponse.setResponseMsg(utilityEntities.getErrorMsg());
+					//10-05			experianreportResponse.setResponseMsg("Name mismatch");
 					}
 					
 					experianreportResponse.setURL(null);
@@ -1404,6 +1431,7 @@ public class CcrisController {
 					// log.info("Coming Inside Experian with total count"+retrival);
 					// log.info("customer already exist so returning json response" + retrival);
 					String errormessage = checkcreditscoreResponse.getErrorMessage();
+					log.info("errormessage " +errormessage);
 					if(utilityEntities.getCodes()!=null && utilityEntities.getCodes().contains("500")) {
 						experianreportResponse.setResponseCode("500");
 						experianreportResponse.setResponseMsg(ServerDownError);
@@ -1597,21 +1625,19 @@ public class CcrisController {
 		log.info("Inside initialize request=" + request);
 		JSONObject response = null;
 
-		ekycService.setValuesToOpenApiHardCoded();
-		setValuesToOpenApi();
+ 		openApiClient = ekycService.setValuesToOpenApiHardCoded();
+//		openApiClient = setValuesToOpenApi();
+		log.info("merchantPublicKey set to openApi in initialize " + openApiClient.getOpenApiPublicKey());
+		log.info("Host url set to openApi in initialize  " + openApiClient.getHostUrl());	
+		log.info("clientId set to openApi in initialize " + openApiClient.getClientId());	
 		String apiRespStr = ekycService.callInitializeOpenApi(request, initializeApi);
-		log.info("initializeApi=" + initializeApi);
 		if (apiRespStr != null) {
 			com.alibaba.fastjson.JSONObject apiResp = JSON.parseObject(apiRespStr);
 
 			response = new JSONObject(apiResp);
-			/*
-			 * response.put("rsaPubKey", openApiClient.getOpenApiPublicKey());
-			 * response.put("transactionId", apiResp.getString("transactionId"));
-			 * response.put("clientCfg", apiResp.getString("clientCfg"));
-			 */
 			log.info("response=" + apiRespStr);
 		} else {
+			response = new JSONObject();
 			response.put("errorMsg", "Zoloc response is null");
 
 		}
@@ -1623,7 +1649,7 @@ public class CcrisController {
 	public JSONObject realIdCheck(@RequestBody JSONObject request) {
     	JSONObject response = null;
 		log.info("Inside checkresult =" + request);
-		//setValuesToOpenApi();
+		// setValuesToOpenApi();
 		ekycService.setValuesToOpenApiHardCoded();
 
 		String apiRespStr = ekycService.callCheckStatusOpenApi(request,checkResultApi);
@@ -1640,7 +1666,9 @@ public class CcrisController {
 		return response;
 	}
     
-	public void setValuesToOpenApi() {
+	public OpenApiClient setValuesToOpenApi() {
+		
+		log.info("CLIENTID VALUE VS " +creditScoreConfigRepository.findValueFromName("clientId"));
 		openApiClient.setHostUrl(hostUrl);
 		openApiClient.setClientId(clientId);
 		openApiClient.setMerchantPrivateKey(merchantPrivatekey);
@@ -1651,6 +1679,10 @@ public class CcrisController {
 		openApiClient.setEncrypted(true);
 		 
 		log.info("Host url set to openApi " + openApiClient.getHostUrl());	
-		log.info("clientId url set to openApi " + openApiClient.getClientId());	
+		log.info("clientId set to openApi " + openApiClient.getClientId());	
+		log.info("merchantPrivatekey url set to openApi " + openApiClient.getMerchantPrivateKey());
+		log.info("merchantPublicKey set to openApi " + openApiClient.getOpenApiPublicKey());
+		
+		return openApiClient;
 	}
 }

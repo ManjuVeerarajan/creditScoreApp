@@ -2,7 +2,7 @@ package my.mobypay.creditScore.service;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
-
+import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
 import my.mobypay.creditScore.dto.UserConfirmCCRISEntityRequest;
 import my.mobypay.creditScore.dto.UserSearchRequest;
 import my.mobypay.creditScore.dto.request.CcrisRequestXml;
@@ -36,25 +36,30 @@ public class CcrisSearchService {
 	private static Logger log = LoggerFactory.getLogger(CcrisSearchService.class);
     RestTemplate restTemplate  = new RestTemplate();
 
+    @Autowired
+	CreditScoreConfigRepository creditScoreConfigRepository;
+    
     // private String experianUrl = "https://b2buat.experian.com.my/index.php/moby/report";
      // private String experianUrl = "C:\\Users\\Admin\\Documents\\creditScore\\src\\main\\resources\\Item.xml";
 	/*
 	 * ReadPropertyFile file=new ReadPropertyFile(); Properties prop = new
 	 * Properties(); boolean propertyFlag;
 	 */
- 	@Value("${ExperianURLReport}")
+ 	// @Value("${ExperianURLReport}")
  	private String ExperianURLReport;
  	
- 	@Value("${ExperianUsername}")
+ 	//@Value("${ExperianUsername}")
  	private String ExperianUsername;
 	
-	@Value("${ExperianPassword}")
+	//@Value("${ExperianPassword}")
  	private String ExperianPassword;
     
 	 String message="Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! e 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.";
 			
 	public CcrisXml ccrisSearch(UserSearchRequest userSearchRequest, String emailSending) throws Exception {
-System.out.println(ExperianUsername+"========"+ExperianPassword);
+		ExperianUsername = creditScoreConfigRepository.findValueFromName("ExperianUsername");
+		ExperianPassword = creditScoreConfigRepository.findValueFromName("ExperianPassword");
+		System.out.println(ExperianUsername+"========"+ExperianPassword);
 		//ResponseEntity<String> response = null;
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_XML);
@@ -92,6 +97,7 @@ System.out.println(ExperianUsername+"========"+ExperianPassword);
 		 * propertyFlag=false; String user = file.getvaluefromproperty(propertyFlag);
 		 */
 		try {
+			ExperianURLReport = creditScoreConfigRepository.findValueFromName("ExperianURLReport");
 			 ResponseEntity<String> response =  restTemplate.postForEntity(ExperianURLReport,request,String.class);
 		    	String responsess=response.getBody().trim().replaceAll("[ ]{2,}", " ");
 		    	   if(responsess.contains("BINTI")) {
@@ -176,6 +182,8 @@ System.out.println(ExperianUsername+"========"+ExperianPassword);
 		 
 
     public Tokens ccrisConfirm(UserConfirmCCRISEntityRequest userConfirmCCRISEntityRequest, String to) throws Exception{
+    	ExperianUsername = creditScoreConfigRepository.findValueFromName("ExperianUsername");
+		ExperianPassword = creditScoreConfigRepository.findValueFromName("ExperianPassword");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_XML);
        // headers.setBasicAuth("MOBYUAT1","Mobyuat.1");
@@ -228,9 +236,10 @@ System.out.println(ExperianUsername+"========"+ExperianPassword);
          Tokens responses= ParserUtility.xml2Pojo(response.getBody(), Tokens.class);
          log.info("Experian Token response:"+response.getBody());
        // log.info("Token responssssssssssssssssss:"+response.getBody().contains("Invalid Input"));
-        if(response.getBody().contains("Invalid Input")) {
+        if(response.getBody().contains("Invalid Input")) {   
         	Tokens tokens=new Tokens();
     		tokens.setCode("400");
+    		// tokens.setError("Name mismatch"); //10-05
     		tokens.setError("Invalid Input");
     		tokens.setDataBaseMessage(response.getBody());
     		return tokens;

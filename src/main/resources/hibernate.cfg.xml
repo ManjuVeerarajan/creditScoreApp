@@ -6,7 +6,7 @@
     <session-factory>
       <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
       <!-- property name="connection.driver_class">com.mysql.jdbc.Driver</property -->
-      <property name="connection.url">jdbc:mysql://airapay-dev.c3rilhzfezwb.ap-southeast-1.rds.amazonaws.com:3306/airapay_dev</property>
+      <property name="connection.url">jdbc:mysql://airapay-sandbox.c3rilhzfezwb.ap-southeast-1.rds.amazonaws.com:3306/airapay_dev</property>
       <property name="connection.username">admin</property>
       <property name="connection.password">admin123qwe</property>
       <property name="connection.pool_size">3</property>
