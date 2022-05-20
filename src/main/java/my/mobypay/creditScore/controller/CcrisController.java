@@ -1877,13 +1877,7 @@ public class CcrisController {
 		log.info("Inside initialize request=" + request);
 		JSONObject response = null;
 
-		//	openApiClient = ekycService.setValuesToOpenApiHardCoded();
-		String hostUrl = creditScoreConfigRepository.findValueFromName("zolos.server");
-		String clientId = creditScoreConfigRepository.findValueFromName("clientId");
-		String merchantPrivatekey = creditScoreConfigRepository.findValueFromName("merchant.privatekey");
-		String merchantPublicKey = creditScoreConfigRepository.findValueFromName("merchant.publickey");
-		
-		//openApiClient = ekycService.setValuesToOpenApiHardCoded1(hostUrl, clientId, merchantPrivatekey,merchantPublicKey);
+		//openApiClient = setValuesToOpenApi();
 		openApiClient = ekycService.setValuesToOpenApiHardCoded();
 		log.info("openApiClient " +openApiClient);
 		log.info("merchantPublicKey set to openApi in initialize " + openApiClient.getOpenApiPublicKey());
@@ -1909,7 +1903,7 @@ public class CcrisController {
 	public JSONObject realIdCheck(@RequestBody JSONObject request) {
 		JSONObject response = null;
 		log.info("Inside checkresult =" + request);
-		// setValuesToOpenApi();
+		// openApiClient = setValuesToOpenApi();
 		openApiClient =	ekycService.setValuesToOpenApiHardCoded();
 		String checkResultApi =  creditScoreConfigRepository.findValueFromName("zolos.checkresult");
 		log.info("openApiClient " +openApiClient);
