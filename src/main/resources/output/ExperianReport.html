@@ -1,0 +1,1541 @@
+<html>
+<head>
+<title>NXXXXX XXX XXXXX</title>
+<style type="text/css">
+
+table, .section {
+	page-break-inside:avoid;
+}
+
+body {
+	width: 100%;
+	font-family: arial,san-serif;
+	font-size: 10px;
+}
+
+.h1 {
+	font-family: arial,san-serif;
+	font-size: 20px;
+	font-weight: bold;
+	margin-bottom: 5px;
+	color: #1F497D;
+	text-transform:uppercase;
+}
+
+.italic-bold {
+	font-family: arial,san-serif;
+	font-weight: bold;
+	font-style: italic;
+}
+
+.normal-text {
+	font-family: arial,san-serif;
+	font-size: 10px;
+}
+
+.red {
+	color: #E44249;
+}
+
+.popup-box {
+	width: 550px;
+	height: 550px;
+	color: #111;
+	padding: 25px;
+	border: 1px dotted #CAA162;
+	background-color: #FFF;
+	border-radius: 10px;
+	box-shadow: 0 0 25px 5px #999;
+	display:none;
+	overflow: auto;
+	_background-color: #F7F7FF;
+	*width: 600px;
+}
+
+.bClose {
+	border-radius: 7px 7px 7px 7px;
+	box-shadow: none;
+	font: bold 131% sans-serif;
+	padding: 3px 6px 3px 6px;
+	position: absolute;
+	right: 7px;
+	top: 7px;
+	background-color: #2B91AF;
+	color: #FFF;
+	cursor: pointer;
+	display: inline-block;
+	text-align: center;
+}
+
+.popup-box p {
+	padding: 5px;
+	font-family: arial,san-serif;
+	font-size: 12px;
+	margin: 0px;
+}
+
+.input-text-style, .input-button-style {
+	padding: 4px 7px;
+}
+
+.align-radio, .align-checkbox {
+	float:left; 
+	margin-top: 5px;
+}
+
+label {
+	display: block;
+	float: left;
+	padding: 5px;
+	width: 150px;
+}
+
+#popup_form {
+	margin: 0px;
+	padding: 0px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+}
+.clear {
+	clear: both;
+}
+
+.bClose {
+	zoom:1; 
+	display:inline;
+}
+
+.nowrap {
+	white-space: nowrap;
+}
+
+
+.wrapper {
+	width: 660px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.wrapper_landscape {
+	width: 960px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+table.full_border, table.full_border_2p {
+	border-collapse:collapse;
+	border-color:#000000; 
+	border-style:solid; 
+	border-width:1px;
+}
+
+table.full_border tr th, table.full_border tr td {
+	border-width: 1px;
+	border-style:solid;
+	border-color:#C4C1C0;
+	padding: 5px;
+}
+
+table.full_border tr th {
+	font-size: 12px;
+	background-color: #DAEEF3;
+}
+
+table.full_border_2p tr td {
+	font-size: 7px;
+	border-width: 1px;
+	border-style:solid;
+	border-color:#C4C1C0;
+	padding: 1px;
+}
+
+table.full_border_2p tr th {
+	font-size: 12px;
+	background-color: #DAEEF3;
+	border-width: 1px;
+	border-style:solid;
+	border-color:#C4C1C0;
+	padding: 5px;
+}
+
+table.woborder tr td {
+	border: 0;
+}
+
+table.full_border tr .no-padding {
+	padding: 1px;
+}
+
+table.full_border tr .no-padding p {
+	margin: 2px;
+}
+
+.no-margin {
+	margin: 0;
+}
+
+.margin20 {
+	margin: 20px 0 0 0;
+}
+
+.margin10 {
+	margin: 10px 0 0 0;
+}
+
+table.nobottom {
+	border: 1px solid #C4C1C0;
+	padding: 0;
+	border-collapse:collapse;
+}
+
+.nobottom th {
+	border: 1px solid #C4C1C0;
+	background-color: #DAEEF3;
+	font-size: 12px;
+	padding: 5px;
+	margin: 0px;
+}
+
+.nobottom td {
+	border-left: 1px solid #C4C1C0;
+	border-right: 1px solid #C4C1C0;
+	padding: 3px;
+	margin: 0px;
+}
+
+.nobottom td.show_border {
+	border: 1px solid #C4C1C0;
+	padding: 3px;
+	margin: 0px;
+}
+
+.nobottom td.show_border2 {
+	border: 1px solid #C4C1C0;
+	padding: 3px;
+	margin: 0px;
+	border-bottom: white;
+}
+
+table.nostyle {
+	border: 1px solid #C4C1C0;
+	padding: 0;
+	border-collapse:collapse;
+}
+
+.nostyle tr th {
+	padding: 5px;
+	font-size: 12px;
+	background-color: #DAEEF3;
+}
+
+.nostyle td {
+	padding: 5px;
+	margin: 0px;
+	border: 0px;
+}
+
+.nostyle td.show_border, .nostyle th.show_border {
+	border: 1px solid #C4C1C0;
+	padding: 5px;
+	margin: 0px;
+}
+
+.nostyle td.show_right_border {
+	border-right: 1px solid #C4C1C0;
+	padding: 5px;
+	margin: 0px;
+}
+
+.nostyle td.show_left_border {
+	border-left: 1px solid #C4C1C0;
+	padding: 5px;
+	margin: 0px;
+}
+
+.nostyle td.show_bottom_border {
+	border-bottom: 1px solid #C4C1C0;
+	padding: 5px;
+	margin: 0px;
+}
+
+.nostyle td.show_top_border {
+	border-top: 1px solid #C4C1C0;
+	padding: 5px;
+	margin: 0px;
+}
+
+.background_DAEEF3 {
+	background-color: #DAEEF3;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.uline {
+	text-decoration: underline;
+}
+
+.legend {
+	margin: 3px;
+	border-collapse:collapse;
+	border-width: 1px;
+	border-style:solid;
+	border-color:#DAEEF3;
+}
+
+.legend td {
+	text-align: center;
+}
+
+.total {
+	text-decoration: overline underline;
+}
+
+.small {
+	font-size: 9px;
+	font-weight: normal;
+	display: inline-block;
+}
+
+.highlight {
+	background-color: #DAEEF3; 
+}
+
+.highlight_F8F8FF {
+  background-color: #F8F8FF; 
+}
+
+
+.padding5 {
+	padding: 5px;
+}
+
+.padding8 {
+	padding: 8px;
+}
+
+.prev_enq {
+  border-collapse:collapse;            
+}
+
+.prev_enq th, .prev_enq td {
+  border-width: 1px;
+  border-style:solid;
+  border-color:black;
+  text-align: center;           
+}
+
+.liteblue {
+	color: #17365D;
+}
+
+.blue {
+	color: #00f;
+}
+
+.term {
+	text-align: justify;
+	font-size: 9px;
+	padding: 0px;
+	margin: 0px;
+}
+
+.h3 {
+  font-size: 11px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.h3_pcrp {
+  font-size: 10px;
+  font-weight: bold;
+  margin: 2px;
+}
+
+.report-date {
+	font-size: 12px;
+}
+
+.h2 {
+  font-family: arial,san-serif;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-decoration: underline;
+}
+
+.font12 {
+	font-size: 12px;
+}
+
+.font14 {
+	font-size: 14px;
+}
+
+.fontRed {
+	color: red;
+}
+
+.bgRedFontWhite {
+	background-color: red;
+	color: white;
+}
+
+.justify {
+	text-align:justify;
+	text-justify:inter-word;
+}
+
+.left {
+	float:left;
+}
+
+.right {
+	float:right;
+}
+
+
+ol { counter-reset: item }
+ol li { display: block }
+ol li:before { content: counter(item) ". "; counter-increment: item }
+
+ol.reset { counter-reset: item }
+li.suit { display: block }
+li.suit:before { content: counter(item) ". "; counter-increment: item }
+
+.pcr_report_title {
+	font-size: large;
+	font-weight: bold;
+	display: inline-block;
+	width: 60%;
+}
+
+.pcr_report_details_box {
+	display: inline-block;
+	width: 30%;
+	border-style: solid;
+	border-width: thin;
+	padding: 5px 30px;
+	border-color: #C4C1C0;
+}
+
+.pcr_report_detail_title {
+	display: inline-block;
+	width: 50%;
+}
+
+.pcr_report_logo {
+	margin-right: 78%;
+}
+
+.risk_grade_active {
+	text-align: center;
+	font-weight: bold;
+	font-size: 1em;
+	background-color: #DAEEF3;
+}
+
+table.full_border tr .risk_grade_active {
+	border: 2px solid black;
+}
+
+.risk_grade_not_active {
+	text-align: center;
+	font-size: 0.8em;
+}
+
+table {
+  font-family: arial,san-serif;
+  font-size: 10px;
+}
+
+.kyc_header {
+	background-color: #DAEEF3;
+	text-align: justify;
+}
+
+.kyc_request_table {
+	font-size:12px;
+}
+
+/*
+
+.note {
+	font-weight: bold;
+	font-style: italic;
+	padding: 8px;
+}
+
+.term {
+  text-align: justify;
+  font-family: arial,san-serif;
+  font-size: 10px;
+  padding: 3px;
+}
+
+hr {
+  border: solid 1px;
+  color: #778899;
+  height: 1px;
+  border-top: 1px;
+}
+
+.tablewborder {
+  border-collapse:collapse;
+  border-width: 1px;
+  border-style:solid;
+  border-color:black; 
+}
+
+/*.tablewborder th, .tablewborder td {
+  border-width: 1px;
+  border-style:solid;
+  border-color:black;       
+}*/
+
+/*
+
+p {
+  font-family: arial,san-serif;
+  font-size: 10px;
+}
+
+
+
+
+
+
+
+.blue {
+	color: #00f;
+}
+
+
+
+.right {
+	text-align: right;
+}
+
+/* add zoom:1; display:inline; to inline-block elements */
+/*
+.column_border {
+	border: 1px solid black;
+}
+
+.main th {
+  color: #fff;
+  font-size: 15px;
+  padding: 5px;
+  text-align: left;
+}
+
+.bg_maroon {
+  background-color: #943634;
+}
+
+.bg_black {
+  background-color: #000;
+}
+
+.bg_grey {
+  background-color: #ccc;
+}
+
+*/
+</style>
+</head>
+<body>
+<div class="wrapper">
+<table width="100%">
+<tr>
+<td align="left">
+<img height="59px" width="176px" src="https://ct.experian.com.my/images/ExperianLogo.png"/> <img height="86px" width="75px" src="https://spekar.experian.com.my/images/angkasa.png"/>
+</td>
+<td class="italic-bold" valign="bottom" align="right">
+<p>CrediTrack by Experian</p>
+<p>25 Jan 2022</p>
+</td>
+</tr>
+</table>
+<p class="h1">SPeKAR SCORE– (SPKCC-S)</p>
+  
+  <div class="section">
+<p class="h2 blue uline">SECTION 1: SUMMARY</p>
+    <br/>
+<table class="full_border" width="100%" border="0">
+<tr>
+<th align="left" colspan="2">PARTICULARS OF THE SUBJECT PROVIDED BY YOU</th>
+</tr>
+<tr>
+<td class="bold" width="20%">Name Of Subject</td>
+<td width="80%">NXXXXX XXX XXXXX</td>
+</tr>
+<tr>
+<td class="bold" width="20%">IC / PP No</td>
+<td width="80%"/>
+</tr>
+<tr>
+<td class="bold" width="20%">New IC No</td>
+<td width="80%">610213-06-5114</td>
+</tr>
+<tr>
+<td class="bold" width="20%">Nationality</td>
+<td width="80%">MY</td>
+</tr>
+</table>
+    <br/>
+<table class="full_border" width="100%" border="0">
+<tr>
+<th align="left" colspan="2">INFORMATION IN OUR DATABANK</th>
+</tr>
+<tr>
+<td class="bold" width="20%">Name Of Subject</td>
+<td width="80%">NXXXXX XXX XXXXX</td>
+</tr>
+<tr>
+<td class="bold" width="20%">IC / PP No</td>
+<td width="80%"/>
+</tr>
+<tr>
+<td class="bold" width="20%">New IC No</td>
+<td width="80%">610213-06-5114</td>
+</tr>
+</table>
+    <br/>
+<table class="full_border" width="100%" border="0">
+<tr>
+<th align="left" colspan="3">ADDRESS (S) IN BANKING &amp; EXPERIAN  DATABANK<br/>
+<span class="small">NOTE: The address (s) stated below may not be the current or last known address of the subject</span>
+</th>
+</tr>
+<tr>
+<td colspan="3">NIL</td>
+</tr>
+</table>
+    <br/>
+<table class="full_border" width="100%" border="0">
+<tr>
+<th align="left" colspan="4">SUMMARY CREDIT INFORMATION</th>
+</tr>
+<tr>
+<td class="bold" colspan="2" width="50%">By Banking Info</td>
+<td class="bold" colspan="2" width="50%">By Experian</td>
+</tr>
+<tr>
+<td width="40%">Credit Applications Approved for Last 12 months</td>
+<td width="10%">0</td>
+<td width="40%">Bankruptcy Record</td>
+<td width="10%">0</td>
+</tr>
+<tr>
+<td width="40%">Credit Applications Pending</td>
+<td width="10%">0</td>
+<td class="fontRed" width="40%">Legal Suits</td>
+<td class="fontRed" width="10%">1</td>
+</tr>
+<tr>
+<td width="40%">Special Attention account</td>
+<td width="10%">0</td>
+<td width="40%">Trade / Credit Reference</td>
+<td width="10%">0</td>
+</tr>
+<tr>
+<td width="40%">Legal Action taken (from Banking)</td>
+<td width="10%">0</td>
+<td width="40%">Total Enquiries for Last 12 months</td>
+<td width="10%">0</td>
+</tr>
+<tr>
+<td width="40%">Existing No. of Facility (from Banking)</td>
+<td width="10%">1</td>
+<td width="40%">Total Companies/Businesses Interest</td>
+<td width="10%">0</td>
+</tr>
+<tr/>
+</table>
+    <div style="page-break-before:always;">
+<br/>
+<div style="font-size: 28px;">i-SCORE</div>
+<table class="full_border" width="100%" border="0">
+<tr>
+<th class="show_border" align="left" colspan="14">CREDIT SCORE<br/>
+<span class="small">Note: The i-SCORE is a credit score, which is a numeric representation of an individual or corporate's credit worthiness, based on prevailing information available on the credit files at the time of scoring. i-SCORE does not provide any conclusive evaluation or credit decisions for credit grantors.</span>
+</th>
+</tr>
+<tr>
+<td class="bold" width="30%">i-SCORE</td>
+<td colspan="13" width="70%">
+<b>769</b>
+</td>
+</tr>
+<tr>
+<td rowspan="2" class="bold" width="30%">Risk Grade</td>
+<td rowspan="2" class="risk_grade_not_active" align="center" width="5%">Higher Risk</td>
+<td class="risk_grade_not_active" colspan="4">WEAK</td>
+<td class="risk_grade_not_active" colspan="2">FAIR</td>
+<td class="risk_grade_not_active" colspan="2">GOOD</td>
+<td class="risk_grade_active" colspan="2">STRONG</td>
+<td rowspan="2" class="risk_grade_not_active" width="5%">Lower Risk</td>
+</tr>
+<tr>
+<td class="risk_grade_not_active" width="6%">1</td>
+<td class="risk_grade_not_active" width="6%">2</td>
+<td class="risk_grade_not_active" width="6%">3</td>
+<td class="risk_grade_not_active" width="6%">4</td>
+<td class="risk_grade_not_active" width="6%">5</td>
+<td class="risk_grade_not_active" width="6%">6</td>
+<td class="risk_grade_not_active" width="6%">7</td>
+<td class="risk_grade_not_active" width="6%">8</td>
+<td class="risk_grade_not_active" width="6%">9</td>
+<td class="risk_grade_active" width="6%">10</td>
+</tr>
+<tr>
+<td class="bold" width="30%">Key Contributing Factors<br/>(Why the Score is not Higher&gt;)</td>
+<td class="no-padding" colspan="14" width="70%">
+							N/A
+						</td>
+</tr>
+</table>
+<br/>
+</div>
+    <br/>
+<table class="full_border" width="100%" border="0">
+<tr>
+<th align="left" colspan="9">SHAREHOLDING INTEREST<br/>
+<span class="small">NOTE: The following information relating to shareholding/directorship interest by the Subject may not be current. There may be changes which may not be currently available in our databank</span>
+</th>
+</tr>
+<tr>
+<td colspan="9">NO INFORMATION AVAILABLE</td>
+</tr>
+</table>
+<br/>
+    <br/>
+<table class="full_border" width="100%" border="0">
+<tr>
+<th align="left" colspan="7">PREVIOUS KNOWN COMPANIES / BUSINESSES<br/>
+<span class="small">Note: The following information relating to shareholding/directorship interest by the Subject is as available from our databank.</span>
+</th>
+</tr>
+<tr>
+<td colspan="6">NO INFORMATION AVAILABLE</td>
+</tr>
+</table>
+  </div>
+  <div class="section">
+<p class="h2 blue uline">SECTION 2: BANKING CREDIT INFORMATION</p>
+<p class="small">Note: The following information has been extracted from Bank Negara Malaysia. The information is confidential and shall not be disclosed to any other person. We do not warrant as to its accuracy, correctness or completeness. If there is any inconsistency, inaccuracies or missing details or information, please contact Experian customer service for assistance.</p>
+    <br/>
+<table class="full_border" width="100%" border="0">
+<tr>
+<th align="left" colspan="2">CCRIS ENTITY SELECTED BY YOU</th>
+</tr>
+<tr>
+<td class="bold" width="20%">Entity Name</td>
+<td width="80%">NXXXXX XXX XXXXX</td>
+</tr>
+<tr>
+<td class="bold" width="20%">Entity ID No. 1</td>
+<td width="80%">610213-06-5114</td>
+</tr>
+<tr>
+<td class="bold" width="20%">Entity ID No. 2</td>
+<td width="80%"/>
+</tr>
+</table>
+<br/>
+    <table class="full_border" width="100%" border="0">
+<tr>
+<td class="bold" colspan="2">Subject Status</td>
+</tr>
+<tr>
+<td width="30%" class="bold">Warning Remark</td>
+<td width="70%">
+							NIL
+						</td>
+</tr>
+</table>
+    <br/>
+<p class="font14 uline">
+<strong>SUMMARY OF BANKING INFORMATION</strong>
+</p>
+<table class="full_border" width="100%" border="0">
+<tr>
+<th colspan="3" align="left">SUMMARY CREDIT REPORT</th>
+</tr>
+<tr>
+<td class="bold" colspan="3" align="left">Total no. of Credit Applications</td>
+</tr>
+<tr>
+<td> </td>
+<td class="bold">No. of Applications</td>
+<td class="bold">Total Amount (RM)</td>
+</tr>
+<tr>
+<td class="bold">A. Approved for past 12 months</td>
+<td>0</td>
+<td>0.00</td>
+</tr>
+<tr>
+<td class="bold">B. Pending</td>
+<td>0</td>
+<td>0.00</td>
+</tr>
+</table>
+<br/>
+<table class="full_border" width="100%" border="0">
+<tr>
+<th colspan="4" align="left">SUMMARY OF POTENTIAL &amp; CURRENT LIABILITIES</th>
+</tr>
+<tr>
+<td> </td>
+<td class="bold">Outstanding (RM) <br/>
+<span class="small">(Exclude FEC)</span>
+</td>
+<td class="bold">Total Limit (RM) <br/>
+<span class="small">(Exclude FEC)</span>
+</td>
+<td class="bold">FEC Limit (RM)</td>
+</tr>
+<tr>
+<td class="bold">As Borrower</td>
+<td>0.00</td>
+<td>100,000.00</td>
+<td>0.00</td>
+</tr>
+<tr>
+<td class="bold fontRed">Legal Action Taken</td>
+<td colspan="3">N</td>
+</tr>
+<tr>
+<td class="bold fontRed">Special Attention Account</td>
+<td colspan="3">N</td>
+</tr>
+</table>
+    <br/>
+<table class="full_border_2p" width="100%" border="0">
+<tr>
+<th align="left" colspan="25">DETAILED CREDIT REPORT (BANKING ACCOUNTS)</th>
+</tr>
+<tr>
+<td class="background_DAEEF3 bold">No.</td>
+<td class="background_DAEEF3 bold">Aprv date /<br/>R&amp;R date </td>
+<td class="background_DAEEF3 bold">Sts</td>
+<td class="background_DAEEF3 bold">Capacity</td>
+<td class="background_DAEEF3 bold">Lender Type</td>
+<td class="background_DAEEF3 bold">Facility</td>
+<td class="background_DAEEF3 bold">Total Outstanding Balance (RM)</td>
+<td class="background_DAEEF3 bold">Date Balance Updated</td>
+<td class="background_DAEEF3 bold">Limit /<br/>Inst.Amt <br/>(RM)</td>
+<td class="background_DAEEF3 bold">Prin Repymt Term</td>
+<td class="background_DAEEF3 bold">Col Type</td>
+<td colspan="12" class="background_DAEEF3 bold">Conduct of Account for the last 12 months</td>
+<td class="background_DAEEF3 bold">Legal Sts</td>
+<td class="background_DAEEF3 bold">Date Status Update</td>
+</tr>
+<tr>
+<td colspan="11" class="background_DAEEF3 bold"> </td>
+<td colspan="12" class="background_DAEEF3 bold justify">
+<div class="left">2022</div>
+<div class="right">2021</div>
+<div class="clear"/>
+</td>
+<td class="background_DAEEF3 bold"> </td>
+<td class="background_DAEEF3 bold"> </td>
+</tr>
+<tr>
+<td align="left" colspan="11" class="background_DAEEF3 bold">OUTSTANDING CREDIT</td>
+<td class="background_DAEEF3 bold">J</td>
+<td class="background_DAEEF3 bold">D</td>
+<td class="background_DAEEF3 bold">N</td>
+<td class="background_DAEEF3 bold">O</td>
+<td class="background_DAEEF3 bold">S</td>
+<td class="background_DAEEF3 bold">A</td>
+<td class="background_DAEEF3 bold">J</td>
+<td class="background_DAEEF3 bold">J</td>
+<td class="background_DAEEF3 bold">M</td>
+<td class="background_DAEEF3 bold">A</td>
+<td class="background_DAEEF3 bold">M</td>
+<td class="background_DAEEF3 bold">F</td>
+<td class="background_DAEEF3 bold"> </td>
+<td class="background_DAEEF3 bold"> </td>
+</tr>
+<tr>
+<td>1</td>
+<td class="nowrap">01/01/2000</td>
+<td> </td>
+<td>OWN</td>
+<td>CB</td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td>100,000.00</td>
+<td> </td>
+<td/>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td/>
+<td class="nowrap"/>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>O</td>
+<td> </td>
+<td> </td>
+<td>CRDTCARD</td>
+<td>0.00</td>
+<td class="nowrap">30/11/2021</td>
+<td class="bold">0.00</td>
+<td>MTH</td>
+<td/>
+<td/>
+<td/>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td class="bold">TOTAL<br/>OUTSTANDING<br/>BALANCE:</td>
+<td class="bold">0.00</td>
+<td class="bold">TOTAL<br/>LIMIT:</td>
+<td class="bold">100,000.00</td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td align="left" colspan="11" class="background_DAEEF3 bold">CREDIT APPLICATION</td>
+<th> </th>
+<th> </th>
+<th> </th>
+<th> </th>
+<th> </th>
+<th> </th>
+<th> </th>
+<th> </th>
+<th> </th>
+<th> </th>
+<th> </th>
+<th> </th>
+<th> </th>
+<th> </th>
+</tr>
+<tr>
+<td class="background_DAEEF3 bold">No.</td>
+<td class="background_DAEEF3 bold">Aprv date</td>
+<td class="background_DAEEF3 bold">Sts</td>
+<td class="background_DAEEF3 bold">Capacity</td>
+<td class="background_DAEEF3 bold">Lender Type</td>
+<td class="background_DAEEF3 bold">Facility</td>
+<td class="background_DAEEF3 bold">Total Outstanding Balance (RM)</td>
+<td class="background_DAEEF3 bold">Date Balance Updated</td>
+<td class="background_DAEEF3 bold">Limit (RM)</td>
+<td class="background_DAEEF3 bold">Prin Repymt Term</td>
+<td class="background_DAEEF3 bold">Col Type</td>
+<td colspan="12" class="background_DAEEF3 bold">Conduct of Account for the last 12 months</td>
+<td class="background_DAEEF3 bold">Legal Sts</td>
+<td class="background_DAEEF3 bold">Date Status Update</td>
+</tr>
+<tr>
+<td colspan="25">NO RECORD ON FILE</td>
+</tr>
+<tr>
+<td class="background_DAEEF3 bold fontRed" align="left" colspan="11">SPECIAL ATTENTION ACCOUNT</td>
+<td class="background_DAEEF3 bold"> </td>
+<td class="background_DAEEF3 bold"> </td>
+<td class="background_DAEEF3 bold"> </td>
+<td class="background_DAEEF3 bold"> </td>
+<td class="background_DAEEF3 bold"> </td>
+<td class="background_DAEEF3 bold"> </td>
+<td class="background_DAEEF3 bold"> </td>
+<td class="background_DAEEF3 bold"> </td>
+<td class="background_DAEEF3 bold"> </td>
+<td class="background_DAEEF3 bold"> </td>
+<td class="background_DAEEF3 bold"> </td>
+<td class="background_DAEEF3 bold"> </td>
+<td class="background_DAEEF3 bold"> </td>
+<td class="background_DAEEF3 bold"> </td>
+</tr>
+<tr>
+<td class="background_DAEEF3 bold">No.</td>
+<td class="background_DAEEF3 bold">Aprv date</td>
+<td class="background_DAEEF3 bold">Sts</td>
+<td class="background_DAEEF3 bold">Capacity</td>
+<td class="background_DAEEF3 bold">Lender Type</td>
+<td class="background_DAEEF3 bold">Facility</td>
+<td class="background_DAEEF3 bold">Total Outstanding Balance (RM)</td>
+<td class="background_DAEEF3 bold">Date Balance Updated</td>
+<td class="background_DAEEF3 bold">Limit (RM)</td>
+<td class="background_DAEEF3 bold">Prin Repymt Term</td>
+<td class="background_DAEEF3 bold">Col Type</td>
+<td colspan="12" class="background_DAEEF3 bold">Conduct of Account for the last 12 months</td>
+<td class="background_DAEEF3 bold">Legal Sts</td>
+<td class="background_DAEEF3 bold">Date Status Update</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+</table>
+<br/>
+<table class="woborder highlight small" width="100%" border="0">
+<tr>
+<td colspan="4" class="bold">REMARK LEGEND</td>
+</tr>
+<tr>
+<td valign="top" width="25%">
+<p class="bold uline">FACILITY</p>
+<table width="100%" border="0">
+<tr>
+<td valign="top" width="5%">CRDTCARD</td>
+<td valign="top" width="1%">-</td>
+<td>CREDIT CARD</td>
+</tr>
+</table>
+</td>
+<td valign="top" width="25%">
+<p class="bold uline">STATUS</p>
+<table width="100%" border="0">
+<tr>
+<td valign="top" width="5%">O</td>
+<td valign="top" width="1%">-</td>
+<td>Outstanding</td>
+</tr>
+</table>
+</td>
+<td valign="top" width="25%"/>
+</tr>
+</table>
+  </div>
+  <div class="section">
+<p class="h2 blue uline">SECTION 3: LITIGATION INFORMATION</p>
+    <br/>
+<table class="nobottom" width="100%" border="0">
+<tr>
+<th class="show_border" align="left" colspan="4">LEGAL ACTION<br/>
+<span class="small">Note: The following information on legal / winding up / bankruptcy proceedings may not be current. This Suit(s) may have been dismissed, withdrawn or struck off (eg: it may have been held that the subject is not liable as alleged in the claim, if at all or the case against a Defendant may have been struck off or the alleged debt may have been settled after the entry of the information in our database). The person or company listed as the litigant in the suit may have a similar name as the subject whom/which you seek information on. Whilst the Subject's IC number (if available) or Company Number (if available) or other identification may indicate that the person named in the action is the Subject, we cannot determine or confirm that the litigant is in fact the subject on whom/which information is sought. Please check with subject(s) concerned for confirmation.</span>
+</th>
+</tr>
+<tr>
+<td class="show_border" colspan="4">
+<table width="100%" class="woborder" border="0">
+<tr>
+<td class="bold normal-text">LEGAL SUITS - SUBJECT AS DEFENDANT</td>
+<td align="right" class="italic-bold normal-text">Total: 1</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td class="show_border2" colspan="4">
+<table width="100%" class="woborder" border="0">
+<tr>
+<td class="bold normal-text">1. CASE PENDING</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td class="bold" width="20%">Defendant Name</td>
+<td width="30%">NXXXXX XXX XXXXX</td>
+<td class="bold" width="20%">ID/ IC No</td>
+<td width="30%">610213-06-5114 / NA</td>
+</tr>
+<tr>
+<td class="bold" width="20%">Defendant Address</td>
+<td width="30%">XXX 11900, PULAU PINANG</td>
+<td width="20%"> </td>
+<td width="30%"> </td>
+</tr>
+<tr>
+<td class="bold" width="20%">Case No.</td>
+<td width="30%">CASE 136-29411-05-2017 MAGISTRATE COURT KUALA LUMPUR</td>
+<td width="20%"> </td>
+<td width="30%"> </td>
+</tr>
+<tr>
+<td class="bold" width="20%">Solicitor</td>
+<td width="30%">CHAN BENEDICT &amp; PARTNERS (CHAN BENEDICT &amp; MAY LIN)</td>
+<td width="20%"> </td>
+<td width="30%"> </td>
+</tr>
+<tr>
+<td class="bold" width="20%">Solicitor Address</td>
+<td width="30%">LOT 8.02, MENARA KH, JLN SULTAN ISMAIL, 8TH FLR 50250 KUALA LUMPUR</td>
+<td width="20%"> </td>
+<td width="30%"> </td>
+</tr>
+<tr>
+<td class="bold" width="20%">Solicitor Tel</td>
+<td width="30%">03-21489982</td>
+<td class="bold" width="20%">Solicitor Fax</td>
+<td width="30%">03-21450908</td>
+</tr>
+<tr>
+<td class="bold" width="20%">Solicitor Email</td>
+<td width="30%">crc2000@pd.jaring.my</td>
+<td class="bold" width="20%">Solicitor Ref.</td>
+<td width="30%"> </td>
+</tr>
+<tr>
+<td class="bold" width="20%">Case Status</td>
+<td width="30%">CASE PENDING</td>
+<td class="bold" width="20%">As at Date</td>
+<td width="30%">19 Jul 2021</td>
+</tr>
+<tr>
+<td class="bold" width="20%">Suit Ref.</td>
+<td width="30%">COURT LIST / 20 Jul 2021</td>
+<td width="20%"> </td>
+<td width="30%"> </td>
+</tr>
+</table>
+    
+    
+    
+    <br/>
+<table class="nobottom" width="100%" border="0">
+<tr>
+<th class="show_border" align="left" colspan="4">BANKRUPTCY ACTION<br/>
+<span class="small">Note: The following information on legal / winding up / bankruptcy proceedings may not be current. This Suit(s) may have been dismissed, withdrawn or struck off (eg: it may have been held that the subject is not liable as alleged in the claim, if at all or the case against a Defendant may have been struck off or the alleged debt may have been settled after the entry of the information in our database). The person or company listed as the litigant in the suit may have a similar name as the subject whom/which you seek information on. Whilst the Subject's IC number (if available) or Company Number (if available) or other identification may indicate that the person named in the action is the Subject, we cannot determine or confirm that the litigant is in fact the subject on whom/which information is sought. Please check with subject(s) concerned for confirmation.</span>
+</th>
+</tr>
+<tr>
+<td class="show_border" colspan="4">
+<table width="100%" class="woborder" border="0">
+<tr>
+<td align="right" class="italic-bold normal-text">Total: 0</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td class="show_border" colspan="4">NO INFORMATION AVAILABLE</td>
+</tr>
+</table>
+  </div>
+  <div class="section">
+<p class="h2 blue uline">SECTION 4: TRADE BUREAU / OTHER CREDIT REFERENCE</p>
+    <br/>
+<table class="nobottom" width="100%" border="0">
+<tr>
+<th class="" align="left" colspan="4">TRADE BUREAU / CREDIT REFERENCE<br/>
+<span class="small">NOTE: The following information is provided by third party sources for your reference. Searched Subject will also be listed if he/she is in Guarantor capacity. Experian does not guarantee the accuracy of the information. Please check with the Creditors for confirmation as alleged debts may have been settled since recorded. Users should NOT treat the information as conclusive factor for evaluation purpose.</span>
+</th>
+</tr>
+<tr>
+<td class="show_border" colspan="4">NO INFORMATION AVAILABLE.</td>
+</tr>
+</table>
+  </div>
+  
+    <br/>
+<table class="full_border" width="100%" border="1">
+<tr>
+<th align="left" colspan="6">AML / Sanction List<br/>
+<span class="small">Note: The following information is based on Name Match only, against database complied from the following sources (a) Bank Negara Malaysia website (b) UN Security Council resolution 1267 list (c) United States Dept. of the Treasure Specially Designated Nationals (d) Ministry of Home Affairs website for your reference and may not be current. There may be changes which may not be currently available in our databank. Kindly conduct further checking with relevant source for detailed information. For international coverage which cover Enforcements, Sanctions. Politically Exposed Persons (PEP) listing, of more than 35,000 data sources globally, please conduct <a target="_blank" href="https://ct.experian.com.my/index.php/myorder/individual/cdd">Customer Due-D check</a>
+</span>
+</th>
+</tr>
+</table>
+<br/>
+<table class="full_border" width="100%" border="1">
+<tr>
+<td align="center" class="bold">No.</td>
+<td align="center" class="bold">IC / PP No.</td>
+<td align="center" class="bold">Individual Name</td>
+<td align="center" class="bold">Trace Case</td>
+<td align="center" class="bold">Company Name</td>
+<td align="center" class="bold">Date Listed by Source(s)</td>
+<td align="center" class="bold">Name Match</td>
+</tr>
+<tr>
+<td align="center" colspan="7">NO RECORD FOUND</td>
+</tr>
+</table>
+<br/>
+<table class="full_border" width="100%" border="1">
+<tr>
+<td align="center" class="bold">Trace Case</td>
+<td align="center" class="bold">Date Listed by Source(s)</td>
+<td align="center" class="bold">Name Match</td>
+</tr>
+<tr>
+<td>
+<b>AML/CFT</b> - Anti-Money Laundering and Anti-Terrorism Financing Act 2001</td>
+<td align="center">-</td>
+<td align="center">NOT MATCHED</td>
+</tr>
+<tr>
+<td>
+<b>BAFIA</b> - Banking and Financial Institutions Act 1989</td>
+<td align="center">-</td>
+<td align="center">NOT MATCHED</td>
+</tr>
+<tr>
+<td>
+<b>KDN</b> - KDN Sanction List</td>
+<td align="center">-</td>
+<td align="center">NOT MATCHED</td>
+</tr>
+<tr>
+<td>
+<b>MSBA</b> - Money Services Business Act 2011</td>
+<td align="center">-</td>
+<td align="center">NOT MATCHED</td>
+</tr>
+<tr>
+<td>
+<b>UN</b> - UN Sanction List</td>
+<td align="center">-</td>
+<td align="center">NOT MATCHED</td>
+</tr>
+</table>
+  
+  <div class="section">
+<p class="h2 blue uline">SECTION 5: ENQUIRIES</p>
+    <br/>
+<table class="full_border" width="100%" border="0">
+<tr>
+<th align="left" colspan="14">FINANCIAL RELATED SEARCH COUNT<br/>
+<span class="small">(The number of times that the Subject has been searched by Financial Institutions via CrediTrack)</span>
+</th>
+</tr>
+<tr>
+<td align="center" class="bold">Year</td>
+<td align="center" class="bold">Total</td>
+<td align="center" class="bold">Jan</td>
+<td align="center" class="bold">Feb</td>
+<td align="center" class="bold">Mar</td>
+<td align="center" class="bold">Apr</td>
+<td align="center" class="bold">May</td>
+<td align="center" class="bold">Jun</td>
+<td align="center" class="bold">Jul</td>
+<td align="center" class="bold">Aug</td>
+<td align="center" class="bold">Sep</td>
+<td align="center" class="bold">Oct</td>
+<td align="center" class="bold">Nov</td>
+<td align="center" class="bold">Dec</td>
+</tr>
+<tr>
+<td align="center" class="bold">2022</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr>
+<td align="center" class="bold">2021</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr>
+<td align="center" class="bold">2020</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+</table>
+<br/>
+<table class="full_border" width="100%" border="0">
+<tr>
+<th align="left" colspan="14">COMMERCIAL RELATED SEARCH COUNT<br/>
+<span class="small">(The number of times that the Subject has been searched by Business Corporations via CrediTrack)</span>
+</th>
+</tr>
+<tr>
+<td align="center" class="bold">Year</td>
+<td align="center" class="bold">Total</td>
+<td align="center" class="bold">Jan</td>
+<td align="center" class="bold">Feb</td>
+<td align="center" class="bold">Mar</td>
+<td align="center" class="bold">Apr</td>
+<td align="center" class="bold">May</td>
+<td align="center" class="bold">Jun</td>
+<td align="center" class="bold">Jul</td>
+<td align="center" class="bold">Aug</td>
+<td align="center" class="bold">Sep</td>
+<td align="center" class="bold">Oct</td>
+<td align="center" class="bold">Nov</td>
+<td align="center" class="bold">Dec</td>
+</tr>
+<tr>
+<td align="center" class="bold">2022</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr>
+<td align="center" class="bold">2021</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+<tr>
+<td align="center" class="bold">2020</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0</td>
+</tr>
+</table>
+  </div>
+  <div style="page-break-before:always;" class="section">
+<p class="h2 blue uline">LEGENDS:</p>
+<p class="font12 bold blue uline">SECTION 1: SUMMARY - SCORE INTERPRETATION</p>
+<div>
+<img width="70%" src="http://img.experian.com.my/i_score_ccris_graph_full_gen2.png"/>
+</div>
+<br/>
+<div>
+<p class="h3">Explanation</p>
+<p>
+<strong>i-SCORE</strong>
+<br/>
+			i-SCORE is a credit score, which is a numeric representation of an individual or corporation's credit worthiness, based on prevailing information available on the credit files at the time of scoring. The i-SCORE is calculated using advanced statistical modelling techniques, encapsulates comprehensive credit information (both banking and non-banking) from Experian to give you a simple 3 digits number to objectively assess your customers, business partners, vendors and others, for a better credit decision - the higher the number, the better the individual or corporation's credit worthiness.</p>
+<p>
+<strong>Risk Grade</strong>
+<br/>
+			Risk Grade is risk segmentation for i-SCORE range for easy understanding and application. It has 10 risk grades from 1 to 10.  A risk grade of "10" is considering the best.<br/>
+			For non-scored individual, the Risk Grade will be “N/A” as well.
+			</p>
+<p>
+<strong>Probability of Default (%)</strong>
+<br/>
+			It is the predicted likelihood of an individual or corporation not able to repay its debts within the next 12 months.<br/> 
+			An individual with a higher probability of default is more risky than one with lower percentage.</p>
+<p>
+<strong>Key Contributing Factors (KCF)</strong>
+<br/>
+			Key Contributing Factors are the key factors that have impact on why the individual or corporation's i-SCORE cannot be higher. It lists out the top 2 factors that lower the credit score.</p>
+<p>
+<strong>Non-Scored Segment</strong>
+<br/>
+			The following are 3 scenarios that entity will fall under non-scored segment with i-SCORE = N/A:<br/>
+<table border="0" width="100%" class="legendtext">
+<tr>
+<th>i-SCORE</th>
+<th>Risk Grade</th>
+<th>Key Contributing Factors (KCF)</th>
+</tr>
+<tr>
+<td rowspan="3">A "N/A" will be shown</td>
+<td rowspan="3">A "N/A" will be shown</td>
+<td>Entity has insufficient or no CCRIS and Experian data available for the scoring</td>
+</tr>
+<tr>
+<td>Entity is below the age of 18 years old</td>
+</tr>
+<tr>
+<td>Entity has bankruptcy status as per CCRIS or Experian record</td>
+</tr>
+</table>
+</p>
+</div>
+<br/>
+<br/>
+<p class="font12 bold blue uline">SECTION 2: BANKING CREDIT INFORMATION</p>
+<div>
+<p class="h3 uline">Banking Information Warning</p>
+<p>From the system, the user may see CCRIS Warning Message with the meaning as per below:</p>
+<ol type="i">
+<li>Pending Verification - the profile force added by a user awaiting verification by NRD/ROC/ROB of the profile.</li>
+<li>Rejected - the profile had been submitted to NRD for verification but it was rejected due to non-existence of record in the NRD database.</li>
+<li>Deceased - the profile had been submitted to NRD for verification but according to the NRD records, the individual is already "deceased".</li>
+<li>Wound-up - the company had been reported as wound-up by ROC.</li>
+</ol>
+</div>
+<div>
+<p class="h3 uline">Secured Facility</p>
+<p>Refer to loan which the borrower pledges some asset as collateral for the loan, which then becomes a secured debt owed to the creditor who gives the loan.</p>
+</div>
+<div>
+<p class="h3 uline">Unsecured Facility</p>
+<p>Refer to loan that is not collateralized by a lien on specific assets of the borrower.</p>
+</div>
+<div>
+<p class="h3 uline">Credit Card average utilization last 6 months</p>
+<p>[(monthly credit card total outstanding balance/ total limit) for last 6 months]*100<br/>
+				The ratio of credit card utilized amount compared to your credit limit for the last 6 months.</p>
+</div>
+<div>
+<p class="h3 uline">Other Revolving Credits average utilization last 6 months</p>
+<p>[(monthly other revolving credits facility total outstanding balance / total limit) for last 6 months]*100<br/>
+				The ratio of all other revolving loans outstanding amount compared to the total limit for the last 6 months. It includes Overdraft, revolving credit facility, share margin financing facility and other such revolving facilities.</p>
+</div>
+<p class="h3 uline">Capacity</p>
+<p>Refers to whether the loan is taken directly or indirectly by the customer</p>
+<ol type="i">
+<li>Own = the credit facility is obtained by the borrower himself.</li>
+<li>Joint = the credit facility is obtained by the borrower himself one of the borrowers in a joint application, eg. in a joint housing loan.</li>
+<li>Sole = the credit facility is obtained by the sole proprietorship in which the borrower is the owner.</li>
+<li>Partner = the credit facility is obtained by the partnership in which the borrower is one of the partners.</li>
+<li>Prof = the credit facility is obtained by the professional body eg. (i.e. lawyers, doctors, accountants who are not registered with ROB) in which the borrower is one of the partners.</li>
+</ol>
+<p>For more legends, please refer to User Guide</p>
+</div>
+  <p class="bold">-END OF REPORT-</p>
+<table width="100%" border="0">
+<tr>
+<td align="left">SUBSCRIBER NAME: MOBY MONEY UAT</td>
+<td align="right">ORDER DATE: 2022-01-25</td>
+</tr>
+<tr>
+<td align="left">USER NAME: MOBY MONEY UAT</td>
+<td align="right">ORDER TIME: 16:45:46</td>
+</tr>
+</table>
+<br/>
+<br/>
+<br/>
+</div>
+</body>
+</html>
