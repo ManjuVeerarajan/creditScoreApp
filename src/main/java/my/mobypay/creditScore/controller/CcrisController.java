@@ -73,6 +73,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -367,23 +368,39 @@ public class CcrisController {
 		 */
 		// System.out.println(retivalCount);
 		Object simulatorResponse = null;
-		
+		String simulatorJson = null;
+		CustomerSpendingLimitResponse res = new CustomerSpendingLimitResponse();
+		JSONObject simulatorResponseJson ; 
 		if((userSearchRequest.getEntityId().contains("500101") || userSearchRequest.getEntityId().contains("501230") 
 				|| userSearchRequest.getEntityId().contains("501231")) || (userSearchRequest.getName().contains("WRONG NAME") 
 						|| userSearchRequest.getName().contains("ABDULLAH BIN MALIK") || userSearchRequest.getName().contains("LARRY HENG")
 						|| userSearchRequest.getName().contains("BILL CLINTON") || userSearchRequest.getName().contains("DEVI THANAPAKIAM"))) {
 			log.info("Calling Simulator");
-			//public Object creditCheckerSimulator(@RequestBody JSONObject request) {
 			JSONObject request = new JSONObject();
 			request.put("entityId", userSearchRequest.getEntityId());
 			request.put("name", userSearchRequest.getName());
 			
 			
-			simulatorResponse = creditCheckerSimulator(request);
-			return simulatorResponse;
-			
+			res = creditCheckerSimulatorForSpendingLimit(request);
+		/*	simulatorResponseJson = new JSONObject();
+			simulatorResponseJson.put("response", simulatorResponse.toString());
+			simulatorJson = simulatorResponseJson.getString("response");
+			log.info("simulatorResponse " +simulatorResponse);
+			log.info("simulatorResponseJson " +simulatorResponseJson);
+			log.info("simulatorJson " +simulatorJson);
+			List<Object> l = new ArrayList();
+			l.add(simulatorJson);	
+			res = (CustomerSpendingLimitResponse) l; */
+			log.info("res " +res);
+			log.info("Status code " +res.getStatusCode());
+			if(res.getStatusCode()!= null) {
+				log.info("Inside  res.getStatusCode()!= null" );
+			return res;
+			}
 		}
-		else
+		
+		if(res != null && res.getStatusCode()== null) {
+			log.info("Inside  res.getStatusCode()== null" );
 		if (nricnumber.length() == 14) {
 			saveRequestToDB(userSearchRequest);
 			String name = userSearchRequest.getName().toUpperCase().replaceAll("[ ]{2,}", " ");
@@ -883,6 +900,20 @@ public class CcrisController {
 			// SavetoCreditCheckError(jsonresponse.getStatusCode(),jsonresponse.getErrorMessage(),name,regexexpression);
 			return jsonresponse;
 		}
+		}
+		log.info("Simulator response is null");
+		CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
+		jsonresponse.setIsNricExist(false);
+		jsonresponse.setIsNameNricMatched(false);
+		jsonresponse.setIsRegistrationAllowed(false);
+		jsonresponse.setMaximumAllowedInstallments(0);
+		jsonresponse.setMaximumSpendingLimit(0);
+		jsonresponse.setStatusCode("null");
+		jsonresponse.setErrorMessage(
+				"null");
+		// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
+		// SavetoCreditCheckError(jsonresponse.getStatusCode(),jsonresponse.getErrorMessage(),name,regexexpression);
+		return jsonresponse;
 
 	}
 
@@ -1234,10 +1265,16 @@ public class CcrisController {
 			request.put("name", userSearchRequest.getName());
 			request.put("serviceName", userSearchRequest.getServiceName());
 			
-			simulatorResponse = creditCheckerSimulator(request);
-			return simulatorResponse;
+			experianreportResponse = creditCheckerSimulatorForReport(request);
 			
-		}else {
+			if(experianreportResponse.getResponseCode() != null) {
+				log.info("Returning response from Simulator");
+			return experianreportResponse;
+			}
+			
+		}
+		if(experianreportResponse != null && experianreportResponse.getResponseCode()== null){
+			log.info("Normal flow as response is not available from simulator");
 		String nricnumber = NricRegchecking(userSearchRequest.getEntityId());
 		// Integer retivalCount =
 		// creditCheckErrorRepository.findbynric(userSearchRequest.getEntityId());
@@ -1781,9 +1818,8 @@ public class CcrisController {
 			// your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.");
 			// SavetoCreditCheckError(error,userSearchRequest.getName(),userSearchRequest.getEntityId());
 			// return error;
-			experianreportResponse.setResponseCode("404");
-			experianreportResponse.setResponseMsg(
-					"Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.");
+			experianreportResponse.setResponseCode("01");
+			experianreportResponse.setResponseMsg("Error");
 			experianreportResponse.setURL(null);
 			experianreportResponse.setRefxml(null);
 			experianreportResponse.setBankruptcyCount(0);
@@ -1802,7 +1838,26 @@ public class CcrisController {
 			// SavetoCreditCheckError(error,name,regexexpression);
 			return experianreportResponse;
 		}
-		}
+		}experianreportResponse.setResponseCode("01");
+		experianreportResponse.setResponseMsg(
+				"Error");
+		experianreportResponse.setURL(null);
+		experianreportResponse.setRefxml(null);
+		experianreportResponse.setBankruptcyCount(0);
+		experianreportResponse.setLegalSuitCount(0);
+		experianreportResponse.setTradeBureauCount(0);
+		experianreportResponse.setIScore(0);
+		experianreportResponse.setIScoreRiskGrade(0);
+		experianreportResponse.setIScoreGradeFormat(null);
+		experianreportResponse.setLegalActionBankingCount(0);
+		experianreportResponse.setBorrowerOutstanding(0);
+		experianreportResponse.setBankingCreditApprovedCount(0);
+		experianreportResponse.setBankingCreditApprovedAmount(0);
+		experianreportResponse.setBankingCreditPendingCount(0);
+		experianreportResponse.setBankingCreditPendingAmount(0);
+		// SavetoCreditCheckErrors(experianreportResponse.getResponseCode(),experianreportResponse.getResponseMsg(),name,regexexpression);
+		// SavetoCreditCheckError(error,name,regexexpression);
+		return experianreportResponse;
 	}
 
 	private void SavetoCreditCheckErrors(String responseCode, String responseMsg, String name, String regexexpression,
@@ -1922,7 +1977,7 @@ public class CcrisController {
 	}
 
 	@RequestMapping(value = "/simulator", method = RequestMethod.POST)
-	public Object creditCheckerSimulator(@RequestBody JSONObject request) {
+	public CustomerSpendingLimitResponse creditCheckerSimulatorForSpendingLimit(@RequestBody JSONObject request) {
 		log.info("Inside simulator " + request);
 		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
 		CustomerSpendingLimitResponse response = new CustomerSpendingLimitResponse();
@@ -1961,7 +2016,7 @@ public class CcrisController {
 				if(serviceReportFlag == false)
 					response = (CustomerSpendingLimitResponse) validMykadForSpendingLimit(entityId, response,name,serviceReportFlag);
 				if(serviceReportFlag == true)
-					experianreportResponse = (ExperianReportResponse) validMykadForSpendingLimit(entityId, response,name,serviceReportFlag);
+					experianreportResponse = (ExperianReportResponse) validMykadForReport(entityId,name,serviceReportFlag);
 					//experianreportResponse = generateExperianReportForSuccess(experianreportResponse, null,name,entityId); 
 
 			} else if (entityId.contains("501231")) {
@@ -1981,7 +2036,7 @@ public class CcrisController {
 				if(serviceReportFlag == false)
 					response = (CustomerSpendingLimitResponse) validMykadForSpendingLimit(entityId, response,name,serviceReportFlag);
 				if(serviceReportFlag == true)
-					experianreportResponse = (ExperianReportResponse) validMykadForSpendingLimit(entityId, response,name,serviceReportFlag);
+					experianreportResponse = (ExperianReportResponse) validMykadForReport(entityId,name,serviceReportFlag);
 					
 					//experianreportResponse = generateExperianReportForSuccess(experianreportResponse, null,name,entityId); 
 			}
@@ -2000,8 +2055,65 @@ public class CcrisController {
 			return response;
 		}
 		
-		log.info("finalResponse " +finalResponse);
-		return finalResponse;
+		//log.info("finalResponse " +finalResponse);
+		return response;
+	}
+	
+	@RequestMapping(value = "/simulatorReport", method = RequestMethod.POST)
+	public ExperianReportResponse creditCheckerSimulatorForReport(@RequestBody JSONObject request) {
+		log.info("Inside simulator " + request);
+		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
+		// CustomerSpendingLimitResponse response = new CustomerSpendingLimitResponse();
+		String entityId = null;
+		String name = null;
+		boolean serviceReportFlag = false;
+		Object finalResponse = null;
+		try {
+			if (request.getString("entityId") != null && request.getString("entityId") != "") {
+				entityId = request.getString("entityId");
+			}
+			if (request.getString("name") != null && request.getString("name") != "") {
+				name = request.getString("name");
+			}
+			if (request.getString("serviceName") != null && request.getString("serviceName").equals("GetReport")) {
+				serviceReportFlag = true;
+			}
+			log.info("entityId " + entityId);
+
+			if ((name.equals("WRONG NAME") || name.equals("ABDULLAH BIN MALIK") || name.equals("LARRY HENG")
+					|| name.equals("BILL CLINTON") || name.equals("DEVI THANAPAKIAM"))) {
+				String error = "Oops, maybe it is us and not you, but we can\\u2019t seem to validate this MyKad number\\/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space\\/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin\\/Binti\\/ A\\/L \\/ A\\/P and without any abbreviations.";
+					log.info("Inside validate name ");
+					experianreportResponse = generateExperianReport(experianreportResponse, error,"404");
+			} else if (entityId.contains("501230")) {
+				Thread.sleep(25000);
+				log.info("Thread sleeping for 25seconds");
+
+				if(serviceReportFlag == true)
+					experianreportResponse = (ExperianReportResponse) validMykadForReport(entityId,name,serviceReportFlag);
+					//experianreportResponse = generateExperianReportForSuccess(experianreportResponse, null,name,entityId); 
+
+			} else if (entityId.contains("501231")) {
+				String error = "We try to connect with Experian API 4 times if it is not connecting we will be throwing the status code.";
+				Thread.sleep(25000);
+				log.info("Thread sleeping for 25seconds");
+					experianreportResponse = generateExperianReport(experianreportResponse, error,"102");
+			} else {
+
+				if(serviceReportFlag == true)
+					experianreportResponse = (ExperianReportResponse) validMykadForReport(entityId,name,serviceReportFlag);
+					
+					//experianreportResponse = generateExperianReportForSuccess(experianreportResponse, null,name,entityId); 
+			}
+			
+			log.info("request.get(\"serviceName\") " +request.get("serviceName"));
+		} catch (Exception e) {
+			log.error("Exception in simulator " + e);
+			experianreportResponse.setResponseMsg(e.getLocalizedMessage());
+			return experianreportResponse;
+		}
+		
+		return experianreportResponse;
 	}
 
 		
@@ -2059,7 +2171,7 @@ public class CcrisController {
 		return experianreportResponse;
 	}
 
-	public Object validMykadForSpendingLimit(String entityId, CustomerSpendingLimitResponse response,String name, boolean getReportflag) {
+	public CustomerSpendingLimitResponse validMykadForSpendingLimit(String entityId, CustomerSpendingLimitResponse response,String name, boolean getReportflag) {
 		log.info("inside validMykadForSpendingLimit");
 		Object validateMyKad = null;
 		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
@@ -2074,7 +2186,7 @@ public class CcrisController {
 				response.setMaximumSpendingLimit(0);
 				response.setStatusCode("07");
 				response.setErrorMessage("No Response");
-				experianreportResponse = generateExperianReport(experianreportResponse, "No Response","07");
+			// 	experianreportResponse = generateExperianReport(experianreportResponse, "No Response","07");
 			} else if (entityId.charAt(6) == '0' && entityId.charAt(7) == '5') {
 				log.info("Inside entityId 500101{05}XXXX ");
 				response.setIsRegistrationAllowed(true);
@@ -2085,8 +2197,8 @@ public class CcrisController {
 				response.setStatusCode("05");
 				response.setErrorMessage("No Ccris Info found");
 				
-				 String xml = simulatorService.getXmlByErrorCode("05",name,entityId);
-				 experianreportResponse = generateExperianReportForSuccess(xml);				 
+				// String xml = simulatorService.getXmlByErrorCode("05",name,entityId);
+				// experianreportResponse = generateExperianReportForSuccess(xml);				 
 			} else if (entityId.charAt(6) == '0' && entityId.charAt(7) == '6') {
 				log.info("Inside entityId 500101{06}XXXX ");
 				response.setIsRegistrationAllowed(false);
@@ -2097,8 +2209,8 @@ public class CcrisController {
 				response.setStatusCode("06");
 				response.setErrorMessage("Low Credit Score");
 				
-				 String xml = simulatorService.getXmlByErrorCode("06",name,entityId);
-				 experianreportResponse =  generateExperianReportForSuccess(xml);	
+				// String xml = simulatorService.getXmlByErrorCode("06",name,entityId);
+				// experianreportResponse =  generateExperianReportForSuccess(xml);	
 				 
 			} else if (entityId.charAt(6) == '0' && entityId.charAt(7) == '1') {
 				String error = "We are sorry,We are unable to provide AiraPay services to you. Upon our internal checks and verifications, we regret to inform you that you did not meet certain requirements we are looking for to enable the instalment payments under AiraPay for your account.";
@@ -2110,7 +2222,7 @@ public class CcrisController {
 				response.setMaximumSpendingLimit(0);
 				response.setStatusCode("01");
 				response.setErrorMessage(error);
-				experianreportResponse = generateExperianReport(experianreportResponse, error,"01");
+				// experianreportResponse = generateExperianReport(experianreportResponse, error,"01");
 			} else if (entityId.charAt(6) == '4' && entityId.charAt(7) == '0') {
 				log.info("Inside entityId 500101{40}XXXX ");
 				response.setIsRegistrationAllowed(false);
@@ -2130,7 +2242,7 @@ public class CcrisController {
 				response.setMaximumSpendingLimit(0);
 				response.setStatusCode("405");
 				response.setErrorMessage("Server error");
-				experianreportResponse = generateExperianReport(experianreportResponse, "Server error","405");
+			//	experianreportResponse = generateExperianReport(experianreportResponse, "Server error","405");
 			} else if (entityId.charAt(6) == '1' && entityId.charAt(7) == '3') {
 				if (entityId.charAt(8) == '0') {
 					log.info("Inside installment 3 success case ");
@@ -2140,8 +2252,8 @@ public class CcrisController {
 					response.setMaximumAllowedInstallments(3);
 					response.setMaximumSpendingLimit(300);
 					response.setStatusCode("00");
-					 String xml = simulatorService.getXmlByErrorCode("0030",name,entityId);
-					 experianreportResponse =  generateExperianReportForSuccess(xml);		
+				//	 String xml = simulatorService.getXmlByErrorCode("0030",name,entityId);
+				//	 experianreportResponse =  generateExperianReportForSuccess(xml);		
 				} else if (entityId.charAt(8) == '1') {
 					log.info("Inside installment 3 success case ");
 					response.setIsRegistrationAllowed(true);
@@ -2162,8 +2274,8 @@ public class CcrisController {
 					response.setMaximumAllowedInstallments(6);
 					response.setMaximumSpendingLimit(1000);
 					response.setStatusCode("00");
-					String xml = simulatorService.getXmlByErrorCode("0060",name,entityId);
-					experianreportResponse = generateExperianReportForSuccess(xml);	
+					// String xml = simulatorService.getXmlByErrorCode("0060",name,entityId);
+				//	experianreportResponse = generateExperianReportForSuccess(xml);	
 				} else if (entityId.charAt(8) == '1') {
 					log.info("Inside installment 6 success case ");
 					response.setIsRegistrationAllowed(true);
@@ -2172,8 +2284,8 @@ public class CcrisController {
 					response.setMaximumAllowedInstallments(6);
 					response.setMaximumSpendingLimit(1500);
 					response.setStatusCode("00");
-					String xml = simulatorService.getXmlByErrorCode("0061",name,entityId);
-					experianreportResponse = generateExperianReportForSuccess(xml);	
+				//	String xml = simulatorService.getXmlByErrorCode("0061",name,entityId);
+				//	experianreportResponse = generateExperianReportForSuccess(xml);	
 				} else if (entityId.charAt(8) == '2') {
 					log.info("Inside installment 6 success case ");
 					response.setIsRegistrationAllowed(true);
@@ -2182,8 +2294,8 @@ public class CcrisController {
 					response.setMaximumAllowedInstallments(6);
 					response.setMaximumSpendingLimit(2000);
 					response.setStatusCode("00");
-					String xml = simulatorService.getXmlByErrorCode("0062",name,entityId);
-					experianreportResponse = generateExperianReportForSuccess(xml);	
+				//	String xml = simulatorService.getXmlByErrorCode("0062",name,entityId);
+				//	experianreportResponse = generateExperianReportForSuccess(xml);	
 				} else if (entityId.charAt(8) == '3') {
 					log.info("Inside installment 6 success case ");
 					response.setIsRegistrationAllowed(true);
@@ -2192,8 +2304,8 @@ public class CcrisController {
 					response.setMaximumAllowedInstallments(6);
 					response.setMaximumSpendingLimit(2500);
 					response.setStatusCode("00");
-					String xml = simulatorService.getXmlByErrorCode("0063",name,entityId);
-					experianreportResponse = generateExperianReportForSuccess(xml);	
+				//	String xml = simulatorService.getXmlByErrorCode("0063",name,entityId);
+				//	experianreportResponse = generateExperianReportForSuccess(xml);	
 				} else if (entityId.charAt(8) == '4') {
 					log.info("Inside installment 6 success case ");
 					response.setIsRegistrationAllowed(true);
@@ -2202,18 +2314,86 @@ public class CcrisController {
 					response.setMaximumAllowedInstallments(6);
 					response.setMaximumSpendingLimit(3000);
 					response.setStatusCode("00");
+				//	String xml = simulatorService.getXmlByErrorCode("0064",name,entityId);
+				//	experianreportResponse = generateExperianReportForSuccess(xml);	
+				}
+			}
+			}
+		 /*	if(getReportflag == true) {
+		 		validateMyKad = experianreportResponse;
+		 	}
+		 	else {
+		 		validateMyKad = response;
+		 	}*/
+		 	return response;
+	 }
+	
+	
+	public ExperianReportResponse validMykadForReport(String entityId,String name, boolean getReportflag) {
+		log.info("inside validMykadForSpendingLimit");
+		Object validateMyKad = null;
+		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
+		if(entityId.contains("500101") || entityId.contains("501230")){
+			
+		 if (entityId.charAt(6) == '0' && entityId.charAt(7) == '7') {
+				log.info("Inside entityId 500101{07}XXXX ");
+				experianreportResponse = generateExperianReport(experianreportResponse, "No Response","07");
+			} else if (entityId.charAt(6) == '0' && entityId.charAt(7) == '5') {
+				log.info("Inside entityId 500101{05}XXXX ");
+				
+				 String xml = simulatorService.getXmlByErrorCode("05",name,entityId);
+				 experianreportResponse = generateExperianReportForSuccess(xml);				 
+			} else if (entityId.charAt(6) == '0' && entityId.charAt(7) == '6') {
+				log.info("Inside entityId 500101{06}XXXX ");
+				
+				 String xml = simulatorService.getXmlByErrorCode("06",name,entityId);
+				 experianreportResponse =  generateExperianReportForSuccess(xml);	
+				 
+			} else if (entityId.charAt(6) == '0' && entityId.charAt(7) == '1') {
+				String error = "We are sorry,We are unable to provide AiraPay services to you. Upon our internal checks and verifications, we regret to inform you that you did not meet certain requirements we are looking for to enable the instalment payments under AiraPay for your account.";
+				log.info("Inside entityId 500101{01}XXXX ");
+				experianreportResponse = generateExperianReport(experianreportResponse, error,"01");
+			} else if (entityId.charAt(6) == '4' && entityId.charAt(7) == '0') {
+				log.info("Inside entityId 500101{40}XXXX ");
+				experianreportResponse = generateExperianReport(experianreportResponse, "Invalid Input","400");
+			} else if (entityId.charAt(6) == '4' && entityId.charAt(7) == '5') {
+				log.info("Inside entityId 500101{45}XXXX ");
+				experianreportResponse = generateExperianReport(experianreportResponse, "Server error","405");
+			} else if (entityId.charAt(6) == '1' && entityId.charAt(7) == '3') {
+				if (entityId.charAt(8) == '0') {
+					log.info("Inside installment 3 success case ");
+					 String xml = simulatorService.getXmlByErrorCode("0030",name,entityId);
+					 experianreportResponse =  generateExperianReportForSuccess(xml);		
+				} else if (entityId.charAt(8) == '1') {
+					log.info("Inside installment 3 success case ");
+					 String xml = simulatorService.getXmlByErrorCode("0031",name,entityId);
+					 experianreportResponse =  generateExperianReportForSuccess(xml);	
+				}
+			} else if (entityId.charAt(6) == '1' && entityId.charAt(7) == '6') {
+				if (entityId.charAt(8) == '0') {
+					log.info("Inside installment 6 success case ");
+					String xml = simulatorService.getXmlByErrorCode("0060",name,entityId);
+					experianreportResponse = generateExperianReportForSuccess(xml);	
+				} else if (entityId.charAt(8) == '1') {
+					log.info("Inside installment 6 success case ");
+					String xml = simulatorService.getXmlByErrorCode("0061",name,entityId);
+					experianreportResponse = generateExperianReportForSuccess(xml);	
+				} else if (entityId.charAt(8) == '2') {
+					log.info("Inside installment 6 success case ");
+					String xml = simulatorService.getXmlByErrorCode("0062",name,entityId);
+					experianreportResponse = generateExperianReportForSuccess(xml);	
+				} else if (entityId.charAt(8) == '3') {
+					log.info("Inside installment 6 success case ");
+					String xml = simulatorService.getXmlByErrorCode("0063",name,entityId);
+					experianreportResponse = generateExperianReportForSuccess(xml);	
+				} else if (entityId.charAt(8) == '4') {
+					log.info("Inside installment 6 success case ");
 					String xml = simulatorService.getXmlByErrorCode("0064",name,entityId);
 					experianreportResponse = generateExperianReportForSuccess(xml);	
 				}
 			}
 			}
-		 	if(getReportflag == true) {
-		 		validateMyKad = experianreportResponse;
-		 	}
-		 	else {
-		 		validateMyKad = response;
-		 	}
-		 	return validateMyKad;
+		 	return experianreportResponse;
 	 }
 	 
 	public OpenApiClient setValuesToOpenApi() {
