@@ -420,7 +420,7 @@ public class CcrisReportRetrievalService {
 					String finalvalue = g[0].toString();
 					System.out.println(finalvalue);
 
-					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
+					filepaths = "http://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
 							+ filename + "";
 					File file = new File(filename);
 					log.info("delete the file from directory" + filename);
@@ -911,7 +911,7 @@ public class CcrisReportRetrievalService {
 					String finalvalue = g[0].toString();
 					System.out.println(finalvalue);
 
-					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
+					filepaths = "http://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
 							+ filename + "";
 					File file = new File(filename);
 					log.info("delete the file from directory" + filename);
@@ -1472,7 +1472,7 @@ public class CcrisReportRetrievalService {
 		String finalvalue = g[0].toString();
 		System.out.println(finalvalue);
 
-		filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName=" + filename + "";
+		filepaths = "http://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName=" + filename + "";
 		File file = new File(filename);
 		log.info("delete the file from directory" + filename);
 		System.out.println("delete the file from directory" + filename);
