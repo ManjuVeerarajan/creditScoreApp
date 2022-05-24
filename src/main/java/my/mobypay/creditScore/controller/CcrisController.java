@@ -367,35 +367,30 @@ public class CcrisController {
 		 * valueOf(finalretivalvalue)); }
 		 */
 		// System.out.println(retivalCount);
-		Object simulatorResponse = null;
-		String simulatorJson = null;
+		String simulator = creditScoreConfigRepository.findValueFromName("simulator.call");
+		log.info("Call Simulator :" + simulator);
 		CustomerSpendingLimitResponse res = new CustomerSpendingLimitResponse();
-		JSONObject simulatorResponseJson ; 
-		if((userSearchRequest.getEntityId().contains("500101") || userSearchRequest.getEntityId().contains("501230") 
-				|| userSearchRequest.getEntityId().contains("501231")) || (userSearchRequest.getName().contains("WRONG NAME") 
-						|| userSearchRequest.getName().contains("ABDULLAH BIN MALIK") || userSearchRequest.getName().contains("LARRY HENG")
-						|| userSearchRequest.getName().contains("BILL CLINTON") || userSearchRequest.getName().contains("DEVI THANAPAKIAM"))) {
-			log.info("Calling Simulator");
-			JSONObject request = new JSONObject();
-			request.put("entityId", userSearchRequest.getEntityId());
-			request.put("name", userSearchRequest.getName());
-			
-			
-			res = creditCheckerSimulatorForSpendingLimit(request);
-		/*	simulatorResponseJson = new JSONObject();
-			simulatorResponseJson.put("response", simulatorResponse.toString());
-			simulatorJson = simulatorResponseJson.getString("response");
-			log.info("simulatorResponse " +simulatorResponse);
-			log.info("simulatorResponseJson " +simulatorResponseJson);
-			log.info("simulatorJson " +simulatorJson);
-			List<Object> l = new ArrayList();
-			l.add(simulatorJson);	
-			res = (CustomerSpendingLimitResponse) l; */
-			log.info("res " +res);
-			log.info("Status code " +res.getStatusCode());
-			if(res.getStatusCode()!= null) {
-				log.info("Inside  res.getStatusCode()!= null" );
-			return res;
+		if (simulator.equals("true")) {
+			if ((userSearchRequest.getEntityId().contains("500101")
+					|| userSearchRequest.getEntityId().contains("501230")
+					|| userSearchRequest.getEntityId().contains("501231"))
+					|| (userSearchRequest.getName().contains("WRONG NAME")
+							|| userSearchRequest.getName().contains("ABDULLAH BIN MALIK")
+							|| userSearchRequest.getName().contains("LARRY HENG")
+							|| userSearchRequest.getName().contains("BILL CLINTON")
+							|| userSearchRequest.getName().contains("DEVI THANAPAKIAM"))) {
+				log.info("Calling Simulator");
+				JSONObject request = new JSONObject();
+				request.put("entityId", userSearchRequest.getEntityId());
+				request.put("name", userSearchRequest.getName());
+
+				res = creditCheckerSimulatorForSpendingLimit(request);
+				log.info("response from simulator " + res);
+				log.info("Status code " + res.getStatusCode());
+				if (res.getStatusCode() != null) {
+					log.info("Inside  res.getStatusCode()!= null");
+					return res;
+				}
 			}
 		}
 		
@@ -1241,7 +1236,7 @@ public class CcrisController {
 		log.info("Inside ExperianReport for user :" + userSearchRequest.getName() + "entity "
 				+ userSearchRequest.getEntityId().trim());
 		log.info("Request :" + userSearchRequest.toString());
-		
+		String simulator = creditScoreConfigRepository.findValueFromName("simulator.call");
 		String TokenMap = null;
 		TokenMap = customerUserTokenRepository.findTokenByNric(userSearchRequest.getEntityId());
 		triggersleep.add("experian-trigger-time");
@@ -1253,7 +1248,7 @@ public class CcrisController {
 		System.out.println(triggersleeptime + "========" + triggerreconnectCount);
 		Integer retivalCount = 0;
 		Object simulatorResponse = null;
-		
+		if(simulator.equals("true")){
 		if((userSearchRequest.getEntityId().contains("500101") || userSearchRequest.getEntityId().contains("501230") 
 				|| userSearchRequest.getEntityId().contains("501231")) || (userSearchRequest.getName().contains("WRONG NAME") 
 						|| userSearchRequest.getName().contains("ABDULLAH BIN MALIK") || userSearchRequest.getName().contains("LARRY HENG")
@@ -1272,7 +1267,7 @@ public class CcrisController {
 			return experianreportResponse;
 			}
 			
-		}
+		}}
 		if(experianreportResponse != null && experianreportResponse.getResponseCode()== null){
 			log.info("Normal flow as response is not available from simulator");
 		String nricnumber = NricRegchecking(userSearchRequest.getEntityId());
@@ -1976,8 +1971,8 @@ public class CcrisController {
 		return response;
 	}
 
-	@RequestMapping(value = "/simulator", method = RequestMethod.POST)
-	public CustomerSpendingLimitResponse creditCheckerSimulatorForSpendingLimit(@RequestBody JSONObject request) {
+	
+	public CustomerSpendingLimitResponse creditCheckerSimulatorForSpendingLimit(JSONObject request) {
 		log.info("Inside simulator " + request);
 		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
 		CustomerSpendingLimitResponse response = new CustomerSpendingLimitResponse();
@@ -2059,8 +2054,8 @@ public class CcrisController {
 		return response;
 	}
 	
-	@RequestMapping(value = "/simulatorReport", method = RequestMethod.POST)
-	public ExperianReportResponse creditCheckerSimulatorForReport(@RequestBody JSONObject request) {
+	
+	public ExperianReportResponse creditCheckerSimulatorForReport(JSONObject request) {
 		log.info("Inside simulator " + request);
 		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
 		// CustomerSpendingLimitResponse response = new CustomerSpendingLimitResponse();
