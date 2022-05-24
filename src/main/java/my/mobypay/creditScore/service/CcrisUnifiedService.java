@@ -53,6 +53,16 @@ public class CcrisUnifiedService {
 	@Autowired
 	CustomerUserTokenRepository customerUserTokenRepository;
 
+
+	Integer maximumAllowedInstallments = 0;
+	Integer maximumSpendingLimit = 0;
+	boolean registrationallowed = false;
+	boolean isNricExist = false;
+	boolean creditscoreless = false;
+	Boolean flag = false;
+	boolean lowcreditScore = false;
+	String messageStatus = null;
+	
 	private void delay(long l) {
 		try {
 			Thread.sleep(l);
@@ -79,13 +89,8 @@ public class CcrisUnifiedService {
 		log.info("specialAttentionAccount " +specialAttentionAccount);
 		
 		System.out.println(paymentaging);
-		String messageStatus = null;
 		int paymentAmountcalculation = 0;
-		boolean registrationallowed = false;
-		boolean isNricExist = false;
-		boolean creditscoreless = false;
-		Boolean flag = false;
-		boolean lowcreditScore = false;
+		
 		String Message = null;
 		CreditCheckResponse credit = null;
 		if (paymentaging != null) {
@@ -94,284 +99,37 @@ public class CcrisUnifiedService {
 				paymentaging = "DEFAULTED / ACCOUNT TERMINATED";
 			}
 		}
-
+		log.info("paymentAmountcalculation " +paymentAmountcalculation);
 		if (iscore == null) {
 			return getZeroCreditScore();
 		}
-
-		Integer maximumAllowedInstallments = 0;
-		Integer maximumSpendingLimit = 0;
 
 		// Spending limit algorithm based on iScore
 
 		if (bankruptcycount == 0
 				&& ((caseSettled != null && caseSettled.equalsIgnoreCase("Y"))
 						|| (casewithdraw != null && casewithdraw.equalsIgnoreCase("Y")) || pendingflag == false)
-				&& paymentaging != null && !paymentaging.equalsIgnoreCase("DEFAULTED / ACCOUNT TERMINATED")
-				&& paymentAmountcalculation < 120 && (specialAttentionAccount == null || specialAttentionAccount.equals("N")) ) {
+				&& paymentaging == null 
+				 && (specialAttentionAccount == null || specialAttentionAccount.equals("N")) ) {
 			log.info("Inside caseSettled != null ");
-			//if ((iscore == 0 || iscore == null) && crissFlag == true) {
-			if ((iscore == 0 || iscore == null) && entityId == false  && entityKey == false) {
-				log.info("criss info condition with iscore = = 0");
-				System.out.println("iscore = = 0");
-				maximumAllowedInstallments = 3;
-				maximumSpendingLimit = 150;
-				registrationallowed = true;
-				isNricExist = true;
-				creditscoreless = true;
-				messageStatus = "No Ccris Info found";
-			} else if ((iscore == 0 || iscore == null) && entityId == true  && entityKey == true && facility.equals("NHEDFNCE")) {
-				log.info("criss info condition with iscore = = 0");
-				System.out.println("iscore = = 0");
-				maximumAllowedInstallments = 3;
-				maximumSpendingLimit = 150;
-				registrationallowed = true;
-				isNricExist = true;
-				creditscoreless = true;
-				messageStatus = "No Ccris Info found";
-			} else if (iscore <= 420 && entityId == true  && entityKey == true) {
-				log.info("iscore <= 420");
-				maximumAllowedInstallments = 0;
-				maximumSpendingLimit = 0;
-				registrationallowed = true;
-				isNricExist = true;
-				messageStatus = "Low Credit Score";
-				lowcreditScore = true;
-			} else if (iscore >= 421 && iscore <= 460 && entityId == true  && entityKey == true) {
-				log.info("iscore >= 421 && iscore <= 460");
-				maximumAllowedInstallments = 3;
-				maximumSpendingLimit = 300;
-				registrationallowed = true;
-				isNricExist = true;
-			} else if (iscore >= 461 && iscore <= 540 && entityId == true  && entityKey == true) {
-				log.info("iscore >= 461 && iscore <= 540");
-				maximumAllowedInstallments = 3;
-				maximumSpendingLimit = 500;
-				registrationallowed = true;
-				isNricExist = true;
-
-			} else if ((iscore >= 541) && (iscore <= 580) && entityId == true  && entityKey == true) {
-				log.info("iscore >= 541) && (iscore <= 580");
-				maximumAllowedInstallments = 6;
-				maximumSpendingLimit = 1000;
-				registrationallowed = true;
-				isNricExist = true;
-
-			} else if ((iscore >= 581) && (iscore <= 620) && entityId == true  && entityKey == true) {
-				log.info("iscore >= 581) && (iscore <= 620");
-				maximumAllowedInstallments = 6;
-				maximumSpendingLimit = 1500;
-				registrationallowed = true;
-				isNricExist = true;
-
-			} else if ((iscore >= 621) && (iscore <= 660) && entityId == true  && entityKey == true) {
-				log.info("iscore >= 621) && (iscore <= 660");
-				maximumAllowedInstallments = 6;
-				maximumSpendingLimit = 2000;
-				registrationallowed = true;
-				isNricExist = true;
-
-			} else if ((iscore >= 661) && (iscore <= 700) && entityId == true  && entityKey == true) {
-				log.info("iscore >= 661) && (iscore <= 700");
-				maximumAllowedInstallments = 6;
-				maximumSpendingLimit = 2500;
-				registrationallowed = true;
-				isNricExist = true;
-			} else if (iscore >= 701 && entityId == true  && entityKey == true) {
-				log.info("iscore >= 701");
-				maximumAllowedInstallments = 6;
-				maximumSpendingLimit = 3000;
-				registrationallowed = true;
-				isNricExist = true;
-			} else if (iscore > 0 && entityId == false  && entityKey == false) {
-				log.info("iscore > 0 && entityId == false  && entityKey == false");
-				System.out.println("iscore > = 0");
-				maximumAllowedInstallments = 3;
-				maximumSpendingLimit = 150;
-				registrationallowed = true;
-				isNricExist = true;
-				creditscoreless = true;
-				messageStatus = "No Ccris Info found";
-			}
+			spendinglimitAlgorithm(entityId,entityKey,iscore,facility);
 		}
 		else if (bankruptcycount == 0
 				&& legalsuitcount == 0 && caseSettled == null && casewithdraw == null && pendingflag == false
-				&& paymentaging != null && !paymentaging.equalsIgnoreCase("DEFAULTED / ACCOUNT TERMINATED")
-				&& paymentAmountcalculation < 120 && (specialAttentionAccount == null || specialAttentionAccount.equals("N")) ) {
+				&& paymentaging == null 
+				&& (specialAttentionAccount == null || specialAttentionAccount.equals("N")) ) {
 			log.info("Inside (caseSettled == null) || (casewithdraw == null) ");
-			if ((iscore == 0 || iscore == null) && entityId == false  && entityKey == false) {
-				log.info("criss info condition with iscore = = 0");
-				System.out.println("iscore = = 0");
-				maximumAllowedInstallments = 3;
-				maximumSpendingLimit = 150;
-				registrationallowed = true;
-				isNricExist = true;
-				creditscoreless = true;
-				messageStatus = "No Ccris Info found";
-			} else if ((iscore == 0 || iscore == null) && entityId == true  && entityKey == true && facility.equals("NHEDFNCE")) {
-				log.info("criss info condition with iscore = = 0");
-				System.out.println("iscore = = 0");
-				maximumAllowedInstallments = 3;
-				maximumSpendingLimit = 150;
-				registrationallowed = true;
-				isNricExist = true;
-				creditscoreless = true;
-				messageStatus = "No Ccris Info found";
-			}else if (iscore <= 420 && entityId == true  && entityKey == true) {
-				log.info("iscore <= 420");
-				maximumAllowedInstallments = 0;
-				maximumSpendingLimit = 0;
-				registrationallowed = true;
-				isNricExist = true;
-				messageStatus = "Low Credit Score";
-				lowcreditScore = true;
-			} else if (iscore >= 421 && iscore <= 460 && entityId == true  && entityKey == true) {
-				log.info("iscore >= 421 && iscore <= 460");
-				maximumAllowedInstallments = 3;
-				maximumSpendingLimit = 300;
-				registrationallowed = true;
-				isNricExist = true;
-			} else if (iscore >= 461 && iscore <= 540 && entityId == true  && entityKey == true) {
-				log.info("iscore >= 461 && iscore <= 540");
-				maximumAllowedInstallments = 3;
-				maximumSpendingLimit = 500;
-				registrationallowed = true;
-				isNricExist = true;
-
-			} else if ((iscore >= 541) && (iscore <= 580) && entityId == true  && entityKey == true) {
-				log.info("iscore >= 541) && (iscore <= 580");
-				maximumAllowedInstallments = 6;
-				maximumSpendingLimit = 1000;
-				registrationallowed = true;
-				isNricExist = true;
-
-			} else if ((iscore >= 581) && (iscore <= 620) && entityId == true  && entityKey == true) {
-				log.info("iscore >= 581) && (iscore <= 620");
-				maximumAllowedInstallments = 6;
-				maximumSpendingLimit = 1500;
-				registrationallowed = true;
-				isNricExist = true;
-
-			} else if ((iscore >= 621) && (iscore <= 660) && entityId == true  && entityKey == true) {
-				log.info("iscore >= 621) && (iscore <= 660");
-				maximumAllowedInstallments = 6;
-				maximumSpendingLimit = 2000;
-				registrationallowed = true;
-				isNricExist = true;
-
-			} else if ((iscore >= 661) && (iscore <= 700) && entityId == true  && entityKey == true) {
-				log.info("iscore >= 661) && (iscore <= 700");
-				maximumAllowedInstallments = 6;
-				maximumSpendingLimit = 2500;
-				registrationallowed = true;
-				isNricExist = true;
-			} else if (iscore >= 701 && entityId == true  && entityKey == true) {
-				log.info("iscore >= 701");
-				maximumAllowedInstallments = 6;
-				maximumSpendingLimit = 3000;
-				registrationallowed = true;
-				isNricExist = true;
-			} else if (iscore > 0 && entityId == false  && entityKey == false) {
-				log.info("iscore > 0 && entityId == true  && entityKey == true");
-				System.out.println("iscore > = 0");
-				maximumAllowedInstallments = 3;
-				maximumSpendingLimit = 150;
-				registrationallowed = true;
-				isNricExist = true;
-				creditscoreless = true;
-				messageStatus = "No Ccris Info found";
-			}
-		} if (bankruptcycount == 0
+			spendinglimitAlgorithm(entityId,entityKey,iscore,facility);
+		} else if (bankruptcycount == 0
 				&& (caseSettled == null
 						&& casewithdraw == null && pendingflag == false)
 				&& paymentaging == null
-				&& paymentAmountcalculation < 120 && (specialAttentionAccount == null || specialAttentionAccount.equals("N")) ) {
+				&& (specialAttentionAccount == null || specialAttentionAccount.equals("N")) ) {
 			log.info("Inside caseSettled == null ");
-			if ((iscore == 0 || iscore == null) && entityId == false  && entityKey == false) {
-				log.info("criss info condition with iscore = = 0");
-				System.out.println("iscore = = 0");
-				maximumAllowedInstallments = 3;
-				maximumSpendingLimit = 150;
-				registrationallowed = true;
-				isNricExist = true;
-				creditscoreless = true;
-				messageStatus = "No Ccris Info found";
-			} else if ((iscore == 0 || iscore == null) && entityId == true  && entityKey == true && facility.equals("NHEDFNCE")) {
-				log.info("criss info condition with iscore = = 0");
-				System.out.println("iscore = = 0");
-				maximumAllowedInstallments = 3;
-				maximumSpendingLimit = 150;
-				registrationallowed = true;
-				isNricExist = true;
-				creditscoreless = true;
-				messageStatus = "No Ccris Info found";
-			}else if (iscore <= 420 && entityId == true  && entityKey == true) {
-				log.info("iscore <= 420");
-				maximumAllowedInstallments = 0;
-				maximumSpendingLimit = 0;
-				registrationallowed = true;
-				isNricExist = true;
-				messageStatus = "Low Credit Score";
-				lowcreditScore = true;
-			} else if (iscore >= 421 && iscore <= 460 && entityId == true  && entityKey == true) {
-				log.info("iscore >= 421 && iscore <= 460");
-				maximumAllowedInstallments = 3;
-				maximumSpendingLimit = 300;
-				registrationallowed = true;
-				isNricExist = true;
-			} else if (iscore >= 461 && iscore <= 540 && entityId == true  && entityKey == true) {
-				log.info("iscore >= 461 && iscore <= 540");
-				maximumAllowedInstallments = 3;
-				maximumSpendingLimit = 500;
-				registrationallowed = true;
-				isNricExist = true;
-
-			} else if ((iscore >= 541) && (iscore <= 580) && entityId == true  && entityKey == true) {
-				log.info("iscore >= 541) && (iscore <= 580");
-				maximumAllowedInstallments = 6;
-				maximumSpendingLimit = 1000;
-				registrationallowed = true;
-				isNricExist = true;
-
-			} else if ((iscore >= 581) && (iscore <= 620) && entityId == true  && entityKey == true) {
-				log.info("iscore >= 581) && (iscore <= 620");
-				maximumAllowedInstallments = 6;
-				maximumSpendingLimit = 1500;
-				registrationallowed = true;
-				isNricExist = true;
-
-			} else if ((iscore >= 621) && (iscore <= 660) && entityId == true  && entityKey == true) {
-				log.info("iscore >= 621) && (iscore <= 660");
-				maximumAllowedInstallments = 6;
-				maximumSpendingLimit = 2000;
-				registrationallowed = true;
-				isNricExist = true;
-
-			} else if ((iscore >= 661) && (iscore <= 700) && entityId == true  && entityKey == true) {
-				log.info("iscore >= 661) && (iscore <= 700");
-				maximumAllowedInstallments = 6;
-				maximumSpendingLimit = 2500;
-				registrationallowed = true;
-				isNricExist = true;
-			} else if (iscore >= 701 && entityId == true  && entityKey == true) {
-				log.info("iscore >= 701");
-				maximumAllowedInstallments = 6;
-				maximumSpendingLimit = 3000;
-				registrationallowed = true;
-				isNricExist = true;
-			} else if (iscore > 0 && entityId == false  && entityKey == false) {
-				log.info("iscore > 0 && entityId == true  && entityKey == true");
-				System.out.println("iscore > = 0");
-				maximumAllowedInstallments = 3;
-				maximumSpendingLimit = 150;
-				registrationallowed = true;
-				isNricExist = true;
-				creditscoreless = true;
-				messageStatus = "No Ccris Info found";
-			}
-		}else if (bankruptcycount == 0 && legalsuitcount != 0 && pendingflag == true
-				&& paymentAmountcalculation >=120 && iscore > 421) {
-			log.info("Inside paymentAmountcalculation > 90 && iscore > 421");
+			spendinglimitAlgorithm(entityId,entityKey,iscore,facility);
+		}else if (paymentaging != null
+				&& paymentAmountcalculation <= 90 && iscore > 421) {
+			log.info("Inside paymentAmountcalculation <= 90 && iscore > 421");
 			maximumAllowedInstallments = 3;
 			maximumSpendingLimit = 300;
 			registrationallowed = true;
@@ -389,7 +147,7 @@ public class CcrisUnifiedService {
 			registrationallowed = false;
 			isNricExist = true;
 		} else if (paymentAmountcalculation >= 120 && iscore > 0) {
-			log.info("Inside paymentAmountcalculation >= 90 " + paymentAmountcalculation);
+			log.info("Inside paymentAmountcalculation >= 120 " + paymentAmountcalculation);
 			maximumSpendingLimit = 0;
 			messageStatus = "We are sorry,We are unable to provide AiraPay services to you. Upon our internal checks and verifications, we regret to inform you that you did not meet certain requirements we are looking for to enable the instalment payments under AiraPay for your account.";
 			flag = true;
@@ -434,6 +192,92 @@ public class CcrisUnifiedService {
 					.build();
 		}
 		return credit;
+	}
+
+	private void spendinglimitAlgorithm(boolean entityId, boolean entityKey, Integer iscore, String facility) {
+		if ((iscore == 0 || iscore == null) && entityId == false  && entityKey == false) {
+			log.info("criss info condition with iscore = = 0");
+			System.out.println("iscore = = 0");
+			maximumAllowedInstallments = 3;
+			maximumSpendingLimit = 150;
+			registrationallowed = true;
+			isNricExist = true;
+			creditscoreless = true;
+			messageStatus = "No Ccris Info found";
+		} else if ((iscore == 0 || iscore == null) && entityId == true  && entityKey == true && facility.equals("NHEDFNCE")) {
+			log.info("criss info condition with iscore = = 0");
+			System.out.println("iscore = = 0");
+			maximumAllowedInstallments = 3;
+			maximumSpendingLimit = 150;
+			registrationallowed = true;
+			isNricExist = true;
+			creditscoreless = true;
+			messageStatus = "No Ccris Info found";
+		} else if (iscore <= 420 && entityId == true  && entityKey == true) {
+			log.info("iscore <= 420");
+			maximumAllowedInstallments = 0;
+			maximumSpendingLimit = 0;
+			registrationallowed = false;
+			isNricExist = true;
+			messageStatus = "Low Credit Score";
+			lowcreditScore = true;
+		} else if (iscore >= 421 && iscore <= 460 && entityId == true  && entityKey == true) {
+			log.info("iscore >= 421 && iscore <= 460");
+			maximumAllowedInstallments = 3;
+			maximumSpendingLimit = 300;
+			registrationallowed = true;
+			isNricExist = true;
+		} else if (iscore >= 461 && iscore <= 540 && entityId == true  && entityKey == true) {
+			log.info("iscore >= 461 && iscore <= 540");
+			maximumAllowedInstallments = 3;
+			maximumSpendingLimit = 500;
+			registrationallowed = true;
+			isNricExist = true;
+
+		} else if ((iscore >= 541) && (iscore <= 580) && entityId == true  && entityKey == true) {
+			log.info("iscore >= 541) && (iscore <= 580");
+			maximumAllowedInstallments = 6;
+			maximumSpendingLimit = 1000;
+			registrationallowed = true;
+			isNricExist = true;
+
+		} else if ((iscore >= 581) && (iscore <= 620) && entityId == true  && entityKey == true) {
+			log.info("iscore >= 581) && (iscore <= 620");
+			maximumAllowedInstallments = 6;
+			maximumSpendingLimit = 1500;
+			registrationallowed = true;
+			isNricExist = true;
+
+		} else if ((iscore >= 621) && (iscore <= 660) && entityId == true  && entityKey == true) {
+			log.info("iscore >= 621) && (iscore <= 660");
+			maximumAllowedInstallments = 6;
+			maximumSpendingLimit = 2000;
+			registrationallowed = true;
+			isNricExist = true;
+
+		} else if ((iscore >= 661) && (iscore <= 700) && entityId == true  && entityKey == true) {
+			log.info("iscore >= 661) && (iscore <= 700");
+			maximumAllowedInstallments = 6;
+			maximumSpendingLimit = 2500;
+			registrationallowed = true;
+			isNricExist = true;
+		} else if (iscore >= 701 && entityId == true  && entityKey == true) {
+			log.info("iscore >= 701");
+			maximumAllowedInstallments = 6;
+			maximumSpendingLimit = 3000;
+			registrationallowed = true;
+			isNricExist = true;
+		} else if (iscore > 0 && entityId == false  && entityKey == false) {
+			log.info("iscore > 0 && entityId == false  && entityKey == false");
+			System.out.println("iscore > = 0");
+			maximumAllowedInstallments = 3;
+			maximumSpendingLimit = 150;
+			registrationallowed = true;
+			isNricExist = true;
+			creditscoreless = true;
+			messageStatus = "No Ccris Info found";
+		}
+		
 	}
 
 	public static int PaymentAgingvalidation(String paymentaging) {

@@ -420,7 +420,7 @@ public class CcrisReportRetrievalService {
 					String finalvalue = g[0].toString();
 					System.out.println(finalvalue);
 
-					filepaths = "http://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
+					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
 							+ filename + "";
 					File file = new File(filename);
 					log.info("delete the file from directory" + filename);
@@ -875,6 +875,7 @@ public class CcrisReportRetrievalService {
 					/*
 					 * myWriter.close(); myWriter.flush();
 					 */
+					log.info("#### legalsuitcount #### " +legalsuitcount);
 					report = CustomerCreditReportRequest.builder().name(responsess).nric(nric)
 							.bankruptcyCount(bankruptcy_count).legalSuitCount(legalsuitcount)
 							.tradeBureauCount(trade_bureau_count).iScore(iscore).iScoreRiskGrade(i_score_risk_grade)
@@ -910,7 +911,7 @@ public class CcrisReportRetrievalService {
 					String finalvalue = g[0].toString();
 					System.out.println(finalvalue);
 
-					filepaths = "http://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
+					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
 							+ filename + "";
 					File file = new File(filename);
 					log.info("delete the file from directory" + filename);
@@ -1364,6 +1365,8 @@ public class CcrisReportRetrievalService {
 					/*
 					 * myWriter.close(); myWriter.flush();
 					 */
+					
+					log.info("++++ legalsuitcount ++++ " +legalsuitcount);
 					report = CustomerCreditReportRequest.builder().name(responsess).nric(nric)
 							.bankruptcyCount(bankruptcy_count).legalSuitCount(legalsuitcount)
 							.tradeBureauCount(trade_bureau_count).iScore(iscore).iScoreRiskGrade(i_score_risk_grade)
@@ -1469,7 +1472,7 @@ public class CcrisReportRetrievalService {
 		String finalvalue = g[0].toString();
 		System.out.println(finalvalue);
 
-		filepaths = "http://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName=" + filename + "";
+		filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName=" + filename + "";
 		File file = new File(filename);
 		log.info("delete the file from directory" + filename);
 		System.out.println("delete the file from directory" + filename);
@@ -1521,4 +1524,7 @@ public class CcrisReportRetrievalService {
 		return filename;
 
 	}
-}
+	
+	
+	
+	}

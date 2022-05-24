@@ -35,13 +35,9 @@ import my.mobypay.creditScore.repository.UserRequestEntityRepository;
 import my.mobypay.creditScore.service.CcrisReportRetrievalService;
 import my.mobypay.creditScore.service.CcrisSearchService;
 import my.mobypay.creditScore.service.CcrisUnifiedService;
+import my.mobypay.creditScore.service.SimulatorService;
 import my.mobypay.creditScore.service.XmlFormatter;
 import my.mobypay.creditScore.utility.EmailUtility;
-import my.mobypay.ekyc.dao.CheckResultRequest;
-import my.mobypay.ekyc.dao.CheckResultResponse;
-import my.mobypay.ekyc.dao.InitializeRequest;
-import my.mobypay.ekyc.dao.InitializeResponse;
-import my.mobypay.ekyc.service.EkycService;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
@@ -72,6 +68,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -85,9 +82,9 @@ import java.util.Map;
 @RestController
 public class CcrisController {
 
-	//@Autowired
-	//EmailSendingRepository emailSendingRepository;
-	
+	// @Autowired
+	// EmailSendingRepository emailSendingRepository;
+
 	@Autowired
 	UserRequestEntityRepository userRequestRepository;
 
@@ -106,11 +103,7 @@ public class CcrisController {
 	CcrisUnifiedService ccrisUnifiedService;
 	@Autowired
 	CcrisReportRetrievalService ccrisReportRetrievalService;
-	
-	// @Autowired
-    OpenApiClient openApiClient = new OpenApiClient();
-	// @Autowired
-	EkycService ekycService = new EkycService();
+
 	/*
 	 * @Autowired private CcrisReportRetrievalService ccrisReportRetrievalService;
 	 */
@@ -119,13 +112,16 @@ public class CcrisController {
 
 	@Autowired
 	private AWSS3Service awsService;
-	
+
 	@Autowired
 	ApplicationSettingsRepository appSettings;
-	
+
 	@Autowired
 	CreditScoreConfigRepository creditScoreConfigRepository;
 
+	@Autowired
+	SimulatorService simulatorService;
+	/*
 	@Value("${zolos.server}")
 	private String hostUrl;
 
@@ -134,19 +130,21 @@ public class CcrisController {
 
 	@Value("${zolos.checkresult}")
 	private String checkResultApi;
-	
+
 	@Value("${clientId}")
 	private String clientId;
-	
+
 	@Value("${merchant.publickey}")
 	private String merchantPublicKey;
-	
+
 	@Value("${merchant.privatekey}")
 	private String merchantPrivatekey;
-	
+*/
 	boolean ispresent = false;
-  //  String ServerDownError="we are unable to process your application as our 3rd party services provider is not available at the moment. Please try again later.";
-	String ServerDownError="Experian API connection issue.";
+	// String ServerDownError="we are unable to process your application as our 3rd
+	// party services provider is not available at the moment. Please try again
+	// later.";
+	String ServerDownError = "Experian API connection issue.";
 	CustomerCreditReportRequest customercreditreportrequest = null;
 	// private static final log log = log.getlog(CcrisController.class);
 	/*
@@ -196,45 +194,47 @@ public class CcrisController {
 
 	private boolean RetriveCustomerDetails(String Nric) {
 		ispresent = customerCreditReportsRepository.findByName(Nric) != null;
-		/*if(ispresent) {
-			log.info("Appending existing nric with old");
-			CustomerCreditReports customerCreditReports = new CustomerCreditReports();
-			customerCreditReports.setNric(Nric+"_old");
-			log.info("After append " +customerCreditReports.getNric());
-			customerCreditReportsRepository.save(customerCreditReports);
-		}*/
+		/*
+		 * if(ispresent) { log.info("Appending existing nric with old");
+		 * CustomerCreditReports customerCreditReports = new CustomerCreditReports();
+		 * customerCreditReports.setNric(Nric+"_old"); log.info("After append "
+		 * +customerCreditReports.getNric());
+		 * customerCreditReportsRepository.save(customerCreditReports); }
+		 */
 		return ispresent;
 		// TODO Auto-generated method stub findByNameAndTime
 
 	}
-	
+
 	@Transactional
 	public boolean retrieveNricFromDB(String nric) {
 		boolean ispresent = false;
-		
+
 		Session session = null;
 		Transaction transaction = null;
 		try {
 			// SessionFactory factory = HibernateUtil.getSessionFactory();
-			//SessionFactory factory = new AnnotationConfiguration().configure().buildSessionFactory();
+			// SessionFactory factory = new
+			// AnnotationConfiguration().configure().buildSessionFactory();
 			Configuration config = new Configuration();
-			  config.configure();
-			  // local SessionFactory bean created
-			 //  SessionFactory sessionFactory = config.buildSessionFactory();
-			  SessionFactory factory = new Configuration().configure("hibernate.cfg.xml").addAnnotatedClass(CustomerCreditReports.class)
-		                .buildSessionFactory();
+			config.configure();
+			// local SessionFactory bean created
+			// SessionFactory sessionFactory = config.buildSessionFactory();
+			SessionFactory factory = new Configuration().configure("hibernate.cfg.xml")
+					.addAnnotatedClass(CustomerCreditReports.class).buildSessionFactory();
 			session = factory.openSession();
 			transaction = session.beginTransaction();
-			//TODO
+			// TODO
 			// List<ApplicationSettings> inputDays = appSettings.findAll();
 			// ApplicationSettings expireDays = inputDays.get(6);
 			// String daysExpire = expireDays.getValue();
-			String daysExpire  = appSettings.findValueFromName("daysExpire");
-			
-			log.info("daysExpire " +daysExpire);
-			String hqlQuery = "SELECT p.nric from CustomerCreditReports p WHERE p.nric = " +nric +" AND p.UpdatedAt >= date_sub(now(),interval " +daysExpire + ")";
+			String daysExpire = appSettings.findValueFromName("daysExpire");
+
+			log.info("daysExpire " + daysExpire);
+			String hqlQuery = "SELECT p.nric from CustomerCreditReports p WHERE p.nric = " + nric
+					+ " AND p.UpdatedAt >= date_sub(now(),interval " + daysExpire + ")";
 			org.hibernate.query.Query query = session.createSQLQuery(hqlQuery);
-			log.info("Query Response" +query.getResultList());
+			log.info("Query Response" + query.getResultList());
 			if (!query.getResultList().isEmpty()) {
 				log.info("Query Response not NUll");
 				ispresent = true;
@@ -242,16 +242,70 @@ public class CcrisController {
 				log.info("Query Response NUll");
 				ispresent = false;
 			}
-			
+
 			transaction.commit();
 		} catch (Exception e) {
-			System.out.println("exception " +e);
+			System.out.println("exception " + e);
 		}
 		/** Closing Session */
-		//session.close();
+		// session.close();
 		return ispresent;
 	}
 	
+	
+	
+	@Transactional
+	public Object retrieveNameNricFromDB(String nric) {
+		boolean ispresent = false;
+
+		Session session = null;
+		Object dbResponse = null;
+		Transaction transaction = null;
+		try {
+			// SessionFactory factory = HibernateUtil.getSessionFactory();
+			// SessionFactory factory = new
+			// AnnotationConfiguration().configure().buildSessionFactory();
+			Configuration config = new Configuration();
+			config.configure();
+			
+			// local SessionFactory bean created
+			// SessionFactory sessionFactory = config.buildSessionFactory();
+			SessionFactory factory = new Configuration().configure("hibernate.cfg.xml")
+					.addAnnotatedClass(CustomerCreditReports.class).buildSessionFactory();
+			session = factory.openSession();
+			transaction = session.beginTransaction();
+			// TODO
+			// List<ApplicationSettings> inputDays = appSettings.findAll();
+			// ApplicationSettings expireDays = inputDays.get(6);
+			// String daysExpire = expireDays.getValue();
+			String daysExpire = appSettings.findValueFromName("daysExpire");
+
+			log.info("daysExpire " + daysExpire);
+			String hqlQuery = "SELECT p.name,p.nric from CustomerCreditReports p WHERE p.nric= "+nric;
+			org.hibernate.query.Query query = session.createSQLQuery(hqlQuery);
+			log.info("Query Response" + query.getResultList());
+			if (!query.getResultList().isEmpty()) {
+				log.info("Query Response not NUll");
+				ispresent = true;
+				 List<Object[]> response = query.getResultList();
+					System.out.println("dbResponse " + response.get(0));
+					dbResponse =  response.get(0);
+				log.info("dbResponse " + dbResponse);
+			} else if (query.getResultList().isEmpty()) {
+				
+				log.info("Query Response NUll");
+				ispresent = false;
+			}
+
+			transaction.commit();
+		} catch (Exception e) {
+			System.out.println("exception " + e);
+		}
+		/** Closing Session */
+		// session.close();
+		return dbResponse;
+	}
+
 	@SuppressWarnings("null")
 	@PostMapping("/creditchecker/CreditCheckOnRegisterUats")
 	public Object processReports(@RequestBody UserSearchRequest userSearchRequest) throws Exception {
@@ -277,8 +331,9 @@ public class CcrisController {
 		 * token1=split[0].toString(); String token2=split[1].toString();
 		 * System.out.println(token1+"====="+token2);
 		 */
-		log.info("Inside CreditCheckOnRegisterUats for user " +userSearchRequest.getName() + "entity " +userSearchRequest.getEntityId());
-		
+		log.info("Inside CreditCheckOnRegisterUats for user " + userSearchRequest.getName() + "entity "
+				+ userSearchRequest.getEntityId());
+
 		Map<String, String> ExperianPropertyValue = new LinkedHashMap<String, String>();
 		boolean reportFlag = false;
 
@@ -293,15 +348,45 @@ public class CcrisController {
 		System.out.println(triggersleeptime + "========" + triggerreconnectCount);
 		log.info("Request :" + userSearchRequest.toString());
 		String nricnumber = NricRegchecking(userSearchRequest.getEntityId());
-		//Integer retivalCount = creditCheckErrorRepository.findbynric(userSearchRequest.getEntityId());
-		Integer retivalCount=0;
+		// Integer retivalCount =
+		// creditCheckErrorRepository.findbynric(userSearchRequest.getEntityId());
+		Integer retivalCount = 0;
 		/*
 		 * int finalretivalvalue=Integer.parseInt(retivalCount); if(finalretivalvalue<3)
 		 * { finalretivalvalue++; String
 		 * updatedretrivalCount=creditCheckErrorRepository.updateRetivalCount(String.
 		 * valueOf(finalretivalvalue)); }
 		 */
-		//System.out.println(retivalCount);
+		// System.out.println(retivalCount);
+		String simulator = creditScoreConfigRepository.findValueFromName("simulator.call");
+		log.info("Call Simulator :" + simulator);
+		CustomerSpendingLimitResponse res = new CustomerSpendingLimitResponse();
+		if (simulator.equals("true")) {
+			if ((userSearchRequest.getEntityId().contains("500101")
+					|| userSearchRequest.getEntityId().contains("501230")
+					|| userSearchRequest.getEntityId().contains("501231"))
+					|| (userSearchRequest.getName().contains("WRONG NAME")
+							|| userSearchRequest.getName().contains("ABDULLAH BIN MALIK")
+							|| userSearchRequest.getName().contains("LARRY HENG")
+							|| userSearchRequest.getName().contains("BILL CLINTON")
+							|| userSearchRequest.getName().contains("DEVI THANAPAKIAM"))) {
+				log.info("Calling Simulator");
+				JSONObject request = new JSONObject();
+				request.put("entityId", userSearchRequest.getEntityId());
+				request.put("name", userSearchRequest.getName());
+
+				res = creditCheckerSimulatorForSpendingLimit(request);
+				log.info("response from simulator " + res);
+				log.info("Status code " + res.getStatusCode());
+				if (res.getStatusCode() != null) {
+					log.info("Inside  res.getStatusCode()!= null");
+					return res;
+				}
+			}
+		}
+		
+		if(res != null && res.getStatusCode()== null) {
+			log.info("Inside  res.getStatusCode()== null" );
 		if (nricnumber.length() == 14) {
 			saveRequestToDB(userSearchRequest);
 			String name = userSearchRequest.getName().toUpperCase().replaceAll("[ ]{2,}", " ");
@@ -334,36 +419,38 @@ public class CcrisController {
 			else {
 				name = name.replaceAll("Binti", "").trim().replaceAll("[ ]{2,}", " ");
 			}
-
+			
+			
 			String Nric = userSearchRequest.getEntityId();
 			String regexexpression = Nric.replaceAll("-", "");
 			ispresent = retrieveNricFromDB(regexexpression);
-			log.info("ispresent flag value " +ispresent);
+			log.info("ispresent flag value " + ispresent);
 			if (ispresent == true) {
-				String inputResponse = customerCreditReportsRepository.find(userSearchRequest.getName(),
-						regexexpression);
-				log.info("inputResponse: " +inputResponse);
+				 String inputResponse = customerCreditReportsRepository.find(userSearchRequest.getName(),regexexpression);
+				
+				Object inputResponseName = retrieveNameNricFromDB(regexexpression);
+				log.info("inputResponse: " + inputResponse);
 				String response = customerCreditReportsRepository.find(name, regexexpression);
-				log.info("response: " +response);
+				log.info("response: " + response);
 				if (response != null) {
 					String splits[] = response.split(",");
 					String responseName = splits[0].toString();
 					String responseNric = splits[1].toString();
 					userSearchRequest.setName(name);
-					
-					log.info("responseName " +responseName);
-					log.info("name " +name);
-					
-					log.info("responseNric " +responseNric);
-					log.info("regexexpression " +regexexpression);
-					
+
+					log.info("responseName " + responseName);
+					log.info("name " + name);
+
+					log.info("responseNric " + responseNric);
+					log.info("regexexpression " + regexexpression);
+
 					if (responseName.equalsIgnoreCase(name) && responseNric.equalsIgnoreCase(regexexpression)) {
 						log.info("name and nric matched!!");
 						String xmlresponse = customerCreditReportsRepository.findbyXMLpath(regexexpression);
 						String jsonString = customerCreditReportsRepository.findbynameandnric(regexexpression);
 						if (xmlresponse != null) {
-							log.info("xmlresponse: " +xmlresponse);
-							log.info("jsonString in controller: " +jsonString);
+							log.info("xmlresponse: " + xmlresponse);
+							log.info("jsonString in controller: " + jsonString);
 							CustomerSpendingLimitResponse jsonresponse = new ObjectMapper().readValue(jsonString,
 									CustomerSpendingLimitResponse.class);
 							log.info("customer already exist so returning json response" + jsonresponse);
@@ -383,7 +470,31 @@ public class CcrisController {
 							return jsonresponse;
 						}
 
-					} else {
+					} 
+					else if (! responseName.equals(name)) {
+						CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
+						jsonresponse.setIsNricExist(false);
+						jsonresponse.setIsNameNricMatched(false);
+						jsonresponse.setIsRegistrationAllowed(false);
+						jsonresponse.setMaximumAllowedInstallments(0);
+						jsonresponse.setMaximumSpendingLimit(0);
+						jsonresponse.setStatusCode("404");
+						// jsonresponse.setErrorMessage(
+						// "Oops, maybe it is us and not you, but we can’t seem to validate this MyKad
+						// number/name! Probably it was not in a correct format. For MyKad No, please
+						// key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name,
+						// please ensure the name is keyed in exactly as per your MyKad i.e with
+						// Bin/Binti/ A/L / A/P and without any abbreviations.\"");
+
+						// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
+
+						jsonresponse.setErrorMessage("Invalid Input"); // 10-05
+						SavetoCreditCheckError(jsonresponse.getStatusCode(), jsonresponse.getErrorMessage(), name,
+								regexexpression, 0);
+						return jsonresponse;
+						
+					}
+					else {
 						/*
 						 * error.setErrorcode("404"); error.setErrormessage();
 						 * 
@@ -396,13 +507,17 @@ public class CcrisController {
 						jsonresponse.setIsRegistrationAllowed(false);
 						jsonresponse.setMaximumAllowedInstallments(0);
 						jsonresponse.setMaximumSpendingLimit(0);
-						jsonresponse.setStatusCode("404");
+						jsonresponse.setStatusCode("400");
 						// jsonresponse.setErrorMessage(
-						//		"Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.\"");
-						
+						// "Oops, maybe it is us and not you, but we can’t seem to validate this MyKad
+						// number/name! Probably it was not in a correct format. For MyKad No, please
+						// key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name,
+						// please ensure the name is keyed in exactly as per your MyKad i.e with
+						// Bin/Binti/ A/L / A/P and without any abbreviations.\"");
+
 						// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
-					
-						jsonresponse.setErrorMessage("Invalid Input"); //10-05	
+
+						jsonresponse.setErrorMessage("Invalid Input"); // 10-05
 						SavetoCreditCheckError(jsonresponse.getStatusCode(), jsonresponse.getErrorMessage(), name,
 								regexexpression, 0);
 						return jsonresponse;
@@ -436,7 +551,8 @@ public class CcrisController {
 							return jsonresponse;
 						}
 
-					} else {
+					} 
+					else {
 						/*
 						 * error.setErrorcode("404"); error.
 						 * setErrormessage("Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations."
@@ -450,17 +566,40 @@ public class CcrisController {
 						jsonresponse.setIsRegistrationAllowed(false);
 						jsonresponse.setMaximumAllowedInstallments(0);
 						jsonresponse.setMaximumSpendingLimit(0);
-						jsonresponse.setStatusCode("404");
+						jsonresponse.setStatusCode("400");
 						// jsonresponse.setErrorMessage(
-						// 		"Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.");
+						// "Oops, maybe it is us and not you, but we can’t seem to validate this MyKad
+						// number/name! Probably it was not in a correct format. For MyKad No, please
+						// key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name,
+						// please ensure the name is keyed in exactly as per your MyKad i.e with
+						// Bin/Binti/ A/L / A/P and without any abbreviations.");
 						// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
-						jsonresponse.setErrorMessage("Invalid Input"); //10-05	
+						jsonresponse.setErrorMessage("Invalid Input"); // 10-05
 						SavetoCreditCheckError(jsonresponse.getStatusCode(), jsonresponse.getErrorMessage(), name,
 								regexexpression, 0);
 						return jsonresponse;
 					}
 
-				} else {
+				} else if(inputResponseName!= null && !inputResponseName.equals(userSearchRequest.getName())) {
+					CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
+					jsonresponse.setIsNricExist(false);
+					jsonresponse.setIsNameNricMatched(false);
+					jsonresponse.setIsRegistrationAllowed(false);
+					jsonresponse.setMaximumAllowedInstallments(0);
+					jsonresponse.setMaximumSpendingLimit(0);
+					jsonresponse.setStatusCode("404");
+					// jsonresponse.setErrorMessage(
+					// "Oops, maybe it is us and not you, but we can’t seem to validate this MyKad
+					// number/name! Probably it was not in a correct format. For MyKad No, please
+					// key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name,
+					// please ensure the name is keyed in exactly as per your MyKad i.e with
+					// Bin/Binti/ A/L / A/P and without any abbreviations.");
+					// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
+					jsonresponse.setErrorMessage("Name mismatch"); // 10-05
+					SavetoCreditCheckError(jsonresponse.getStatusCode(), jsonresponse.getErrorMessage(), name,
+							regexexpression, 0);
+					return jsonresponse;
+				}else {
 					/*
 					 * error.setErrorcode("404"); error.setErrormessage(
 					 * "Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations."
@@ -472,11 +611,15 @@ public class CcrisController {
 					jsonresponse.setIsRegistrationAllowed(false);
 					jsonresponse.setMaximumAllowedInstallments(0);
 					jsonresponse.setMaximumSpendingLimit(0);
-					jsonresponse.setStatusCode("404");
+					jsonresponse.setStatusCode("400");
 					// jsonresponse.setErrorMessage(
-					//		"Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.");
+					// "Oops, maybe it is us and not you, but we can’t seem to validate this MyKad
+					// number/name! Probably it was not in a correct format. For MyKad No, please
+					// key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name,
+					// please ensure the name is keyed in exactly as per your MyKad i.e with
+					// Bin/Binti/ A/L / A/P and without any abbreviations.");
 					// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
-							jsonresponse.setErrorMessage("Invalid input"); //10-05
+					jsonresponse.setErrorMessage("Invalid input"); // 10-05
 					SavetoCreditCheckError(jsonresponse.getStatusCode(), jsonresponse.getErrorMessage(), name,
 							regexexpression, 0);
 					return jsonresponse;
@@ -485,22 +628,20 @@ public class CcrisController {
 				Utility utilityEntities = new Utility();
 				userSearchRequest.setName(name);
 				if (retivalCount != null) {
-					//utilityEntities = ccrisUnifiedService.getCcrisReport();
-					
-					
-					  utilityEntities = ccrisUnifiedService.getCcrisReport(userSearchRequest,
-					  reportFlag, triggersleeptime, triggerreconnectCount, retivalCount);
-					 
-					 
-					log.info("coming inside controller retival count if block " +utilityEntities);
+					// utilityEntities = ccrisUnifiedService.getCcrisReport();
+
+					utilityEntities = ccrisUnifiedService.getCcrisReport(userSearchRequest, reportFlag,
+							triggersleeptime, triggerreconnectCount, retivalCount);
+
+					log.info("coming inside controller retival count if block " + utilityEntities);
 				} else {
 					utilityEntities = ccrisUnifiedService.getCcrisReport(userSearchRequest, reportFlag,
 							triggersleeptime, triggerreconnectCount, 0);
-					log.info("coming inside controller retival count else block " +utilityEntities);
+					log.info("coming inside controller retival count else block " + utilityEntities);
 				}
 				// utilityEntities = ccrisUnifiedService.getCcrisReport();
 				customercreditreportrequest = utilityEntities.getCreditReportRequest();
-				
+
 				log.info("utilityEntities " + utilityEntities.toString());
 				CustomerSpendingLimitResponse customerSpendingLimitResponse = new CustomerSpendingLimitResponse(); //
 
@@ -511,18 +652,20 @@ public class CcrisController {
 					boolean pendingflag = customercreditreportrequest.getPendingStatus();
 					Integer legalsuitcount = customercreditreportrequest.getLegalstatusCount();
 					Integer bankruptcycount = customercreditreportrequest.getBankruptcyCount();
-					Boolean CrissFlag=customercreditreportrequest.isCriss();
+					Boolean CrissFlag = customercreditreportrequest.isCriss();
 					Integer tradeBureauCount = customercreditreportrequest.getTradeBureauCount();
 					boolean entityKey = customercreditreportrequest.isEntityKey();
 					boolean entityId = customercreditreportrequest.isEntityId();
-				    String specialAttentionAccount = customercreditreportrequest.getSpecialAttentionAccount();
-				    String facility = customercreditreportrequest.getFacility();
+					String specialAttentionAccount = customercreditreportrequest.getSpecialAttentionAccount();
+					String facility = customercreditreportrequest.getFacility();
 					log.info(CrissFlag + "checking the pending flagggggggggggg");
 					checkcreditscoreResponse = ccrisUnifiedService.getCreditScore(
 							customercreditreportrequest.getIScore(), caseSettled, casewithdraw, paymentaging,
-							pendingflag, legalsuitcount, bankruptcycount,CrissFlag,tradeBureauCount,entityKey,entityId,specialAttentionAccount,facility);
+							pendingflag, legalsuitcount, bankruptcycount, CrissFlag, tradeBureauCount, entityKey,
+							entityId, specialAttentionAccount, facility);
 					log.info("checking the credit score" + checkcreditscoreResponse.toString());
-					if (checkcreditscoreResponse.getIsBelowscoreFlag()!=null && checkcreditscoreResponse.getIsBelowscoreFlag() == false) {
+					if (checkcreditscoreResponse.getIsBelowscoreFlag() != null
+							&& checkcreditscoreResponse.getIsBelowscoreFlag() == false) {
 						boolean nricExist = checkcreditscoreResponse.getIsNricExist();
 						boolean isnamenricmatched = checkcreditscoreResponse.getIsNameNricMatched();
 						boolean isregistrationAllowed = checkcreditscoreResponse.getIsRegistrationAllowed();
@@ -535,20 +678,20 @@ public class CcrisController {
 						customerSpendingLimitResponse.setIsRegistrationAllowed(isregistrationAllowed);
 						customerSpendingLimitResponse.setMaximumAllowedInstallments(maximumallowedinstall);
 						customerSpendingLimitResponse.setMaximumSpendingLimit(maximumspeedlimit);
-						if(utilityEntities.getCodes()!=null && utilityEntities.getCodes().contains("500") ) {
+						if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 							customerSpendingLimitResponse.setStatusCode(utilityEntities.getCodes());
 							customerSpendingLimitResponse.setErrorMessage(ServerDownError);
-						}else {
+						} else {
 							customerSpendingLimitResponse.setStatusCode(statuscode);
 							customerSpendingLimitResponse.setErrorMessage(errormessage);
 						}
-						
+
 						log.info("added new customer to database" + customerSpendingLimitResponse);
 						saveResponseToDB(customercreditreportrequest, customerSpendingLimitResponse, userSearchRequest,
-								"", false, nricnumber,ispresent);
-						log.info("added new customer to database1: " +customercreditreportrequest.getNric());
+								"", false, nricnumber, ispresent);
+						log.info("added new customer to database1: " + customercreditreportrequest.getNric());
 						return customerSpendingLimitResponse;
-					} else if(CrissFlag!=null && CrissFlag==true) {
+					} else if (CrissFlag != null && CrissFlag == true) {
 						log.info("CrissFlag============================");
 						System.out.println("CrissFlag============================");
 						boolean nricExist = checkcreditscoreResponse.getIsNricExist();
@@ -567,8 +710,9 @@ public class CcrisController {
 						customerSpendingLimitResponse.setErrorMessage(errormessage);
 						return customerSpendingLimitResponse;
 					}
-					
-				else if(checkcreditscoreResponse.getLowScoreCheck()!=null && checkcreditscoreResponse.getLowScoreCheck()==true){
+
+					else if (checkcreditscoreResponse.getLowScoreCheck() != null
+							&& checkcreditscoreResponse.getLowScoreCheck() == true) {
 						boolean nricExist = checkcreditscoreResponse.getIsNricExist();
 						boolean isnamenricmatched = checkcreditscoreResponse.getIsNameNricMatched();
 						boolean isregistrationAllowed = checkcreditscoreResponse.getIsRegistrationAllowed();
@@ -584,12 +728,13 @@ public class CcrisController {
 						customerSpendingLimitResponse.setStatusCode(statuscode);
 						customerSpendingLimitResponse.setErrorMessage(errormessage);
 						return customerSpendingLimitResponse;
-					}	else if (checkcreditscoreResponse.getIsBelowscoreFlag() == true ) {
+					} else if (checkcreditscoreResponse.getIsBelowscoreFlag() == true) {
 
 						checkcreditscoreResponse = ccrisUnifiedService.getCreditScore(
 								customercreditreportrequest.getIScore(), caseSettled, casewithdraw, paymentaging,
-								pendingflag, legalsuitcount, bankruptcycount,false,tradeBureauCount,entityKey,entityId,specialAttentionAccount,facility);
-                         
+								pendingflag, legalsuitcount, bankruptcycount, false, tradeBureauCount, entityKey,
+								entityId, specialAttentionAccount, facility);
+
 						error.setErrorcode("404");
 						error.setErrormessage(checkcreditscoreResponse.getErrorMessage());
 						customerSpendingLimitResponse.setIsNricExist(checkcreditscoreResponse.getIsNricExist());
@@ -604,7 +749,7 @@ public class CcrisController {
 						customerSpendingLimitResponse.setStatusCode(checkcreditscoreResponse.getStatusCode());
 						customerSpendingLimitResponse.setErrorMessage(checkcreditscoreResponse.getErrorMessage());
 						saveResponseToDB(customercreditreportrequest, customerSpendingLimitResponse, userSearchRequest,
-								"", false, nricnumber,ispresent);
+								"", false, nricnumber, ispresent);
 						// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
 						return customerSpendingLimitResponse;
 					} else {
@@ -613,25 +758,31 @@ public class CcrisController {
 						// SavetoCreditCheckError(error,name,regexexpression);
 						return error;
 					}
-				}else if (utilityEntities.getInvalidUserFlag() != null && utilityEntities.getInvalidUserFlag() == true) {
+				} else if (utilityEntities.getInvalidUserFlag() != null
+						&& utilityEntities.getInvalidUserFlag() == true) {
 					log.info("Inside else if to check InvalidUserFlag()");
 					customerSpendingLimitResponse.setIsNricExist(false);
 					customerSpendingLimitResponse.setIsNameNricMatched(false);
 					customerSpendingLimitResponse.setIsRegistrationAllowed(false);
 					customerSpendingLimitResponse.setMaximumAllowedInstallments(0);
 					customerSpendingLimitResponse.setMaximumSpendingLimit(0);
-					if(utilityEntities.getCodes()!=null && utilityEntities.getCodes().contains("500")) {
+					if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 						customerSpendingLimitResponse.setStatusCode(utilityEntities.getCodes());
 						customerSpendingLimitResponse.setErrorMessage(ServerDownError);
-					}else {
+					} else if(utilityEntities.getErrorMsg().equals("Invalid Input")){
+							customerSpendingLimitResponse.setStatusCode("400");
+					customerSpendingLimitResponse.setErrorMessage(utilityEntities.getErrorMsg());
+							}else {
 						customerSpendingLimitResponse.setStatusCode("404");
 						customerSpendingLimitResponse.setErrorMessage(utilityEntities.getErrorMsg());
 					}
-					/*if(utilityEntities.getDBMessage()!=null) {
-					customerSpendingLimitResponse.setErrorMessage(utilityEntities.getDBMessage());
-					}else {*/
-						
-					//}
+					/*
+					 * if(utilityEntities.getDBMessage()!=null) {
+					 * customerSpendingLimitResponse.setErrorMessage(utilityEntities.getDBMessage())
+					 * ; }else {
+					 */
+
+					// }
 					// customerSpendingLimitResponse.setDBXML(utilityEntities.getDBMessage());
 					SavetoCreditCheckErrorwithResponsefromExperian(utilityEntities, name, regexexpression, 0);
 					return customerSpendingLimitResponse;
@@ -647,41 +798,41 @@ public class CcrisController {
 					int maximumallowedinstall = checkcreditscoreResponse.getMaximumAllowedInstallments();
 					int maximumspeedlimit = checkcreditscoreResponse.getMaximumSpendingLimit();
 					String statuscode = checkcreditscoreResponse.getStatusCode();
-					log.info("Experian Status code :" +statuscode);
+					log.info("Experian Status code :" + statuscode);
 					String errormessage = checkcreditscoreResponse.getErrorMessage();
 					customerSpendingLimitResponse.setIsNricExist(nricExist);
 					customerSpendingLimitResponse.setIsNameNricMatched(isnamenricmatched);
 					customerSpendingLimitResponse.setIsRegistrationAllowed(isregistrationAllowed);
 					customerSpendingLimitResponse.setMaximumAllowedInstallments(maximumallowedinstall);
 					customerSpendingLimitResponse.setMaximumSpendingLimit(maximumspeedlimit);
-					if(utilityEntities.getCodes()!=null && utilityEntities.getCodes().contains("500")) {
+					if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 						customerSpendingLimitResponse.setStatusCode(utilityEntities.getCodes());
 						customerSpendingLimitResponse.setErrorMessage(ServerDownError);
-					}else {
+					} else {
 						customerSpendingLimitResponse.setStatusCode(statuscode);
 						customerSpendingLimitResponse.setErrorMessage(errormessage);
 					}
-					
-					//SavetoCreditCheckError(statuscode, errormessage, name, regexexpression, 0);
+
+					// SavetoCreditCheckError(statuscode, errormessage, name, regexexpression, 0);
 					// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
 					return customerSpendingLimitResponse;
 
-				} else if (utilityEntities.getInvalidUsernameflag() != null && utilityEntities.getInvalidUsernameflag() == true) {
+				} else if (utilityEntities.getInvalidUsernameflag() != null
+						&& utilityEntities.getInvalidUsernameflag() == true) {
 
 					customerSpendingLimitResponse.setIsNricExist(false);
 					customerSpendingLimitResponse.setIsNameNricMatched(false);
 					customerSpendingLimitResponse.setIsRegistrationAllowed(false);
 					customerSpendingLimitResponse.setMaximumAllowedInstallments(0);
 					customerSpendingLimitResponse.setMaximumSpendingLimit(0);
-					if(utilityEntities.getCodes()!=null && utilityEntities.getCodes().contains("500")) {
+					if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 						customerSpendingLimitResponse.setStatusCode(utilityEntities.getCodes());
 						customerSpendingLimitResponse.setErrorMessage(ServerDownError);
-					}else {
+					} else {
 						customerSpendingLimitResponse.setStatusCode("404");
 						customerSpendingLimitResponse.setErrorMessage(utilityEntities.getErrorMsg());
 					}
-				
-					
+
 					SavetoCreditCheckErrorwithResponsefromExperian(utilityEntities, name, regexexpression, 0);
 					return customerSpendingLimitResponse;
 
@@ -700,14 +851,14 @@ public class CcrisController {
 					customerSpendingLimitResponse.setIsRegistrationAllowed(isregistrationAllowed);
 					customerSpendingLimitResponse.setMaximumAllowedInstallments(maximumallowedinstall);
 					customerSpendingLimitResponse.setMaximumSpendingLimit(maximumspeedlimit);
-					if(utilityEntities.getCodes()!=null && utilityEntities.getCodes().contains("500")) {
+					if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 						customerSpendingLimitResponse.setStatusCode(utilityEntities.getCodes());
 						customerSpendingLimitResponse.setErrorMessage(ServerDownError);
-					}else {
-					customerSpendingLimitResponse.setStatusCode(statuscode);
-					customerSpendingLimitResponse.setErrorMessage(errormessage);
+					} else {
+						customerSpendingLimitResponse.setStatusCode(statuscode);
+						customerSpendingLimitResponse.setErrorMessage(errormessage);
 					}
-					
+
 					// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
 					return customerSpendingLimitResponse;
 				}
@@ -721,6 +872,7 @@ public class CcrisController {
 			 * SavetoCreditCheckError(error,userSearchRequest.getName(),userSearchRequest.
 			 * getEntityId()); return error;
 			 */
+			log.info("NRIC length is not 14");
 			CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
 			jsonresponse.setIsNricExist(false);
 			jsonresponse.setIsNameNricMatched(false);
@@ -734,7 +886,21 @@ public class CcrisController {
 			// SavetoCreditCheckError(jsonresponse.getStatusCode(),jsonresponse.getErrorMessage(),name,regexexpression);
 			return jsonresponse;
 		}
-		
+		}
+		log.info("Simulator response is null");
+		CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
+		jsonresponse.setIsNricExist(false);
+		jsonresponse.setIsNameNricMatched(false);
+		jsonresponse.setIsRegistrationAllowed(false);
+		jsonresponse.setMaximumAllowedInstallments(0);
+		jsonresponse.setMaximumSpendingLimit(0);
+		jsonresponse.setStatusCode("null");
+		jsonresponse.setErrorMessage(
+				"null");
+		// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
+		// SavetoCreditCheckError(jsonresponse.getStatusCode(),jsonresponse.getErrorMessage(),name,regexexpression);
+		return jsonresponse;
+
 	}
 
 	private void SavetoCreditCheckError(String statusCode, String errorMessage, String name, String regexexpression,
@@ -767,64 +933,58 @@ public class CcrisController {
 	 */
 
 	@SuppressWarnings("null")
-	private void SavetoCreditCheckErrorwithResponsefromExperian(Utility utilityEntities, String name, String regexexpression, int retrival)  {
-		
+	private void SavetoCreditCheckErrorwithResponsefromExperian(Utility utilityEntities, String name,
+			String regexexpression, int retrival) {
+
 		try {
-			/*CreditCheckError checkError=new CreditCheckError();
-			log.info("Saving Error Database=============="+utilityEntities);
-		  checkError=creditCheckErrorRepository.findbyAll(regexexpression);
-		 // int i = 0;
-	
-		
-		//checkError.setId(i+1);
-		if(checkError!=null) {
-			
-			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
-			   LocalDateTime now = LocalDateTime.now();  
-			   String updatedDate=dtf.format(now);
-			   SimpleDateFormat sdfIn1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				Date date = sdfIn1.parse(updatedDate);
-			   log.info("Checking the user database==============");
-			   log.info("checking date"+date);
-			 creditCheckErrorRepository.updateRetivalCount(retrival,regexexpression,date); 
-		}else {	
-			log.info("adding the user database==============");
-			CreditCheckError checkError1=new CreditCheckError();
-		if(utilityEntities.getDBMessage()!=null){
-		  checkError1.setErrorStatus(utilityEntities.getDBMessage());
-		}else {
-			
-			
-			  log.info("i count=============="+retrival);
-			  checkError1.setErrorStatus(utilityEntities.getErrorMsg());
-			  log.info("New user database=============="+checkError1);
-			   checkError1.setErrorCode(utilityEntities.getCodes());
-			  checkError1.setName(name);
-			  checkError1.setNric(regexexpression);
-			  checkError1.setRetrivalCount(retrival);
-			  checkError1.setCreatedAt(new Date());
-			  checkError1.setUpdatedAt(new Date());
-			*/
-			 
-		//}
-		// creditCheckErrorRepository.save(checkError1);		   
-		//}
-			CreditCheckError checkError=new CreditCheckError();
+			/*
+			 * CreditCheckError checkError=new CreditCheckError();
+			 * log.info("Saving Error Database=============="+utilityEntities);
+			 * checkError=creditCheckErrorRepository.findbyAll(regexexpression); // int i =
+			 * 0;
+			 * 
+			 * 
+			 * //checkError.setId(i+1); if(checkError!=null) {
+			 * 
+			 * DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
+			 * LocalDateTime now = LocalDateTime.now(); String updatedDate=dtf.format(now);
+			 * SimpleDateFormat sdfIn1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); Date
+			 * date = sdfIn1.parse(updatedDate);
+			 * log.info("Checking the user database==============");
+			 * log.info("checking date"+date);
+			 * creditCheckErrorRepository.updateRetivalCount(retrival,regexexpression,date);
+			 * }else { log.info("adding the user database=============="); CreditCheckError
+			 * checkError1=new CreditCheckError(); if(utilityEntities.getDBMessage()!=null){
+			 * checkError1.setErrorStatus(utilityEntities.getDBMessage()); }else {
+			 * 
+			 * 
+			 * log.info("i count=============="+retrival);
+			 * checkError1.setErrorStatus(utilityEntities.getErrorMsg());
+			 * log.info("New user database=============="+checkError1);
+			 * checkError1.setErrorCode(utilityEntities.getCodes());
+			 * checkError1.setName(name); checkError1.setNric(regexexpression);
+			 * checkError1.setRetrivalCount(retrival); checkError1.setCreatedAt(new Date());
+			 * checkError1.setUpdatedAt(new Date());
+			 */
+
+			// }
+			// creditCheckErrorRepository.save(checkError1);
+			// }
+			CreditCheckError checkError = new CreditCheckError();
 			checkError.setErrorCode(utilityEntities.getCodes());
-			if(utilityEntities.getDBMessage()!=null){
-			  checkError.setErrorStatus(utilityEntities.getDBMessage());
-			}else {
-				  checkError.setErrorStatus(utilityEntities.getErrorMsg());
+			if (utilityEntities.getDBMessage() != null) {
+				checkError.setErrorStatus(utilityEntities.getDBMessage());
+			} else {
+				checkError.setErrorStatus(utilityEntities.getErrorMsg());
 			}
-			 checkError.setName(name);
-			  checkError.setNric(regexexpression);
-			  checkError.setRetrivalCount(retrival);
-			  checkError.setCreatedAt(new Date());
-			  checkError.setUpdatedAt(new Date());
-			  creditCheckErrorRepository.save(checkError);
-			  
-	}catch(Exception e)
-	{
+			checkError.setName(name);
+			checkError.setNric(regexexpression);
+			checkError.setRetrivalCount(retrival);
+			checkError.setCreatedAt(new Date());
+			checkError.setUpdatedAt(new Date());
+			creditCheckErrorRepository.save(checkError);
+
+		} catch (Exception e) {
 			System.out.println(e.getLocalizedMessage());
 		}
 
@@ -851,7 +1011,8 @@ public class CcrisController {
 
 	private Object saveResponseToDB(CustomerCreditReportRequest customercreditreportrequest2,
 			CustomerSpendingLimitResponse customerSpendingLimitResponse, UserSearchRequest userSearchRequest,
-			String string, boolean reportFlag, String regexexpression,boolean isPresent) throws JsonProcessingException {
+			String string, boolean reportFlag, String regexexpression, boolean isPresent)
+			throws JsonProcessingException {
 		customercreditreportrequest = customercreditreportrequest2;
 		log.info("Saving to airapay" + customercreditreportrequest);
 		System.out.println(customercreditreportrequest.getIScore() + "===================================");
@@ -894,7 +1055,7 @@ public class CcrisController {
 				customerCreditReports.setFilepath(customercreditreportrequest.getDownaloadfilepath());
 				customerCreditReportsRepository.save(customerCreditReports);
 				return null;
-			} else if(reportFlag == true && isPresent == true) {
+			} else if (reportFlag == true && isPresent == true) {
 				/*
 				 * ObjectMapper Obj = new ObjectMapper(); String jsonStr =
 				 * Obj.writeValueAsString(customerSpendingLimitResponse);
@@ -952,9 +1113,9 @@ public class CcrisController {
 				customerCreditReports.setFilepath(customercreditreportrequest.getDownaloadfilepath());
 				customerCreditReportsRepository.save(customerCreditReports);
 				return null;
-			}else if(isPresent == false) {
-				log.info("Inside isPresent = false in saveToDB() " );
-				log.info("customercreditreportrequest2  " +customercreditreportrequest2 );
+			} else if (isPresent == false) {
+				log.info("Inside isPresent = false in saveToDB() ");
+				log.info("customercreditreportrequest2  " + customercreditreportrequest2);
 				CustomerCreditReports customerCreditReports = new CustomerCreditReports();
 				ObjectMapper Obj = new ObjectMapper();
 				String jsonStr = Obj.writeValueAsString(customerSpendingLimitResponse);
@@ -986,34 +1147,40 @@ public class CcrisController {
 				log.info("JSON id from request" + customerCreditReports.getJsonString());
 				customerCreditReports.setCustomerId(userSearchRequest.getClientId());
 				customerCreditReports.setFilepath(customercreditreportrequest2.getDownaloadfilepath());
-				if(RetriveCustomerDetails(customerCreditReports.getNric())) {
+				if (RetriveCustomerDetails(customerCreditReports.getNric())) {
 					log.info("NRIC exist!! Updating table");
-				customerCreditReportsRepository.updateTable(customerCreditReports.getName(),customerCreditReports.getNric(), customerCreditReports.getBankruptcyCount(), customerCreditReports.getCreatedAt(), customerCreditReports.getUpdatedAt(), 
-						customerCreditReports.getBankingCreditApprovedAmount(), customerCreditReports.getBankingCreditApprovedCount(), customerCreditReports.getBankingCreditPendingAmount(),
-						customerCreditReports.getIScoreGradeFormat(), customerCreditReports.getIScoreRiskGrade(), customerCreditReports.getLegalActionBankingCount(), 
-						customerCreditReports.getTradeBureauCount(),customerCreditReports.getXmlString(), customerCreditReports.getJsonString(), customerCreditReports.getFilepath(),customerCreditReports.getIScore());
-				
-				
-				//customerCreditReportsRepository.save(customerCreditReports);
-				//customerCreditReportsRepository.updateTable(customerCreditReports.getName(),customerCreditReports.getNric(), customerCreditReports.getBankruptcyCount(), customerCreditReports.getCreatedAt(), customerCreditReports.getUpdatedAt());
-				log.info("Data updated " +customerCreditReports.getNric());
-				}
-				else if(!RetriveCustomerDetails(customerCreditReports.getNric())) {
-					log.info("Inserting into DB" );
+					customerCreditReportsRepository.updateTable(customerCreditReports.getName(),
+							customerCreditReports.getNric(), customerCreditReports.getBankruptcyCount(),
+							customerCreditReports.getCreatedAt(), customerCreditReports.getUpdatedAt(),
+							customerCreditReports.getBankingCreditApprovedAmount(),
+							customerCreditReports.getBankingCreditApprovedCount(),
+							customerCreditReports.getBankingCreditPendingAmount(),
+							customerCreditReports.getIScoreGradeFormat(), customerCreditReports.getIScoreRiskGrade(),
+							customerCreditReports.getLegalActionBankingCount(),
+							customerCreditReports.getTradeBureauCount(), customerCreditReports.getXmlString(),
+							customerCreditReports.getJsonString(), customerCreditReports.getFilepath(),
+							customerCreditReports.getIScore());
+
+					// customerCreditReportsRepository.save(customerCreditReports);
+					// customerCreditReportsRepository.updateTable(customerCreditReports.getName(),customerCreditReports.getNric(),
+					// customerCreditReports.getBankruptcyCount(),
+					// customerCreditReports.getCreatedAt(), customerCreditReports.getUpdatedAt());
+					log.info("Data updated " + customerCreditReports.getNric());
+				} else if (!RetriveCustomerDetails(customerCreditReports.getNric())) {
+					log.info("Inserting into DB");
 					customerCreditReportsRepository.save(customerCreditReports);
 				}
-				log.info("Updated iscore " +customerCreditReports.getIScore());
-			//	log.info("Bankcruptcy count " +customerCreditReports.getBankruptcyCount());
+				log.info("Updated iscore " + customerCreditReports.getIScore());
+				// log.info("Bankcruptcy count " +customerCreditReports.getBankruptcyCount());
 				return null;
 			}
-		} 
-		catch (Exception e) {
+		} catch (Exception e) {
 			String errormessage = "Already Customer Exit With Same NRIC !!!!!";
 			customerSpendingLimitResponse.setStatusCode("1062");
 			customerSpendingLimitResponse.setErrorMessage(errormessage);
-			System.out.println("history already exist" +e);
-			//EmailUtility emailUtility = new EmailUtility();
-			//emailUtility.sentEmail(e.getLocalizedMessage());
+			System.out.println("history already exist" + e);
+			// EmailUtility emailUtility = new EmailUtility();
+			// emailUtility.sentEmail(e.getLocalizedMessage());
 			return customerSpendingLimitResponse;
 		}
 		return null;
@@ -1057,8 +1224,10 @@ public class CcrisController {
 		CustomerSpendingLimitResponse customerSpendingLimitResponse = new CustomerSpendingLimitResponse();
 		CreditCheckResponse checkcreditscoreResponse = null;
 		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
-		log.info("Inside ExperianReport for user :" + userSearchRequest.getName() + "entity " +userSearchRequest.getEntityId().trim());
+		log.info("Inside ExperianReport for user :" + userSearchRequest.getName() + "entity "
+				+ userSearchRequest.getEntityId().trim());
 		log.info("Request :" + userSearchRequest.toString());
+		String simulator = creditScoreConfigRepository.findValueFromName("simulator.call");
 		String TokenMap = null;
 		TokenMap = customerUserTokenRepository.findTokenByNric(userSearchRequest.getEntityId());
 		triggersleep.add("experian-trigger-time");
@@ -1068,9 +1237,35 @@ public class CcrisController {
 		String triggersleeptime = triggersleep.get(0);
 		String triggerreconnectCount = triggersleep.get(1);
 		System.out.println(triggersleeptime + "========" + triggerreconnectCount);
-		Integer retivalCount=0;
+		Integer retivalCount = 0;
+		Object simulatorResponse = null;
+		if(simulator.equals("true")){
+		if((userSearchRequest.getEntityId().contains("500101") || userSearchRequest.getEntityId().contains("501230") 
+				|| userSearchRequest.getEntityId().contains("501231")) || (userSearchRequest.getName().contains("WRONG NAME") 
+						|| userSearchRequest.getName().contains("ABDULLAH BIN MALIK") || userSearchRequest.getName().contains("LARRY HENG")
+						|| userSearchRequest.getName().contains("BILL CLINTON") || userSearchRequest.getName().contains("DEVI THANAPAKIAM"))) {
+			log.info("Calling Simulator");
+			//public Object creditCheckerSimulator(@RequestBody JSONObject request) {
+			JSONObject request = new JSONObject();
+			request.put("entityId", userSearchRequest.getEntityId());
+			request.put("name", userSearchRequest.getName());
+			request.put("serviceName", userSearchRequest.getServiceName());
+			
+			experianreportResponse = creditCheckerSimulatorForReport(request);
+			
+			if(experianreportResponse.getResponseCode() != null) {
+				log.info("Returning response from Simulator");
+			return experianreportResponse;
+			}
+			
+		}}
+		if(experianreportResponse != null && experianreportResponse.getResponseCode()== null){
+			log.info("Normal flow as response is not available from simulator");
 		String nricnumber = NricRegchecking(userSearchRequest.getEntityId());
-		//Integer retivalCount = creditCheckErrorRepository.findbynric(userSearchRequest.getEntityId());
+		// Integer retivalCount =
+		// creditCheckErrorRepository.findbynric(userSearchRequest.getEntityId());
+		log.info("nricnumber " +nricnumber);
+		log.info("nricnumber length " +nricnumber.length());
 		System.out.println(retivalCount);
 		if (nricnumber.length() == 14) {
 			saveRequestToDB(userSearchRequest);
@@ -1107,11 +1302,14 @@ public class CcrisController {
 			String Nric = userSearchRequest.getEntityId();
 			String regexexpression = Nric.replaceAll("-", "");
 			ispresent = retrieveNricFromDB(regexexpression);
-			log.info("ispresent value " +ispresent);
+			log.info("ispresent value " + ispresent);
 			if (ispresent == true) {
 				String response = customerCreditReportsRepository.find(name, regexexpression);
+				 String inputResponse = customerCreditReportsRepository.find(userSearchRequest.getName(),regexexpression);
+				Object inputResponseName = retrieveNameNricFromDB(regexexpression);
+				log.info("inputResponse" +inputResponse);
 				if (response != null) {
-					log.info("response value " +response);
+					log.info("response value " + response);
 					String splits[] = response.split(",");
 					String responseName = splits[0].toString();
 					String responseNric = splits[1].toString();
@@ -1146,7 +1344,7 @@ public class CcrisController {
 						} else {
 
 							XmlFormatter formatter = new XmlFormatter();
-							System.out.println(xmlPathResponse+"------------------------------");
+							System.out.println(xmlPathResponse + "------------------------------");
 							String xmlResponse = formatter.format(xmlPathResponse);
 							String nricNumber = StringUtils.substringBetween(xmlResponse, "<new_ic>", "</new_ic>");
 							System.out.println(nricNumber + "============");
@@ -1161,7 +1359,32 @@ public class CcrisController {
 							return experianreportResponse;
 						}
 
-					} else {
+					} else if (! responseName.equals(name)) {
+						experianreportResponse.setResponseCode("404");
+						experianreportResponse.setResponseMsg(
+								"Name mismatch");
+						experianreportResponse.setURL(null);
+						experianreportResponse.setRefxml(null);
+						experianreportResponse.setBankruptcyCount(0);
+						experianreportResponse.setLegalSuitCount(0);
+						experianreportResponse.setTradeBureauCount(0);
+						experianreportResponse.setIScore(0);
+						experianreportResponse.setIScoreRiskGrade(0);
+						experianreportResponse.setIScoreGradeFormat(null);
+						experianreportResponse.setLegalActionBankingCount(0);
+						experianreportResponse.setBorrowerOutstanding(0);
+						experianreportResponse.setBankingCreditApprovedCount(0);
+						experianreportResponse.setBankingCreditApprovedAmount(0);
+						experianreportResponse.setBankingCreditPendingCount(0);
+						experianreportResponse.setBankingCreditPendingAmount(0);
+						SavetoCreditCheckErrors(experianreportResponse.getResponseCode(),
+								experianreportResponse.getResponseMsg(), name, regexexpression, 0);
+						// SavetoCreditCheckError(error,name,regexexpression);
+						return experianreportResponse;
+						
+					}
+					
+						else {
 						experianreportResponse.setResponseCode("404");
 						experianreportResponse.setResponseMsg(
 								"Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.");
@@ -1184,7 +1407,56 @@ public class CcrisController {
 						// SavetoCreditCheckError(error,name,regexexpression);
 						return experianreportResponse;
 					}
-				} else {
+				} 
+				else if (inputResponseName != null) {
+					
+					if (!inputResponseName.equals(userSearchRequest.getName())) {
+						experianreportResponse.setResponseCode("404");
+						experianreportResponse.setResponseMsg(
+								"Name mismatch");
+						experianreportResponse.setURL(null);
+						experianreportResponse.setRefxml(null);
+						experianreportResponse.setBankruptcyCount(0);
+						experianreportResponse.setLegalSuitCount(0);
+						experianreportResponse.setTradeBureauCount(0);
+						experianreportResponse.setIScore(0);
+						experianreportResponse.setIScoreRiskGrade(0);
+						experianreportResponse.setIScoreGradeFormat(null);
+						experianreportResponse.setLegalActionBankingCount(0);
+						experianreportResponse.setBorrowerOutstanding(0);
+						experianreportResponse.setBankingCreditApprovedCount(0);
+						experianreportResponse.setBankingCreditApprovedAmount(0);
+						experianreportResponse.setBankingCreditPendingCount(0);
+						experianreportResponse.setBankingCreditPendingAmount(0);
+						SavetoCreditCheckErrors(experianreportResponse.getResponseCode(),
+								experianreportResponse.getResponseMsg(), name, regexexpression, 0);
+						// SavetoCreditCheckError(error,name,regexexpression);
+						return experianreportResponse;
+					}else
+					experianreportResponse.setResponseCode("404");
+					experianreportResponse.setResponseMsg(
+							"Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.");
+					experianreportResponse.setURL(null);
+					experianreportResponse.setRefxml(null);
+					experianreportResponse.setBankruptcyCount(0);
+					experianreportResponse.setLegalSuitCount(0);
+					experianreportResponse.setTradeBureauCount(0);
+					experianreportResponse.setIScore(0);
+					experianreportResponse.setIScoreRiskGrade(0);
+					experianreportResponse.setIScoreGradeFormat(null);
+					experianreportResponse.setLegalActionBankingCount(0);
+					experianreportResponse.setBorrowerOutstanding(0);
+					experianreportResponse.setBankingCreditApprovedCount(0);
+					experianreportResponse.setBankingCreditApprovedAmount(0);
+					experianreportResponse.setBankingCreditPendingCount(0);
+					experianreportResponse.setBankingCreditPendingAmount(0);
+					SavetoCreditCheckErrors(experianreportResponse.getResponseCode(),
+							experianreportResponse.getResponseMsg(), name, regexexpression, 0);
+					// SavetoCreditCheckError(error,name,regexexpression);
+					return experianreportResponse;
+					
+				}
+				else {
 					/*
 					 * error.setErrorcode("404"); error.setErrormessage(
 					 * "Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations."
@@ -1229,7 +1501,7 @@ public class CcrisController {
 				// ccrisUnifiedService.getCcrisReport(userSearchRequest,reportFlag,retivalCount);
 				// utilityEntities = ccrisUnifiedService.getCcrisReport();
 				customercreditreportrequest = utilityEntities.getCreditReportRequest();
-				log.info("customercreditreportrequest value## " +customercreditreportrequest);
+				log.info("customercreditreportrequest value## " + customercreditreportrequest);
 				log.info("checking the error flafffff");
 
 				if (utilityEntities.getInvalidUserFlag() != null && utilityEntities.getInvalidUserFlag() == false) {
@@ -1242,13 +1514,14 @@ public class CcrisController {
 					Integer tradeBureauCount = customercreditreportrequest.getTradeBureauCount();
 					boolean entityKey = customercreditreportrequest.isEntityKey();
 					boolean entityId = customercreditreportrequest.isEntityId();
-					boolean CrissFlag=customercreditreportrequest.isCriss();
+					boolean CrissFlag = customercreditreportrequest.isCriss();
 					String specialAttentionAccount = customercreditreportrequest.getSpecialAttentionAccount();
 					String facility = customercreditreportrequest.getFacility();
 					log.info(CrissFlag + "checking the pending Criss FLAG");
 					checkcreditscoreResponse = ccrisUnifiedService.getCreditScore(
 							customercreditreportrequest.getIScore(), caseSettled, casewithdraw, paymentaging,
-							pendingflag, legalsuitcount, bankruptcycount,CrissFlag,tradeBureauCount,entityKey,entityId,specialAttentionAccount,facility);
+							pendingflag, legalsuitcount, bankruptcycount, CrissFlag, tradeBureauCount, entityKey,
+							entityId, specialAttentionAccount, facility);
 					log.info("checking the credit score" + checkcreditscoreResponse.toString());
 
 					if (checkcreditscoreResponse.getIsBelowscoreFlag() == false
@@ -1292,23 +1565,22 @@ public class CcrisController {
 						experianreportResponse.setRefxml(customercreditreportrequest.getXmlString());
 						log.info("added new customer to database" + experianreportResponse);
 						saveResponseToDB(customercreditreportrequest, customerSpendingLimitResponse, userSearchRequest,
-								"", reportFlag, nricnumber,ispresent);
-						log.info("added new customer to database: " +customercreditreportrequest.getNric());
+								"", reportFlag, nricnumber, ispresent);
+						log.info("added new customer to database: " + customercreditreportrequest.getNric());
 						return experianreportResponse;
 					} else if (checkcreditscoreResponse.getIsBelowscoreFlag() == true
 							&& customercreditreportrequest.getDownaloadfilepath() == null
 							&& customercreditreportrequest.getDownaloadfilepath().isEmpty() == true) {
 
 						log.info("Error 1==============");
-						if(utilityEntities.getCodes()!=null && utilityEntities.getCodes().contains("500")) {
+						if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 							experianreportResponse.setResponseCode("500");
 							experianreportResponse.setResponseMsg(ServerDownError);
-						}else {
+						} else {
 							experianreportResponse.setResponseCode("01");
 							experianreportResponse.setResponseMsg("File Not Found For the Customer !!!");
 						}
-						
-						
+
 						experianreportResponse.setURL(null);
 						experianreportResponse.setRefxml(null);
 						experianreportResponse.setBankruptcyCount(0);
@@ -1325,7 +1597,7 @@ public class CcrisController {
 						experianreportResponse.setBankingCreditPendingAmount(0);
 						// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
 						return experianreportResponse;
-					}  else if(CrissFlag==true) {
+					} else if (CrissFlag == true) {
 						boolean nricExist = checkcreditscoreResponse.getIsNricExist();
 						boolean isnamenricmatched = checkcreditscoreResponse.getIsNameNricMatched();
 						boolean isregistrationAllowed = checkcreditscoreResponse.getIsRegistrationAllowed();
@@ -1341,7 +1613,8 @@ public class CcrisController {
 						customerSpendingLimitResponse.setStatusCode(statuscode);
 						customerSpendingLimitResponse.setErrorMessage(errormessage);
 						return customerSpendingLimitResponse;
-					}	else if (checkcreditscoreResponse.getIsBelowscoreFlag() != null && checkcreditscoreResponse.getIsBelowscoreFlag() == true) {
+					} else if (checkcreditscoreResponse.getIsBelowscoreFlag() != null
+							&& checkcreditscoreResponse.getIsBelowscoreFlag() == true) {
 						log.info("Error 2==============");
 						experianreportResponse.setResponseCode("01");
 						experianreportResponse.setResponseMsg(checkcreditscoreResponse.getErrorMessage());
@@ -1366,7 +1639,7 @@ public class CcrisController {
 								customercreditreportrequest.getBankingCreditPendingCount());
 						experianreportResponse.setBankingCreditPendingAmount(
 								customercreditreportrequest.getBankingCreditPendingAmount());
-						
+
 						boolean nricExist = checkcreditscoreResponse.getIsNricExist();
 						boolean isnamenricmatched = checkcreditscoreResponse.getIsNameNricMatched();
 						boolean isregistrationAllowed = checkcreditscoreResponse.getIsRegistrationAllowed();
@@ -1381,9 +1654,9 @@ public class CcrisController {
 						customerSpendingLimitResponse.setMaximumSpendingLimit(maximumspeedlimit);
 						customerSpendingLimitResponse.setStatusCode(statuscode);
 						customerSpendingLimitResponse.setErrorMessage(errormessage);
-						
+
 						saveResponseToDB(customercreditreportrequest, customerSpendingLimitResponse, userSearchRequest,
-								checkcreditscoreResponse.getErrorMessage(), reportFlag, regexexpression,ispresent);
+								checkcreditscoreResponse.getErrorMessage(), reportFlag, regexexpression, ispresent);
 						return experianreportResponse;
 					} else {
 						error.setErrorcode(utilityEntities.getCodes());
@@ -1394,15 +1667,16 @@ public class CcrisController {
 				} else if (utilityEntities.getInvalidUserFlag() != null
 						&& utilityEntities.getInvalidUserFlag() == true) {
 					log.info("Error 3==============");
-					if(utilityEntities.getCodes()!=null && utilityEntities.getCodes().contains("500")) {
+					if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 						experianreportResponse.setResponseCode("500");
 						experianreportResponse.setResponseMsg(ServerDownError);
-					}else {
-						experianreportResponse.setResponseCode("404");
-					experianreportResponse.setResponseMsg(utilityEntities.getErrorMsg());
-					//10-05			experianreportResponse.setResponseMsg("Name mismatch");
+					} else {
+						experianreportResponse.setResponseCode("400");
+						//experianreportResponse.setResponseMsg(utilityEntities.getErrorMsg());
+						// 10-05 
+						experianreportResponse.setResponseMsg("Invalid Input");
 					}
-					
+
 					experianreportResponse.setURL(null);
 					experianreportResponse.setRefxml(null);
 					experianreportResponse.setBankruptcyCount(0);
@@ -1417,7 +1691,7 @@ public class CcrisController {
 					experianreportResponse.setBankingCreditApprovedAmount(0);
 					experianreportResponse.setBankingCreditPendingCount(0);
 					experianreportResponse.setBankingCreditPendingAmount(0);
-					
+
 					// log.info("Checking namemistach"+utilityEntities.getRetrivalCount());
 					log.info("Checking namemistach==============" + utilityEntities.getRetrivalCount());
 					SavetoCreditCheckErrorwithResponsefromExperian(utilityEntities, name, regexexpression, 0);
@@ -1425,17 +1699,17 @@ public class CcrisController {
 
 				} else if (utilityEntities.getExperianServerFlag() != null
 						&& utilityEntities.getExperianServerFlag() == true) {
-					log.info("Error 46=============="+utilityEntities.getRetrivalCount());
+					log.info("Error 46==============" + utilityEntities.getRetrivalCount());
 					checkcreditscoreResponse = ccrisUnifiedService.ExperianServerDown();
 					// int retrival=customercreditreportrequest.getRetrivalCount();
 					// log.info("Coming Inside Experian with total count"+retrival);
 					// log.info("customer already exist so returning json response" + retrival);
 					String errormessage = checkcreditscoreResponse.getErrorMessage();
-					log.info("errormessage " +errormessage);
-					if(utilityEntities.getCodes()!=null && utilityEntities.getCodes().contains("500")) {
+					log.info("errormessage " + errormessage);
+					if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 						experianreportResponse.setResponseCode("500");
 						experianreportResponse.setResponseMsg(ServerDownError);
-					}else {
+					} else {
 						experianreportResponse.setResponseCode("102");
 						experianreportResponse.setResponseMsg(errormessage);
 					}
@@ -1453,20 +1727,21 @@ public class CcrisController {
 					experianreportResponse.setBankingCreditApprovedAmount(0);
 					experianreportResponse.setBankingCreditPendingCount(0);
 					experianreportResponse.setBankingCreditPendingAmount(0);
-					
-					//experianreportResponse.setURL(null);
-					//experianreportResponse.setRefxml(customercreditreportrequest.getXmlString());
 
-					SavetoCreditCheckErrorwithResponsefromExperian(utilityEntities, name, regexexpression, utilityEntities.getRetrivalCount());
+					// experianreportResponse.setURL(null);
+					// experianreportResponse.setRefxml(customercreditreportrequest.getXmlString());
+
+					SavetoCreditCheckErrorwithResponsefromExperian(utilityEntities, name, regexexpression,
+							utilityEntities.getRetrivalCount());
 
 					return experianreportResponse;
 
 				} else if (utilityEntities.getInvalidUsernameflag() == true) {
 					log.info("Error 4==============");
-					if(utilityEntities.getCodes()!=null && utilityEntities.getCodes().contains("500")) {
+					if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 						experianreportResponse.setResponseCode("500");
 						experianreportResponse.setResponseMsg(ServerDownError);
-					}else {
+					} else {
 						experianreportResponse.setResponseCode("02");
 						experianreportResponse.setResponseMsg(utilityEntities.getErrorMsg());
 					}
@@ -1484,7 +1759,7 @@ public class CcrisController {
 					experianreportResponse.setBankingCreditApprovedAmount(0);
 					experianreportResponse.setBankingCreditPendingCount(0);
 					experianreportResponse.setBankingCreditPendingAmount(0);
-					
+
 					SavetoCreditCheckErrorwithResponsefromExperian(utilityEntities, name, regexexpression, 0);
 					return experianreportResponse;
 
@@ -1492,14 +1767,14 @@ public class CcrisController {
 					log.info("Error 5==============");
 					checkcreditscoreResponse = ccrisUnifiedService.errorMethodCalling();
 					String errormessage = checkcreditscoreResponse.getErrorMessage();
-					if(utilityEntities.getCodes()!=null && utilityEntities.getCodes().contains("500")) {
+					if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 						experianreportResponse.setResponseCode("500");
 						experianreportResponse.setResponseMsg(ServerDownError);
-					}else {
+					} else {
 						experianreportResponse.setResponseCode("02");
 						experianreportResponse.setResponseMsg(errormessage);
 					}
-				
+
 					experianreportResponse.setURL(null);
 					experianreportResponse.setRefxml(null);
 					experianreportResponse.setBankruptcyCount(0);
@@ -1514,7 +1789,7 @@ public class CcrisController {
 					experianreportResponse.setBankingCreditApprovedAmount(0);
 					experianreportResponse.setBankingCreditPendingCount(0);
 					experianreportResponse.setBankingCreditPendingAmount(0);
-					
+
 					SavetoCreditCheckErrorwithResponsefromExperian(utilityEntities, name, regexexpression, 0);
 					return experianreportResponse;
 				}
@@ -1529,9 +1804,8 @@ public class CcrisController {
 			// your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.");
 			// SavetoCreditCheckError(error,userSearchRequest.getName(),userSearchRequest.getEntityId());
 			// return error;
-			experianreportResponse.setResponseCode("404");
-			experianreportResponse.setResponseMsg(
-					"Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.");
+			experianreportResponse.setResponseCode("01");
+			experianreportResponse.setResponseMsg("Error");
 			experianreportResponse.setURL(null);
 			experianreportResponse.setRefxml(null);
 			experianreportResponse.setBankruptcyCount(0);
@@ -1550,7 +1824,26 @@ public class CcrisController {
 			// SavetoCreditCheckError(error,name,regexexpression);
 			return experianreportResponse;
 		}
-
+		}experianreportResponse.setResponseCode("01");
+		experianreportResponse.setResponseMsg(
+				"Error");
+		experianreportResponse.setURL(null);
+		experianreportResponse.setRefxml(null);
+		experianreportResponse.setBankruptcyCount(0);
+		experianreportResponse.setLegalSuitCount(0);
+		experianreportResponse.setTradeBureauCount(0);
+		experianreportResponse.setIScore(0);
+		experianreportResponse.setIScoreRiskGrade(0);
+		experianreportResponse.setIScoreGradeFormat(null);
+		experianreportResponse.setLegalActionBankingCount(0);
+		experianreportResponse.setBorrowerOutstanding(0);
+		experianreportResponse.setBankingCreditApprovedCount(0);
+		experianreportResponse.setBankingCreditApprovedAmount(0);
+		experianreportResponse.setBankingCreditPendingCount(0);
+		experianreportResponse.setBankingCreditPendingAmount(0);
+		// SavetoCreditCheckErrors(experianreportResponse.getResponseCode(),experianreportResponse.getResponseMsg(),name,regexexpression);
+		// SavetoCreditCheckError(error,name,regexexpression);
+		return experianreportResponse;
 	}
 
 	private void SavetoCreditCheckErrors(String responseCode, String responseMsg, String name, String regexexpression,
@@ -1618,71 +1911,426 @@ public class CcrisController {
 	public String pingServer() {
 		return "Server is up";
 	}
+
+
 	
-	@RequestMapping(value = {"/ekyc/initialize"}, method = RequestMethod.POST)
-	public JSONObject realIdInit(@RequestBody JSONObject request) {
+	public CustomerSpendingLimitResponse creditCheckerSimulatorForSpendingLimit(JSONObject request) {
+		log.info("Inside simulator " + request);
+		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
+		CustomerSpendingLimitResponse response = new CustomerSpendingLimitResponse();
+		String entityId = null;
+		String name = null;
+		boolean serviceReportFlag = false;
+		Object finalResponse = null;
+		try {
+			if (request.getString("entityId") != null && request.getString("entityId") != "") {
+				entityId = request.getString("entityId");
+			}
+			if (request.getString("name") != null && request.getString("name") != "") {
+				name = request.getString("name");
+			}
+			if (request.getString("serviceName") != null && request.getString("serviceName").equals("GetReport")) {
+				serviceReportFlag = true;
+			}
+			log.info("entityId " + entityId);
 
-		log.info("Inside initialize request=" + request);
-		JSONObject response = null;
+			if ((name.equals("WRONG NAME") || name.equals("ABDULLAH BIN MALIK") || name.equals("LARRY HENG")
+					|| name.equals("BILL CLINTON") || name.equals("DEVI THANAPAKIAM"))) {
+				String error = "Oops, maybe it is us and not you, but we can\\u2019t seem to validate this MyKad number\\/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space\\/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin\\/Binti\\/ A\\/L \\/ A\\/P and without any abbreviations.";
+					log.info("Inside validate name ");
+					response.setIsRegistrationAllowed(false);
+					response.setIsNricExist(false);
+					response.setIsNameNricMatched(false);
+					response.setMaximumAllowedInstallments(0);
+					response.setMaximumSpendingLimit(0);
+					response.setStatusCode("404");
+					response.setErrorMessage(error);
+					experianreportResponse = generateExperianReport(experianreportResponse, error,"404");
+			} else if (entityId.contains("501230")) {
+				Thread.sleep(25000);
+				log.info("Thread sleeping for 25seconds");
 
- 		openApiClient = ekycService.setValuesToOpenApiHardCoded();
-//		openApiClient = setValuesToOpenApi();
-		log.info("merchantPublicKey set to openApi in initialize " + openApiClient.getOpenApiPublicKey());
-		log.info("Host url set to openApi in initialize  " + openApiClient.getHostUrl());	
-		log.info("clientId set to openApi in initialize " + openApiClient.getClientId());	
-		String apiRespStr = ekycService.callInitializeOpenApi(request, initializeApi);
-		if (apiRespStr != null) {
-			com.alibaba.fastjson.JSONObject apiResp = JSON.parseObject(apiRespStr);
+				if(serviceReportFlag == false)
+					response = (CustomerSpendingLimitResponse) validMykadForSpendingLimit(entityId, response,name,serviceReportFlag);
+				if(serviceReportFlag == true)
+					experianreportResponse = (ExperianReportResponse) validMykadForReport(entityId,name,serviceReportFlag);
+					//experianreportResponse = generateExperianReportForSuccess(experianreportResponse, null,name,entityId); 
 
-			response = new JSONObject(apiResp);
-			log.info("response=" + apiRespStr);
-		} else {
-			response = new JSONObject();
-			response.put("errorMsg", "Zoloc response is null");
+			} else if (entityId.contains("501231")) {
+				String error = "We try to connect with Experian API 4 times if it is not connecting we will be throwing the status code.";
+				Thread.sleep(25000);
+				log.info("Thread sleeping for 25seconds");
+					response.setIsRegistrationAllowed(false);
+					response.setIsNricExist(false);
+					response.setIsNameNricMatched(false);
+					response.setMaximumAllowedInstallments(0);
+					response.setMaximumSpendingLimit(0);
+					response.setStatusCode("102");
+					response.setErrorMessage(error);
+					experianreportResponse = generateExperianReport(experianreportResponse, error,"102");
+			} else {
 
+				if(serviceReportFlag == false)
+					response = (CustomerSpendingLimitResponse) validMykadForSpendingLimit(entityId, response,name,serviceReportFlag);
+				if(serviceReportFlag == true)
+					experianreportResponse = (ExperianReportResponse) validMykadForReport(entityId,name,serviceReportFlag);
+					
+					//experianreportResponse = generateExperianReportForSuccess(experianreportResponse, null,name,entityId); 
+			}
+			
+			log.info("request.get(\"serviceName\") " +request.get("serviceName"));
+			if (request.get("serviceName") == null) {
+				log.info("building finalResponse for response " +response);
+				finalResponse = response;
+			} else if (request.get("serviceName") != null && request.get("serviceName").toString().equals("GetReport")) {
+				log.info("building finalResponse for experianreportResponse " +experianreportResponse);
+				finalResponse = experianreportResponse;
+			}
+		} catch (Exception e) {
+			log.error("Exception in simulator " + e);
+			response.setErrorMessage(e.getLocalizedMessage());
+			return response;
 		}
-		log.info("initialize request " + response);
+		
+		//log.info("finalResponse " +finalResponse);
 		return response;
 	}
+	
+	
+	public ExperianReportResponse creditCheckerSimulatorForReport(JSONObject request) {
+		log.info("Inside simulator " + request);
+		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
+		// CustomerSpendingLimitResponse response = new CustomerSpendingLimitResponse();
+		String entityId = null;
+		String name = null;
+		boolean serviceReportFlag = false;
+		Object finalResponse = null;
+		try {
+			if (request.getString("entityId") != null && request.getString("entityId") != "") {
+				entityId = request.getString("entityId");
+			}
+			if (request.getString("name") != null && request.getString("name") != "") {
+				name = request.getString("name");
+			}
+			if (request.getString("serviceName") != null && request.getString("serviceName").equals("GetReport")) {
+				serviceReportFlag = true;
+			}
+			log.info("entityId " + entityId);
 
-    @RequestMapping(value = "/ekyc/checkresult", method = RequestMethod.POST)
-	public JSONObject realIdCheck(@RequestBody JSONObject request) {
-    	JSONObject response = null;
-		log.info("Inside checkresult =" + request);
-		// setValuesToOpenApi();
-		ekycService.setValuesToOpenApiHardCoded();
+			if ((name.equals("WRONG NAME") || name.equals("ABDULLAH BIN MALIK") || name.equals("LARRY HENG")
+					|| name.equals("BILL CLINTON") || name.equals("DEVI THANAPAKIAM"))) {
+				String error = "Oops, maybe it is us and not you, but we can\\u2019t seem to validate this MyKad number\\/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space\\/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin\\/Binti\\/ A\\/L \\/ A\\/P and without any abbreviations.";
+					log.info("Inside validate name ");
+					experianreportResponse = generateExperianReport(experianreportResponse, error,"404");
+			} else if (entityId.contains("501230")) {
+				Thread.sleep(25000);
+				log.info("Thread sleeping for 25seconds");
 
-		String apiRespStr = ekycService.callCheckStatusOpenApi(request,checkResultApi);
+				if(serviceReportFlag == true)
+					experianreportResponse = (ExperianReportResponse) validMykadForReport(entityId,name,serviceReportFlag);
+					//experianreportResponse = generateExperianReportForSuccess(experianreportResponse, null,name,entityId); 
 
-		if (apiRespStr != null) {
-		com.alibaba.fastjson.JSONObject apiResp = JSON.parseObject(apiRespStr);
+			} else if (entityId.contains("501231")) {
+				String error = "We try to connect with Experian API 4 times if it is not connecting we will be throwing the status code.";
+				Thread.sleep(25000);
+				log.info("Thread sleeping for 25seconds");
+					experianreportResponse = generateExperianReport(experianreportResponse, error,"102");
+			} else {
 
-		response = new JSONObject(apiResp);
-		}else {
-			response.put("errorMsg", "Zoloc response is null");
-
+				if(serviceReportFlag == true)
+					experianreportResponse = (ExperianReportResponse) validMykadForReport(entityId,name,serviceReportFlag);
+					
+					//experianreportResponse = generateExperianReportForSuccess(experianreportResponse, null,name,entityId); 
+			}
+			
+			log.info("request.get(\"serviceName\") " +request.get("serviceName"));
+		} catch (Exception e) {
+			log.error("Exception in simulator " + e);
+			experianreportResponse.setResponseMsg(e.getLocalizedMessage());
+			return experianreportResponse;
 		}
-		log.info("response in checkresult =" + response);
-		return response;
+		
+		return experianreportResponse;
 	}
-    
-	public OpenApiClient setValuesToOpenApi() {
+
 		
-		log.info("CLIENTID VALUE VS " +creditScoreConfigRepository.findValueFromName("clientId"));
-		openApiClient.setHostUrl(hostUrl);
-		openApiClient.setClientId(clientId);
-		openApiClient.setMerchantPrivateKey(merchantPrivatekey);
-		
-		openApiClient.setOpenApiPublicKey(merchantPublicKey);
-		
-		openApiClient.setSigned(true);
-		openApiClient.setEncrypted(true);
-		 
-		log.info("Host url set to openApi " + openApiClient.getHostUrl());	
-		log.info("clientId set to openApi " + openApiClient.getClientId());	
-		log.info("merchantPrivatekey url set to openApi " + openApiClient.getMerchantPrivateKey());
-		log.info("merchantPublicKey set to openApi " + openApiClient.getOpenApiPublicKey());
-		
-		return openApiClient;
+	 private ExperianReportResponse generateExperianReportForSuccess(String xml) {
+		 log.info("Inside generateExperianReportForSuccess");	
+		 ExperianReportResponse experianreportResponse = new ExperianReportResponse();
+		 UserSearchRequest userSearchRequest = new UserSearchRequest();
+		 userSearchRequest.setServiceName("GetReport");
+		 String to = null;
+		 try {
+		 CustomerCreditReportRequest cc = ccrisReportRetrievalService.processReport( xml, false, false, userSearchRequest, 0,to);
+		 log.info("CustomerCreditReportRequest " +cc);
+		 experianreportResponse.setResponseCode("00");
+			experianreportResponse.setResponseMsg("Success");
+			experianreportResponse.setURL(cc.getDownaloadfilepath());
+			experianreportResponse.setBankruptcyCount(cc.getBankruptcyCount());
+			experianreportResponse.setLegalSuitCount(cc.getLegalSuitCount());
+			experianreportResponse.setTradeBureauCount(cc.getTradeBureauCount());
+			experianreportResponse.setIScore(cc.getIScore());
+			experianreportResponse.setIScoreRiskGrade(cc.getIScoreRiskGrade());
+			experianreportResponse.setIScoreGradeFormat(cc.getIScoreGradeFormat());
+			experianreportResponse.setLegalActionBankingCount(cc.getLegalActionBankingCount());
+			experianreportResponse.setBorrowerOutstanding(cc.getBorrowerOutstanding());
+			experianreportResponse.setBankingCreditApprovedCount(cc.getBankingCreditApprovedCount());
+			experianreportResponse.setBankingCreditApprovedAmount(cc.getBankingCreditApprovedAmount());
+			experianreportResponse.setBankingCreditPendingCount(cc.getBankingCreditPendingCount());
+			experianreportResponse.setBankingCreditPendingAmount(cc.getBankingCreditPendingAmount());
+			experianreportResponse.setRefxml(cc.getXmlString());
+		 }
+		 catch(Exception e) {
+			 log.info("Exception in generateExperianReportForSuccess " +e );
+			 experianreportResponse.setResponseMsg(e.getLocalizedMessage());
+		 }
+		 log.info("experianreportResponse " +experianreportResponse);
+		return experianreportResponse;
 	}
+
+	private ExperianReportResponse generateExperianReport(ExperianReportResponse experianreportResponse,String error, String responseCd) {
+		 experianreportResponse.setResponseCode(responseCd);
+			experianreportResponse.setResponseMsg(error);
+			experianreportResponse.setURL(null);
+			experianreportResponse.setRefxml(null);
+			experianreportResponse.setBankruptcyCount(0);
+			experianreportResponse.setLegalSuitCount(0);
+			experianreportResponse.setTradeBureauCount(0);
+			experianreportResponse.setIScore(0);
+			experianreportResponse.setIScoreRiskGrade(0);
+			experianreportResponse.setIScoreGradeFormat(null);
+			experianreportResponse.setLegalActionBankingCount(0);
+			experianreportResponse.setBorrowerOutstanding(0);
+			experianreportResponse.setBankingCreditApprovedCount(0);
+			experianreportResponse.setBankingCreditApprovedAmount(0);
+			experianreportResponse.setBankingCreditPendingCount(0);
+			experianreportResponse.setBankingCreditPendingAmount(0);
+		return experianreportResponse;
+	}
+
+	public CustomerSpendingLimitResponse validMykadForSpendingLimit(String entityId, CustomerSpendingLimitResponse response,String name, boolean getReportflag) {
+		log.info("inside validMykadForSpendingLimit");
+		Object validateMyKad = null;
+		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
+		if(entityId.contains("500101") || entityId.contains("501230")){
+			
+		 if (entityId.charAt(6) == '0' && entityId.charAt(7) == '7') {
+				log.info("Inside entityId 500101{07}XXXX ");
+				response.setIsRegistrationAllowed(false);
+				response.setIsNricExist(false);
+				response.setIsNameNricMatched(false);
+				response.setMaximumAllowedInstallments(0);
+				response.setMaximumSpendingLimit(0);
+				response.setStatusCode("07");
+				response.setErrorMessage("No Response");
+			// 	experianreportResponse = generateExperianReport(experianreportResponse, "No Response","07");
+			} else if (entityId.charAt(6) == '0' && entityId.charAt(7) == '5') {
+				log.info("Inside entityId 500101{05}XXXX ");
+				response.setIsRegistrationAllowed(true);
+				response.setIsNricExist(true);
+				response.setIsNameNricMatched(true);
+				response.setMaximumAllowedInstallments(3);
+				response.setMaximumSpendingLimit(150);
+				response.setStatusCode("05");
+				response.setErrorMessage("No Ccris Info found");
+				
+				// String xml = simulatorService.getXmlByErrorCode("05",name,entityId);
+				// experianreportResponse = generateExperianReportForSuccess(xml);				 
+			} else if (entityId.charAt(6) == '0' && entityId.charAt(7) == '6') {
+				log.info("Inside entityId 500101{06}XXXX ");
+				response.setIsRegistrationAllowed(false);
+				response.setIsNricExist(true);
+				response.setIsNameNricMatched(true);
+				response.setMaximumAllowedInstallments(0);
+				response.setMaximumSpendingLimit(0);
+				response.setStatusCode("06");
+				response.setErrorMessage("Low Credit Score");
+				
+				// String xml = simulatorService.getXmlByErrorCode("06",name,entityId);
+				// experianreportResponse =  generateExperianReportForSuccess(xml);	
+				 
+			} else if (entityId.charAt(6) == '0' && entityId.charAt(7) == '1') {
+				String error = "We are sorry,We are unable to provide AiraPay services to you. Upon our internal checks and verifications, we regret to inform you that you did not meet certain requirements we are looking for to enable the instalment payments under AiraPay for your account.";
+				log.info("Inside entityId 500101{01}XXXX ");
+				response.setIsRegistrationAllowed(false);
+				response.setIsNricExist(true);
+				response.setIsNameNricMatched(true);
+				response.setMaximumAllowedInstallments(0);
+				response.setMaximumSpendingLimit(0);
+				response.setStatusCode("01");
+				response.setErrorMessage(error);
+				// experianreportResponse = generateExperianReport(experianreportResponse, error,"01");
+			} else if (entityId.charAt(6) == '4' && entityId.charAt(7) == '0') {
+				log.info("Inside entityId 500101{40}XXXX ");
+				response.setIsRegistrationAllowed(false);
+				response.setIsNricExist(false);
+				response.setIsNameNricMatched(false);
+				response.setMaximumAllowedInstallments(0);
+				response.setMaximumSpendingLimit(0);
+				response.setStatusCode("400");
+				response.setErrorMessage("Invalid Input");
+				experianreportResponse = generateExperianReport(experianreportResponse, "Invalid Input","400");
+			} else if (entityId.charAt(6) == '4' && entityId.charAt(7) == '5') {
+				log.info("Inside entityId 500101{45}XXXX ");
+				response.setIsRegistrationAllowed(false);
+				response.setIsNricExist(false);
+				response.setIsNameNricMatched(false);
+				response.setMaximumAllowedInstallments(0);
+				response.setMaximumSpendingLimit(0);
+				response.setStatusCode("405");
+				response.setErrorMessage("Server error");
+			//	experianreportResponse = generateExperianReport(experianreportResponse, "Server error","405");
+			} else if (entityId.charAt(6) == '1' && entityId.charAt(7) == '3') {
+				if (entityId.charAt(8) == '0') {
+					log.info("Inside installment 3 success case ");
+					response.setIsRegistrationAllowed(true);
+					response.setIsNricExist(true);
+					response.setIsNameNricMatched(true);
+					response.setMaximumAllowedInstallments(3);
+					response.setMaximumSpendingLimit(300);
+					response.setStatusCode("00");
+				//	 String xml = simulatorService.getXmlByErrorCode("0030",name,entityId);
+				//	 experianreportResponse =  generateExperianReportForSuccess(xml);		
+				} else if (entityId.charAt(8) == '1') {
+					log.info("Inside installment 3 success case ");
+					response.setIsRegistrationAllowed(true);
+					response.setIsNricExist(true);
+					response.setIsNameNricMatched(true);
+					response.setMaximumAllowedInstallments(3);
+					response.setMaximumSpendingLimit(500);
+					response.setStatusCode("00");
+					 String xml = simulatorService.getXmlByErrorCode("0031",name,entityId);
+					 experianreportResponse =  generateExperianReportForSuccess(xml);	
+				}
+			} else if (entityId.charAt(6) == '1' && entityId.charAt(7) == '6') {
+				if (entityId.charAt(8) == '0') {
+					log.info("Inside installment 6 success case ");
+					response.setIsRegistrationAllowed(true);
+					response.setIsNricExist(true);
+					response.setIsNameNricMatched(true);
+					response.setMaximumAllowedInstallments(6);
+					response.setMaximumSpendingLimit(1000);
+					response.setStatusCode("00");
+					// String xml = simulatorService.getXmlByErrorCode("0060",name,entityId);
+				//	experianreportResponse = generateExperianReportForSuccess(xml);	
+				} else if (entityId.charAt(8) == '1') {
+					log.info("Inside installment 6 success case ");
+					response.setIsRegistrationAllowed(true);
+					response.setIsNricExist(true);
+					response.setIsNameNricMatched(true);
+					response.setMaximumAllowedInstallments(6);
+					response.setMaximumSpendingLimit(1500);
+					response.setStatusCode("00");
+				//	String xml = simulatorService.getXmlByErrorCode("0061",name,entityId);
+				//	experianreportResponse = generateExperianReportForSuccess(xml);	
+				} else if (entityId.charAt(8) == '2') {
+					log.info("Inside installment 6 success case ");
+					response.setIsRegistrationAllowed(true);
+					response.setIsNricExist(true);
+					response.setIsNameNricMatched(true);
+					response.setMaximumAllowedInstallments(6);
+					response.setMaximumSpendingLimit(2000);
+					response.setStatusCode("00");
+				//	String xml = simulatorService.getXmlByErrorCode("0062",name,entityId);
+				//	experianreportResponse = generateExperianReportForSuccess(xml);	
+				} else if (entityId.charAt(8) == '3') {
+					log.info("Inside installment 6 success case ");
+					response.setIsRegistrationAllowed(true);
+					response.setIsNricExist(true);
+					response.setIsNameNricMatched(true);
+					response.setMaximumAllowedInstallments(6);
+					response.setMaximumSpendingLimit(2500);
+					response.setStatusCode("00");
+				//	String xml = simulatorService.getXmlByErrorCode("0063",name,entityId);
+				//	experianreportResponse = generateExperianReportForSuccess(xml);	
+				} else if (entityId.charAt(8) == '4') {
+					log.info("Inside installment 6 success case ");
+					response.setIsRegistrationAllowed(true);
+					response.setIsNricExist(true);
+					response.setIsNameNricMatched(true);
+					response.setMaximumAllowedInstallments(6);
+					response.setMaximumSpendingLimit(3000);
+					response.setStatusCode("00");
+				//	String xml = simulatorService.getXmlByErrorCode("0064",name,entityId);
+				//	experianreportResponse = generateExperianReportForSuccess(xml);	
+				}
+			}
+			}
+		 /*	if(getReportflag == true) {
+		 		validateMyKad = experianreportResponse;
+		 	}
+		 	else {
+		 		validateMyKad = response;
+		 	}*/
+		 	return response;
+	 }
+	
+	
+	public ExperianReportResponse validMykadForReport(String entityId,String name, boolean getReportflag) {
+		log.info("inside validMykadForSpendingLimit");
+		Object validateMyKad = null;
+		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
+		if(entityId.contains("500101") || entityId.contains("501230")){
+			
+		 if (entityId.charAt(6) == '0' && entityId.charAt(7) == '7') {
+				log.info("Inside entityId 500101{07}XXXX ");
+				experianreportResponse = generateExperianReport(experianreportResponse, "No Response","07");
+			} else if (entityId.charAt(6) == '0' && entityId.charAt(7) == '5') {
+				log.info("Inside entityId 500101{05}XXXX ");
+				
+				 String xml = simulatorService.getXmlByErrorCode("05",name,entityId);
+				 experianreportResponse = generateExperianReportForSuccess(xml);				 
+			} else if (entityId.charAt(6) == '0' && entityId.charAt(7) == '6') {
+				log.info("Inside entityId 500101{06}XXXX ");
+				
+				 String xml = simulatorService.getXmlByErrorCode("06",name,entityId);
+				 experianreportResponse =  generateExperianReportForSuccess(xml);	
+				 
+			} else if (entityId.charAt(6) == '0' && entityId.charAt(7) == '1') {
+				String error = "We are sorry,We are unable to provide AiraPay services to you. Upon our internal checks and verifications, we regret to inform you that you did not meet certain requirements we are looking for to enable the instalment payments under AiraPay for your account.";
+				log.info("Inside entityId 500101{01}XXXX ");
+				experianreportResponse = generateExperianReport(experianreportResponse, error,"01");
+			} else if (entityId.charAt(6) == '4' && entityId.charAt(7) == '0') {
+				log.info("Inside entityId 500101{40}XXXX ");
+				experianreportResponse = generateExperianReport(experianreportResponse, "Invalid Input","400");
+			} else if (entityId.charAt(6) == '4' && entityId.charAt(7) == '5') {
+				log.info("Inside entityId 500101{45}XXXX ");
+				experianreportResponse = generateExperianReport(experianreportResponse, "Server error","405");
+			} else if (entityId.charAt(6) == '1' && entityId.charAt(7) == '3') {
+				if (entityId.charAt(8) == '0') {
+					log.info("Inside installment 3 success case ");
+					 String xml = simulatorService.getXmlByErrorCode("0030",name,entityId);
+					 experianreportResponse =  generateExperianReportForSuccess(xml);		
+				} else if (entityId.charAt(8) == '1') {
+					log.info("Inside installment 3 success case ");
+					 String xml = simulatorService.getXmlByErrorCode("0031",name,entityId);
+					 experianreportResponse =  generateExperianReportForSuccess(xml);	
+				}
+			} else if (entityId.charAt(6) == '1' && entityId.charAt(7) == '6') {
+				if (entityId.charAt(8) == '0') {
+					log.info("Inside installment 6 success case ");
+					String xml = simulatorService.getXmlByErrorCode("0060",name,entityId);
+					experianreportResponse = generateExperianReportForSuccess(xml);	
+				} else if (entityId.charAt(8) == '1') {
+					log.info("Inside installment 6 success case ");
+					String xml = simulatorService.getXmlByErrorCode("0061",name,entityId);
+					experianreportResponse = generateExperianReportForSuccess(xml);	
+				} else if (entityId.charAt(8) == '2') {
+					log.info("Inside installment 6 success case ");
+					String xml = simulatorService.getXmlByErrorCode("0062",name,entityId);
+					experianreportResponse = generateExperianReportForSuccess(xml);	
+				} else if (entityId.charAt(8) == '3') {
+					log.info("Inside installment 6 success case ");
+					String xml = simulatorService.getXmlByErrorCode("0063",name,entityId);
+					experianreportResponse = generateExperianReportForSuccess(xml);	
+				} else if (entityId.charAt(8) == '4') {
+					log.info("Inside installment 6 success case ");
+					String xml = simulatorService.getXmlByErrorCode("0064",name,entityId);
+					experianreportResponse = generateExperianReportForSuccess(xml);	
+				}
+			}
+			}
+		 	return experianreportResponse;
+	 }
+	 
 }
