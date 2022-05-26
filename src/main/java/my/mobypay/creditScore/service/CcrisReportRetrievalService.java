@@ -417,8 +417,9 @@ public class CcrisReportRetrievalService {
 
 					String contextvalue = urlvalue[1].toString();
 					String[] g = contextvalue.split("/");
-					String finalvalue = g[0].toString();
-					System.out.println(finalvalue);
+					// String finalvalue = g[0].toString(); 
+					String finalvalue = creditScoreConfigRepository.findValueFromName("sandbox.server"); 
+					log.info("Server name " +finalvalue);
 
 					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
 							+ filename + "";
@@ -908,8 +909,8 @@ public class CcrisReportRetrievalService {
 
 					String contextvalue = urlvalue[1].toString();
 					String[] g = contextvalue.split("/");
-					String finalvalue = g[0].toString();
-					System.out.println(finalvalue);
+					String finalvalue = creditScoreConfigRepository.findValueFromName("sandbox.server"); 
+					log.info("Server name " +finalvalue);
 
 					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
 							+ filename + "";
@@ -1469,8 +1470,8 @@ public class CcrisReportRetrievalService {
 
 		String contextvalue = urlvalue[1].toString();
 		String[] g = contextvalue.split("/");
-		String finalvalue = g[0].toString();
-		System.out.println(finalvalue);
+		String finalvalue = creditScoreConfigRepository.findValueFromName("sandbox.server"); 
+		log.info("Server name " +finalvalue);
 
 		filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName=" + filename + "";
 		File file = new File(filename);
