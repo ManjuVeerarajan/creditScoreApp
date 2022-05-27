@@ -6,9 +6,9 @@
     <session-factory>
       <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
       <!-- property name="connection.driver_class">com.mysql.jdbc.Driver</property -->
-      <property name="connection.url">jdbc:mysql://airapay-sandbox.c3rilhzfezwb.ap-southeast-1.rds.amazonaws.com:3306/airapay_dev</property>
-      <property name="connection.username">admin</property>
-      <property name="connection.password">admin123qwe</property>
+      <property name="connection.url">jdbc:mysql://mobypay-prod.cfqf8c3hv7sx.ap-southeast-1.rds.amazonaws.com:3306/mobypay</property>
+      <property name="connection.username">root</property>
+      <property name="connection.password">MBPdb123</property>
       <property name="connection.pool_size">3</property>
       <property name="dialect">org.hibernate.dialect.MySQL8Dialect</property>
       <property name="current_session_context_class">thread</property>

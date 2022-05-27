@@ -161,6 +161,10 @@ public class CcrisUnifiedService {
 			registrationallowed = false;
 			isNricExist = true;
 		}
+		
+		log.info("flag  " +flag);
+		log.info("creditscoreless  " +creditscoreless);
+		log.info("lowcreditScore  " +lowcreditScore);
 
 		if (flag == true) {
 			log.info("Inside flag== true condition");

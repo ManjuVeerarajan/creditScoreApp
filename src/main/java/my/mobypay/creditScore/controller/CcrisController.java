@@ -248,7 +248,9 @@ public class CcrisController {
 			System.out.println("exception " + e);
 		}
 		/** Closing Session */
-		// session.close();
+		if(session != null) {
+		 session.close();
+		}
 		return ispresent;
 	}
 	
@@ -301,8 +303,11 @@ public class CcrisController {
 		} catch (Exception e) {
 			System.out.println("exception " + e);
 		}
-		/** Closing Session */
-		// session.close();
+		finally {
+		if(session != null) {
+			 session.close();
+			}
+		}
 		return dbResponse;
 	}
 
