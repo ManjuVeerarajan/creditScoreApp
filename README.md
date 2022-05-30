@@ -29,9 +29,9 @@ kill -9  <pid>
 Start the the app 
 
 ```
-java -jar -Dserver.port=443 /home/ubuntu/app/<jar name> &
+nohup java -jar -Dserver.port=443 /home/ubuntu/app/<jar name> &
 
 or 
 
-java -jar /home/ubuntu/app/<jar name>&
+nohup java -jar /home/ubuntu/app/<jar name> &
 ```
