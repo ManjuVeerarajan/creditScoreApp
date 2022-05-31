@@ -2,19 +2,31 @@
 <!DOCTYPE hibernate-configuration PUBLIC 
   "-//Hibernate/Hibernate Configuration DTD 3.0//EN" 
   "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
-  <hibernate-configuration>
-    <session-factory>
-      <property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
-      <!-- property name="connection.driver_class">com.mysql.jdbc.Driver</property -->
-      <property name="connection.url">jdbc:mysql://airapay-sandbox.c3rilhzfezwb.ap-southeast-1.rds.amazonaws.com:3306/airapay_dev</property>
-      <property name="connection.username">admin</property>
-      <property name="connection.password">admin123qwe</property>
-      <property name="connection.pool_size">3</property>
-      <property name="dialect">org.hibernate.dialect.MySQL8Dialect</property>
-      <property name="current_session_context_class">thread</property>
-      <property name="show_sql">true</property>
-      <property name="format_sql">true</property>
-      <property name="hbm2ddl.auto">update</property>
-      <!-- mapping  class="com.mcnz.jpa.examples.Player" / -->
-  </session-factory>
+<hibernate-configuration>
+	<session-factory>
+		<property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+		<!-- property name="connection.driver_class">com.mysql.jdbc.Driver</property -->
+		<property name="connection.url">jdbc:mysql://airapay-sandbox.c3rilhzfezwb.ap-southeast-1.rds.amazonaws.com:3306/airapay_dev</property>
+		<property name="connection.username">admin</property>
+		<property name="connection.password">admin123qwe</property>
+		<!-- <property name="connection.pool_size">10</property> <property name="hibernate.dbcp.initialSize">5</property> 
+			<property name="hibernate.dbcp.maxTotal">10</property> <property name="hibernate.dbcp.maxIdle">10</property> 
+			<property name="hibernate.dbcp.minIdle">5</property> <property name="hibernate.dbcp.maxWaitMillis">10000</property> 
+
+		<property name="hibernate.c3p0.min_size">5</property>
+		<property name="hibernate.c3p0.max_size">10</property>
+		<property name="hibernate.c3p0.acquire_increment">1</property>
+		<property name="hibernate.c3p0.idle_test_period">1000</property>
+		<property name="hibernate.c3p0.max_statements">50</property>
+	<property name="hibernate.c3p0.timeout">1800</property>
+	<property name="hibernate.c3p0.validate">1000</property>
+	<property name="hibernate.c3p0.unreturnedConnectionTimeout">30</property>
+	<property name="hibernate.c3p0.debugUnreturnedConnectionStackTraces">true</property>-->
+		<property name="dialect">org.hibernate.dialect.MySQL8Dialect</property>
+		<property name="current_session_context_class">thread</property>
+		<property name="show_sql">true</property>
+		<property name="format_sql">true</property>
+		<property name="hbm2ddl.auto">update</property>
+		<!-- mapping class="com.mcnz.jpa.examples.Player" / -->
+	</session-factory>
 </hibernate-configuration>
