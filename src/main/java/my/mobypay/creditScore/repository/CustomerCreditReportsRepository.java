@@ -14,11 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface CustomerCreditReportsRepository extends JpaRepository<CustomerCreditReports, Integer> {
+	
+ // @Query("SELECT p.nric from CustomerCreditReports p WHERE  p.nric= :nric AND p.UpdatedAt >= date_sub(now(),interval 30 DAY")
+  // String findByDate(@Param("nric") String paramString);	
+			
   @Query("SELECT p.nric from CustomerCreditReports p WHERE  p.nric= :nric")
   String findByName(@Param("nric") String paramString);
   
   @Query("SELECT p.name,p.nric from CustomerCreditReports p WHERE p.name = :name and p.nric= :nric")
   String find(@Param("name") String paramString1, @Param("nric") String paramString2);
+  
+  @Query("SELECT p.name,p.nric from CustomerCreditReports p WHERE p.nric= :nric")
+  Object findByNricName(@Param("nric") String paramString1);
   
   @Query("SELECT p.jsonString from CustomerCreditReports p WHERE p.nric= :nric")
   String findbynameandnric(@Param("nric") String paramString2);

@@ -38,6 +38,11 @@ import my.mobypay.creditScore.service.CcrisUnifiedService;
 import my.mobypay.creditScore.service.SimulatorService;
 import my.mobypay.creditScore.service.XmlFormatter;
 import my.mobypay.creditScore.utility.EmailUtility;
+import my.mobypay.ekyc.dao.CheckResultRequest;
+import my.mobypay.ekyc.dao.CheckResultResponse;
+import my.mobypay.ekyc.dao.InitializeRequest;
+import my.mobypay.ekyc.dao.InitializeResponse;
+import my.mobypay.ekyc.service.EkycService;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
@@ -56,6 +61,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.amazonaws.internal.config.InternalConfig.Factory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -104,6 +110,10 @@ public class CcrisController {
 	@Autowired
 	CcrisReportRetrievalService ccrisReportRetrievalService;
 
+	// @Autowired
+	OpenApiClient openApiClient = new OpenApiClient();
+	// @Autowired
+	EkycService ekycService = new EkycService();
 	/*
 	 * @Autowired private CcrisReportRetrievalService ccrisReportRetrievalService;
 	 */
@@ -247,9 +257,14 @@ public class CcrisController {
 		} catch (Exception e) {
 			System.out.println("exception " + e);
 		}
-		/** Closing Session */
+		finally {
 		if(session != null) {
-		 session.close();
+			log.info("session " +session.toString());
+			//session.close();
+			session.getSessionFactory().close();
+			//session.disconnect();
+			log.info("session after close" +session.toString());
+		}
 		}
 		return ispresent;
 	}
@@ -280,9 +295,6 @@ public class CcrisController {
 			// List<ApplicationSettings> inputDays = appSettings.findAll();
 			// ApplicationSettings expireDays = inputDays.get(6);
 			// String daysExpire = expireDays.getValue();
-			String daysExpire = appSettings.findValueFromName("daysExpire");
-
-			log.info("daysExpire " + daysExpire);
 			String hqlQuery = "SELECT p.name,p.nric from CustomerCreditReports p WHERE p.nric= "+nric;
 			org.hibernate.query.Query query = session.createSQLQuery(hqlQuery);
 			log.info("Query Response" + query.getResultList());
@@ -305,8 +317,11 @@ public class CcrisController {
 		}
 		finally {
 		if(session != null) {
-			 session.close();
-			}
+			log.info("session " +session.toString());
+			session.close();
+			//session.disconnect();
+			log.info("session after close" +session.toString());
+		}
 		}
 		return dbResponse;
 	}
@@ -433,7 +448,8 @@ public class CcrisController {
 			if (ispresent == true) {
 				 String inputResponse = customerCreditReportsRepository.find(userSearchRequest.getName(),regexexpression);
 				
-				Object inputResponseName = retrieveNameNricFromDB(regexexpression);
+				// Object inputResponseName = retrieveNameNricFromDB(regexexpression);
+				 Object inputResponseName =  customerCreditReportsRepository.findByNricName(regexexpression);
 				log.info("inputResponse: " + inputResponse);
 				String response = customerCreditReportsRepository.find(name, regexexpression);
 				log.info("response: " + response);
@@ -1226,6 +1242,7 @@ public class CcrisController {
 		List<String> triggersleep = new LinkedList<String>();
 		Error error = new Error();
 		boolean reportFlag = false;
+		String valuePresent = null;
 		CustomerSpendingLimitResponse customerSpendingLimitResponse = new CustomerSpendingLimitResponse();
 		CreditCheckResponse checkcreditscoreResponse = null;
 		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
@@ -1306,12 +1323,17 @@ public class CcrisController {
 			userSearchRequest.setName(name);
 			String Nric = userSearchRequest.getEntityId();
 			String regexexpression = Nric.replaceAll("-", "");
-			ispresent = retrieveNricFromDB(regexexpression);
+			 ispresent = retrieveNricFromDB(regexexpression);
+			/* valuePresent = customerCreditReportsRepository.findByDate(regexexpression);
+			if(valuePresent != null) {
+				ispresent = true;
+			}*/
 			log.info("ispresent value " + ispresent);
 			if (ispresent == true) {
 				String response = customerCreditReportsRepository.find(name, regexexpression);
 				 String inputResponse = customerCreditReportsRepository.find(userSearchRequest.getName(),regexexpression);
-				Object inputResponseName = retrieveNameNricFromDB(regexexpression);
+				// Object inputResponseName = retrieveNameNricFromDB(regexexpression);
+				 Object inputResponseName =  customerCreditReportsRepository.findByNricName(regexexpression);
 				log.info("inputResponse" +inputResponse);
 				if (response != null) {
 					log.info("response value " + response);
@@ -1916,8 +1938,57 @@ public class CcrisController {
 	public String pingServer() {
 		return "Server is up";
 	}
+/*
+	@RequestMapping(value = { "/ekyc/initialize" }, method = RequestMethod.POST)
+	public JSONObject realIdInit(@RequestBody JSONObject request) {
 
+		log.info("Inside initialize request=" + request);
+		JSONObject response = null;
 
+		//openApiClient = setValuesToOpenApi();
+		openApiClient = ekycService.setValuesToOpenApiHardCoded();
+		log.info("openApiClient " +openApiClient);
+		log.info("merchantPublicKey set to openApi in initialize " + openApiClient.getOpenApiPublicKey());
+		log.info("Host url set to openApi in initialize  " + openApiClient.getHostUrl());
+		log.info("clientId set to openApi in initialize " + openApiClient.getClientId());
+		String initializeApi =  creditScoreConfigRepository.findValueFromName("zolos.initialize");
+		String apiRespStr = ekycService.callInitializeOpenApi(request, initializeApi);
+		if (apiRespStr != null) {
+			com.alibaba.fastjson.JSONObject apiResp = JSON.parseObject(apiRespStr);
+
+			response = new JSONObject(apiResp);
+			log.info("response=" + apiRespStr);
+		} else {
+			response = new JSONObject();
+			response.put("errorMsg", "Zoloc response is null");
+
+		}
+		log.info("initialize request " + response);
+		return response;
+	}
+
+	@RequestMapping(value = "/ekyc/checkresult", method = RequestMethod.POST)
+	public JSONObject realIdCheck(@RequestBody JSONObject request) {
+		JSONObject response = null;
+		log.info("Inside checkresult =" + request);
+		// openApiClient = setValuesToOpenApi();
+		openApiClient =	ekycService.setValuesToOpenApiHardCoded();
+		String checkResultApi =  creditScoreConfigRepository.findValueFromName("zolos.checkresult");
+		log.info("openApiClient " +openApiClient);
+		String apiRespStr = ekycService.callCheckStatusOpenApi(request, checkResultApi);
+
+		if (apiRespStr != null) {
+			com.alibaba.fastjson.JSONObject apiResp = JSON.parseObject(apiRespStr);
+
+			response = new JSONObject(apiResp);
+		} else {
+			response.put("errorMsg", "Zoloc response is null");
+
+		}
+		log.info("response in checkresult =" + response);
+		return response;
+	}
+*/
 	
 	public CustomerSpendingLimitResponse creditCheckerSimulatorForSpendingLimit(JSONObject request) {
 		log.info("Inside simulator " + request);
@@ -2338,4 +2409,28 @@ public class CcrisController {
 		 	return experianreportResponse;
 	 }
 	 
+	public OpenApiClient setValuesToOpenApi() {
+		log.info("Pulling from properties");
+		//log.info("CLIENTID VALUE VS " + creditScoreConfigRepository.findValueFromName("clientId"));
+		
+		String hostUrl = creditScoreConfigRepository.findValueFromName("zolos.server");
+		String clientId = creditScoreConfigRepository.findValueFromName("clientId");
+		String merchantPrivatekey = creditScoreConfigRepository.findValueFromName("merchant.privatekey");
+		String merchantPublicKey = creditScoreConfigRepository.findValueFromName("merchant.publickey");
+		openApiClient.setHostUrl(hostUrl);
+		openApiClient.setClientId(clientId);
+		openApiClient.setMerchantPrivateKey(merchantPrivatekey);
+
+		openApiClient.setOpenApiPublicKey(merchantPublicKey);
+
+		openApiClient.setSigned(true);
+		openApiClient.setEncrypted(true);
+
+		log.info("Host url set to openApi " + openApiClient.getHostUrl());
+		log.info("clientId set to openApi " + openApiClient.getClientId());
+		log.info("merchantPrivatekey url set to openApi " + openApiClient.getMerchantPrivateKey());
+		log.info("merchantPublicKey set to openApi " + openApiClient.getOpenApiPublicKey());
+
+		return openApiClient;
+	}
 }

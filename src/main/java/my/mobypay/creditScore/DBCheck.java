@@ -1,38 +1,33 @@
 package my.mobypay.creditScore;
 
-import java.util.List;
-
-import javax.persistence.EntityManager;
-
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 
+import com.zoloz.api.sdk.client.OpenApiClient;
+
+import my.mobypay.creditScore.controller.CcrisController;
 import my.mobypay.creditScore.dao.CustomerCreditReports;
 
 public class DBCheck {
 
 	public static void main(String[] args) {
-		System.out.println("Inside main");
-	Object response =	retrieveNameNricFromDB ("610213065114");
-System.out.println("Response " +response);
+	System.out.println("openApiClient " +retrieveNricFromDB("770325016934"));
 	}
 	
 	
-	public static Object retrieveNameNricFromDB(String nric) {
+	public static boolean retrieveNricFromDB(String nric) {
 		boolean ispresent = false;
 
 		Session session = null;
-		Object dbResponse = null;
 		Transaction transaction = null;
 		try {
 			// SessionFactory factory = HibernateUtil.getSessionFactory();
 			// SessionFactory factory = new
 			// AnnotationConfiguration().configure().buildSessionFactory();
-			Configuration config = new Configuration();
-			config.configure();
-			
+			// Configuration config = new Configuration();
+			 // config.configure();
 			// local SessionFactory bean created
 			// SessionFactory sessionFactory = config.buildSessionFactory();
 			SessionFactory factory = new Configuration().configure("hibernate.cfg.xml")
@@ -46,18 +41,14 @@ System.out.println("Response " +response);
 			String daysExpire = "30 DAY";
 
 			System.out.println("daysExpire " + daysExpire);
-			String hqlQuery = "SELECT p.name,p.nric from CustomerCreditReports p WHERE p.nric= "+nric;
+			String hqlQuery = "SELECT p.nric from CustomerCreditReports p WHERE p.nric = " + nric
+					+ " AND p.UpdatedAt >= date_sub(now(),interval " + daysExpire + ")";
 			org.hibernate.query.Query query = session.createSQLQuery(hqlQuery);
 			System.out.println("Query Response" + query.getResultList());
 			if (!query.getResultList().isEmpty()) {
 				System.out.println("Query Response not NUll");
 				ispresent = true;
-				 List<Object[]> response = query.getResultList();
-					System.out.println("dbResponse " + response.get(0));
-					dbResponse =  response.get(0);
-				System.out.println("dbResponse " + dbResponse);
 			} else if (query.getResultList().isEmpty()) {
-				
 				System.out.println("Query Response NUll");
 				ispresent = false;
 			}
@@ -68,12 +59,13 @@ System.out.println("Response " +response);
 		}
 		finally {
 		if(session != null) {
-			System.out.println("Session not null");
-			 session.close();
-			}
+			System.out.println("session " +session.toString());
+			session.close();
+			//	session.disconnect();
+			System.out.println("session after close" +session.toString());
 		}
-		return dbResponse;
+		}
+		return ispresent;
 	}
 
-	
 }
