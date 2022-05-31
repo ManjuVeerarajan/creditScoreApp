@@ -421,7 +421,7 @@ public class CcrisReportRetrievalService {
 					String finalvalue = creditScoreConfigRepository.findValueFromName("sandbox.server"); 
 					log.info("Server name " +finalvalue);
 
-					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
+					filepaths = "http://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
 							+ filename + "";
 					File file = new File(filename);
 					log.info("delete the file from directory" + filename);
@@ -912,7 +912,7 @@ public class CcrisReportRetrievalService {
 					String finalvalue = creditScoreConfigRepository.findValueFromName("sandbox.server"); 
 					log.info("Server name " +finalvalue);
 
-					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
+					filepaths = "http://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
 							+ filename + "";
 					File file = new File(filename);
 					log.info("delete the file from directory" + filename);
@@ -1473,7 +1473,7 @@ public class CcrisReportRetrievalService {
 		String finalvalue = creditScoreConfigRepository.findValueFromName("sandbox.server"); 
 		log.info("Server name " +finalvalue);
 
-		filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName=" + filename + "";
+		filepaths = "http://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName=" + filename + "";
 		File file = new File(filename);
 		log.info("delete the file from directory" + filename);
 		System.out.println("delete the file from directory" + filename);
