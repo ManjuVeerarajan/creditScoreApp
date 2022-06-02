@@ -1,6 +1,7 @@
 package my.mobypay.creditScore.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import my.mobypay.creditScore.DBConfig;
 import my.mobypay.creditScore.dao.ApplicationSettings;
 import my.mobypay.creditScore.dao.ApplicationSettingsRepository;
 import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
@@ -77,6 +78,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -126,12 +128,16 @@ public class CcrisController {
 	@Autowired
 	ApplicationSettingsRepository appSettings;
 
-	@Autowired
-	CreditScoreConfigRepository creditScoreConfigRepository;
 
 	@Autowired
 	SimulatorService simulatorService;
+	
+	@Autowired
+	DBConfig dbconfig;
 	/*
+	 @Autowired
+	CreditScoreConfigRepository creditScoreConfigRepository;
+	
 	@Value("${zolos.server}")
 	private String hostUrl;
 
@@ -151,9 +157,17 @@ public class CcrisController {
 	private String merchantPrivatekey;
 */
 	boolean ispresent = false;
-	// String ServerDownError="we are unable to process your application as our 3rd
-	// party services provider is not available at the moment. Please try again
-	// later.";
+	protected String simulator = null;
+	protected String hostUrl = null;
+	protected String clientId = null;
+	protected String merchantPrivatekey = null;
+	protected String merchantPublicKey = null;
+	protected String initializeApi = null;
+	protected String checkResultApi = null;
+	
+	// String ServerDownError="we are unable to process your application as our 3rd party services provider is not available at the moment. Please try again  later.";
+	
+	
 	String ServerDownError = "Experian API connection issue.";
 	CustomerCreditReportRequest customercreditreportrequest = null;
 	// private static final log log = log.getlog(CcrisController.class);
@@ -357,6 +371,7 @@ public class CcrisController {
 		Map<String, String> ExperianPropertyValue = new LinkedHashMap<String, String>();
 		boolean reportFlag = false;
 
+		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
 		CreditCheckResponse checkcreditscoreResponse = null;
 		ExperianPropertyResponse experianPropertyResponse = new ExperianPropertyResponse();
 		triggersleep.add("experian-trigger-time");
@@ -378,7 +393,8 @@ public class CcrisController {
 		 * valueOf(finalretivalvalue)); }
 		 */
 		// System.out.println(retivalCount);
-		String simulator = creditScoreConfigRepository.findValueFromName("simulator.call");
+	//	String simulator = creditScoreConfigRepository.findValueFromName("simulator.call");
+		simulator = dbvalues.get("simulator.call")	;	
 		log.info("Call Simulator :" + simulator);
 		CustomerSpendingLimitResponse res = new CustomerSpendingLimitResponse();
 		if (simulator.equals("true")) {
@@ -1243,13 +1259,15 @@ public class CcrisController {
 		Error error = new Error();
 		boolean reportFlag = false;
 		String valuePresent = null;
+		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
 		CustomerSpendingLimitResponse customerSpendingLimitResponse = new CustomerSpendingLimitResponse();
 		CreditCheckResponse checkcreditscoreResponse = null;
 		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
 		log.info("Inside ExperianReport for user :" + userSearchRequest.getName() + "entity "
 				+ userSearchRequest.getEntityId().trim());
 		log.info("Request :" + userSearchRequest.toString());
-		String simulator = creditScoreConfigRepository.findValueFromName("simulator.call");
+		// String simulator = creditScoreConfigRepository.findValueFromName("simulator.call");
+		simulator = dbvalues.get("simulator.call");
 		String TokenMap = null;
 		TokenMap = customerUserTokenRepository.findTokenByNric(userSearchRequest.getEntityId());
 		triggersleep.add("experian-trigger-time");
@@ -1944,14 +1962,15 @@ public class CcrisController {
 
 		log.info("Inside initialize request=" + request);
 		JSONObject response = null;
-
+		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
+		
 		//openApiClient = setValuesToOpenApi();
 		openApiClient = ekycService.setValuesToOpenApiHardCoded();
 		log.info("openApiClient " +openApiClient);
 		log.info("merchantPublicKey set to openApi in initialize " + openApiClient.getOpenApiPublicKey());
 		log.info("Host url set to openApi in initialize  " + openApiClient.getHostUrl());
 		log.info("clientId set to openApi in initialize " + openApiClient.getClientId());
-		String initializeApi =  creditScoreConfigRepository.findValueFromName("zolos.initialize");
+		initializeApi =  dbvalues.get("zolos.initialize");
 		String apiRespStr = ekycService.callInitializeOpenApi(request, initializeApi);
 		if (apiRespStr != null) {
 			com.alibaba.fastjson.JSONObject apiResp = JSON.parseObject(apiRespStr);
@@ -1971,9 +1990,11 @@ public class CcrisController {
 	public JSONObject realIdCheck(@RequestBody JSONObject request) {
 		JSONObject response = null;
 		log.info("Inside checkresult =" + request);
+		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
 		// openApiClient = setValuesToOpenApi();
 		openApiClient =	ekycService.setValuesToOpenApiHardCoded();
-		String checkResultApi =  creditScoreConfigRepository.findValueFromName("zolos.checkresult");
+		
+		String checkResultApi =  dbvalues.get("zolos.checkresult");
 		log.info("openApiClient " +openApiClient);
 		String apiRespStr = ekycService.callCheckStatusOpenApi(request, checkResultApi);
 
@@ -2411,12 +2432,13 @@ public class CcrisController {
 	 
 	public OpenApiClient setValuesToOpenApi() {
 		log.info("Pulling from properties");
+		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
 		//log.info("CLIENTID VALUE VS " + creditScoreConfigRepository.findValueFromName("clientId"));
 		
-		String hostUrl = creditScoreConfigRepository.findValueFromName("zolos.server");
-		String clientId = creditScoreConfigRepository.findValueFromName("clientId");
-		String merchantPrivatekey = creditScoreConfigRepository.findValueFromName("merchant.privatekey");
-		String merchantPublicKey = creditScoreConfigRepository.findValueFromName("merchant.publickey");
+		hostUrl = dbvalues.get("zolos.server");
+		clientId = dbvalues.get("clientId");
+		merchantPrivatekey = dbvalues.get("merchant.privatekey");
+		merchantPublicKey = dbvalues.get("merchant.publickey");
 		openApiClient.setHostUrl(hostUrl);
 		openApiClient.setClientId(clientId);
 		openApiClient.setMerchantPrivateKey(merchantPrivatekey);

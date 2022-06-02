@@ -2,6 +2,7 @@ package my.mobypay.creditScore.service;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
+import my.mobypay.creditScore.DBConfig;
 import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
 import my.mobypay.creditScore.dao.CustomerCreditReports;
 import my.mobypay.creditScore.dto.CreditCheckError;
@@ -88,6 +89,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -110,30 +112,34 @@ public class CcrisReportRetrievalService {
 	@Autowired
 	private HttpServletRequest request;
 	
+	/*
 	@Autowired
 	CreditScoreConfigRepository creditScoreConfigRepository;
+	 */
 
-
+	@Autowired
+	DBConfig dbconfig;
+	
 	//@Value("${ExperianURLXML}")
-	private String ExperianURLXML ;
+	protected String ExperianURLXML ;
 
 	// @Value("${ExperianUsername}")
-	private String ExperianUsername;
+	protected String ExperianUsername;
 
 	//@Value("${ExperianPassword}")
-	private String ExperianPassword;
+	protected String ExperianPassword;
 
 	//@Value("${Experianxmlfolder}")
-	private String Experianxmlfolder;
+	protected String Experianxmlfolder;
 
 	// @Value("${Experianxslfolder}")
-	private String Experianxslfolder;
+	protected String Experianxslfolder;
 
 	//@Value("${ExperianPDFFolder}")
-	private String ExperianPDFFolder;
+	protected String ExperianPDFFolder;
 
 	//@Value("${ExperianHTMLfolder}")
-	private String ExperianHTMLfolder;
+	protected String ExperianHTMLfolder;
 
 	@Autowired
 	CcrisSearchService ccrisSearchService;
@@ -153,11 +159,12 @@ public class CcrisReportRetrievalService {
 	public CustomerCreditReportRequest retrieveReport(UserTokensRequest userTokensRequest, boolean reportFlag,
 			UserSearchRequest userSearchRequest, String triggerreconnectCount, String triggersleeptime, String to)
 			throws Exception {
+		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_XML);
 		// headers.setBasicAuth("MOBYUAT1", "Mobyuat.1");
-		ExperianUsername = creditScoreConfigRepository.findValueFromName("ExperianUsername");
-		ExperianPassword = creditScoreConfigRepository.findValueFromName("ExperianPassword");
+		ExperianUsername = dbvalues.get("ExperianUsername");
+		ExperianPassword = dbvalues.get("ExperianPassword");
 		headers.setBasicAuth(ExperianUsername, ExperianPassword);
 		ResponseEntity<String> response = null;
 		boolean ExperianServerDownFlag = false;
@@ -200,7 +207,7 @@ public class CcrisReportRetrievalService {
 			int count1 = 0;
 			CreditCheckError checkError = new CreditCheckError();
 			do {
-				ExperianURLXML = creditScoreConfigRepository.findValueFromName("ExperianURLXML");
+				ExperianURLXML = dbvalues.get("ExperianURLXML");
 				response = restTemplate.postForEntity(ExperianURLXML, request, String.class);
 				System.out.println("***********response**************");
 				System.out.println(response.getBody());
@@ -340,6 +347,7 @@ public class CcrisReportRetrievalService {
 		String name = "";
 
 		String filepaths = "";
+		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
 		// boolean InvalidFlag=false;
 		log.info("checking true or false-------------"
 				+ (!content.equals("Request body is empty") && !content.equals("Result is processing")));
@@ -418,7 +426,7 @@ public class CcrisReportRetrievalService {
 					String contextvalue = urlvalue[1].toString();
 					String[] g = contextvalue.split("/");
 					// String finalvalue = g[0].toString(); 
-					String finalvalue = creditScoreConfigRepository.findValueFromName("sandbox.server"); 
+					String finalvalue = dbvalues.get("sandbox.server"); 
 					log.info("Server name " +finalvalue);
 
 					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
@@ -909,7 +917,7 @@ public class CcrisReportRetrievalService {
 
 					String contextvalue = urlvalue[1].toString();
 					String[] g = contextvalue.split("/");
-					String finalvalue = creditScoreConfigRepository.findValueFromName("sandbox.server"); 
+					String finalvalue = dbvalues.get("sandbox.server"); 
 					log.info("Server name " +finalvalue);
 
 					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
@@ -1458,6 +1466,7 @@ public class CcrisReportRetrievalService {
 
 	public String FilepathdownloadforExisitingCustomer(String xmlResponse, String nricnumber) throws Exception {
 		System.out.println(Experianxmlfolder);
+		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
 		System.out.println(nricnumber + "==================");
 		String filepaths = "";
 		String filepath = convertToPDF(nricnumber, xmlResponse);
@@ -1470,7 +1479,7 @@ public class CcrisReportRetrievalService {
 
 		String contextvalue = urlvalue[1].toString();
 		String[] g = contextvalue.split("/");
-		String finalvalue = creditScoreConfigRepository.findValueFromName("sandbox.server"); 
+		String finalvalue = dbvalues.get("sandbox.server"); 
 		log.info("Server name " +finalvalue);
 
 		filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName=" + filename + "";
@@ -1483,11 +1492,11 @@ public class CcrisReportRetrievalService {
 	}
 
 	public String convertToPDF(String nricNumber, String xmlResponse) throws Exception {
-
-		Experianxmlfolder = creditScoreConfigRepository.findValueFromName("Experianxmlfolder");
-		Experianxslfolder = creditScoreConfigRepository.findValueFromName("Experianxslfolder");
-		ExperianHTMLfolder = creditScoreConfigRepository.findValueFromName("ExperianHTMLfolder");
-		ExperianPDFFolder = creditScoreConfigRepository.findValueFromName("ExperianPDFFolder");
+		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
+		Experianxmlfolder = dbvalues.get("Experianxmlfolder");
+		Experianxslfolder = dbvalues.get("Experianxslfolder");
+		ExperianHTMLfolder = dbvalues.get("ExperianHTMLfolder");
+		ExperianPDFFolder = dbvalues.get("ExperianPDFFolder");
 		String path = Experianxmlfolder + "//data.xml";
 		TransformerFactory tFactory = TransformerFactory.newInstance();
 		// specify the input xsl file location to apply the styles for the pdf

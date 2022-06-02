@@ -32,6 +32,7 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.util.IOUtils;
 
+import lombok.extern.slf4j.Slf4j;
 import my.mobypay.creditScore.AWSS3Config;
 import my.mobypay.creditScore.DBConfig;
 import my.mobypay.creditScore.dto.UserSearchRequest;
@@ -39,6 +40,7 @@ import my.mobypay.creditScore.repository.AWSS3Service;
 import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
 import my.mobypay.creditScore.utility.EmailUtility;
 
+@Slf4j
 @Service
 public class AWSS3ServiceImpl implements AWSS3Service {
 
@@ -49,21 +51,25 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 	
 	
 	// @Value("${aws.s3.bucket}")
-	private String bucketName;
+	protected String bucketName = null;
 	
 	@Autowired
 	private AWSS3Config awss3Config;
-
+/*
 	@Autowired
 	CreditScoreConfigRepository creditScoreConfigRepository;
+	*/
 	
+	@Autowired
+	DBConfig dbconfig;
 	@Bean
 	public String getS3BucketValueFromDB() {
 		//List<CreditScoreConfig> configValues = creditScoreConfigRepository.findAll();
-		String s3bucket = creditScoreConfigRepository.findValueFromName("aws.s3.bucket");
-		System.out.println("##### value s3 bucket " +s3bucket);
+		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
+		bucketName = dbvalues.get("aws.s3.bucket");
+		log.info("bucketName " +bucketName);
 		
-		return s3bucket;
+		return bucketName;
 	}
 	
 	// @Async annotation ensures that the method is executed in a different background thread 

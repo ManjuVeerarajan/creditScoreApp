@@ -2,6 +2,7 @@ package my.mobypay.creditScore.service;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
+import my.mobypay.creditScore.DBConfig;
 import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
 import my.mobypay.creditScore.dto.UserConfirmCCRISEntityRequest;
 import my.mobypay.creditScore.dto.UserSearchRequest;
@@ -26,6 +27,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -35,9 +37,13 @@ public class CcrisSearchService {
 
 	private static Logger log = LoggerFactory.getLogger(CcrisSearchService.class);
     RestTemplate restTemplate  = new RestTemplate();
-
+/*
     @Autowired
 	CreditScoreConfigRepository creditScoreConfigRepository;
+    */
+    
+    @Autowired
+	DBConfig dbconfig;
     
     // private String experianUrl = "https://b2buat.experian.com.my/index.php/moby/report";
      // private String experianUrl = "C:\\Users\\Admin\\Documents\\creditScore\\src\\main\\resources\\Item.xml";
@@ -46,19 +52,21 @@ public class CcrisSearchService {
 	 * Properties(); boolean propertyFlag;
 	 */
  	// @Value("${ExperianURLReport}")
- 	private String ExperianURLReport;
+ 	protected String ExperianURLReport = null;
  	
  	//@Value("${ExperianUsername}")
- 	private String ExperianUsername;
+ 	protected String ExperianUsername  = null;
 	
 	//@Value("${ExperianPassword}")
- 	private String ExperianPassword;
+ 	protected String ExperianPassword  = null;
     
 	 String message="Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! e 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.";
 			
 	public CcrisXml ccrisSearch(UserSearchRequest userSearchRequest, String emailSending) throws Exception {
-		ExperianUsername = creditScoreConfigRepository.findValueFromName("ExperianUsername");
-		ExperianPassword = creditScoreConfigRepository.findValueFromName("ExperianPassword");
+		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
+		
+		ExperianUsername = dbvalues.get("ExperianUsername");
+		ExperianPassword = dbvalues.get("ExperianPassword");
 		System.out.println(ExperianUsername+"========"+ExperianPassword);
 		//ResponseEntity<String> response = null;
 		HttpHeaders headers = new HttpHeaders();
@@ -97,7 +105,7 @@ public class CcrisSearchService {
 		 * propertyFlag=false; String user = file.getvaluefromproperty(propertyFlag);
 		 */
 		try {
-			ExperianURLReport = creditScoreConfigRepository.findValueFromName("ExperianURLReport");
+			ExperianURLReport = dbvalues.get("ExperianURLReport");
 			 ResponseEntity<String> response =  restTemplate.postForEntity(ExperianURLReport,request,String.class);
 		    	String responsess=response.getBody().trim().replaceAll("[ ]{2,}", " ");
 		    	   if(responsess.contains("BINTI")) {
@@ -182,8 +190,10 @@ public class CcrisSearchService {
 		 
 
     public Tokens ccrisConfirm(UserConfirmCCRISEntityRequest userConfirmCCRISEntityRequest, String to) throws Exception{
-    	ExperianUsername = creditScoreConfigRepository.findValueFromName("ExperianUsername");
-		ExperianPassword = creditScoreConfigRepository.findValueFromName("ExperianPassword");
+    	HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
+    	
+    	ExperianUsername = dbvalues.get("ExperianUsername");
+		ExperianPassword = dbvalues.get("ExperianPassword");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_XML);
        // headers.setBasicAuth("MOBYUAT1","Mobyuat.1");
