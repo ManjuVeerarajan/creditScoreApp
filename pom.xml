@@ -11,25 +11,33 @@
 	</parent>
 	<groupId>my.mobypay</groupId>
 	<artifactId>creditScore</artifactId>
-	<version>3.0.8-SNAPSHOT</version>
+	<version>3.1.4-SNAPSHOT_live</version>
 	<name>creditScore</name>
 	<description>Demo for retrieve credit score</description>
 	<properties>
 		<java.version>11</java.version>
 	</properties>
 	<dependencies>
+	<!-- https://mvnrepository.com/artifact/junit/junit -->
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.13.2</version>
+    <scope>test</scope>
+</dependency>
+	
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 			<exclusions>
-				<exclusion>
+				  <exclusion>
 					<groupId>org.apache.tomcat</groupId>
 					<artifactId>tomcat-jdbc</artifactId>
-				</exclusion>
+				</exclusion> 
 				<!-- <exclusion>
 					<groupId>com.zaxxer</groupId>
 					<artifactId>HikariCP</artifactId>
-				</exclusion> -->
+				</exclusion>-->
 			</exclusions>
 		</dependency>
 		<!-- <dependency>
@@ -239,6 +247,18 @@
     <artifactId>c3p0</artifactId>
     <version>0.9.5.5</version>
 </dependency>-->
+<dependency>
+    <groupId>com.github.ulisesbocchio</groupId>
+    <artifactId>jasypt-spring-boot-starter</artifactId>
+    <version>2.1.2</version>
+</dependency>
+<!-- <dependency>
+    <groupId>org.jasypt</groupId>
+    <artifactId>jasypt-hibernate4</artifactId>
+    <version>1.9.2</version>
+    <scope>compile</scope>
+</dependency>-->
+
 	</dependencies>
 
 	<build>
@@ -247,6 +267,11 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+      <groupId>com.github.ulisesbocchio</groupId>
+      <artifactId>jasypt-maven-plugin</artifactId>
+      <version>2.1.2</version>
+    </plugin>
 		</plugins>
 	</build>
 

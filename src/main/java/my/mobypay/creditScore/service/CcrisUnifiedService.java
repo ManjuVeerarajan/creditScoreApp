@@ -80,6 +80,7 @@ public class CcrisUnifiedService {
 		log.info("entityKey " +entityKey);
 		log.info("entityId " +entityId);
 		log.info("specialAttentionAccount " +specialAttentionAccount);
+		log.info("facility " +facility);
 		
 		System.out.println(paymentaging);
 		Integer maximumAllowedInstallments = 0;
@@ -123,7 +124,7 @@ public class CcrisUnifiedService {
 				isNricExist = true;
 				creditscoreless = true;
 				messageStatus = "No Ccris Info found";
-			} else if ((iscore == 0 || iscore == null) && entityId == true  && entityKey == true && facility.equals("NHEDFNCE")) {
+			} else if ((iscore == 0 || iscore == null) && entityId == true  && entityKey == true && facility != null && facility.equals("NHEDFNCE")) {
 				log.info("criss info condition with iscore = = 0");
 				System.out.println("iscore = = 0");
 				maximumAllowedInstallments = 3;
@@ -212,7 +213,7 @@ public class CcrisUnifiedService {
 				isNricExist = true;
 				creditscoreless = true;
 				messageStatus = "No Ccris Info found";
-			} else if ((iscore == 0 || iscore == null) && entityId == true  && entityKey == true && facility.equals("NHEDFNCE")) {
+			} else if ((iscore == 0 || iscore == null) && entityId == true  && entityKey == true && facility != null && facility.equals("NHEDFNCE")) {
 				log.info("criss info condition with iscore = = 0");
 				System.out.println("iscore = = 0");
 				maximumAllowedInstallments = 3;
@@ -301,7 +302,7 @@ public class CcrisUnifiedService {
 				isNricExist = true;
 				creditscoreless = true;
 				messageStatus = "No Ccris Info found";
-			} else if ((iscore == 0 || iscore == null) && entityId == true  && entityKey == true && facility.equals("NHEDFNCE")) {
+			} else if ((iscore == 0 || iscore == null) && entityId == true  && entityKey == true && facility != null && facility.equals("NHEDFNCE")) {
 				log.info("criss info condition with iscore = = 0");
 				System.out.println("iscore = = 0");
 				maximumAllowedInstallments = 3;

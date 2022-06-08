@@ -49,8 +49,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.query.Query;
+import org.hibernate.service.ServiceRegistry;
+import org.jasypt.encryption.StringEncryptor;
+import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
+import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
+import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;
+import org.jasypt.properties.PropertyValueEncryptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -230,28 +237,46 @@ public class CcrisController {
 
 	}
 
+	public StringEncryptor strongHibernateStringEncryptor() {
+	    PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
+	    SimpleStringPBEConfig config = new SimpleStringPBEConfig();
+	  //  config.setPassword("password");
+	    config.setPassword("Moby1234");
+	    config.setAlgorithm("PBEWithMD5AndDES");
+	    config.setPoolSize("1");
+	    encryptor.setConfig(config);
+	    return encryptor;
+	}
+	
+	
+	
 	@Transactional
 	public boolean retrieveNricFromDB(String nric) {
+		log.info("Inside retrieveNricFromDB ");	
+		
 		boolean ispresent = false;
 
 		Session session = null;
 		Transaction transaction = null;
+		 String decrypted = null;
 		try {
 			// SessionFactory factory = HibernateUtil.getSessionFactory();
 			// SessionFactory factory = new
 			// AnnotationConfiguration().configure().buildSessionFactory();
 			Configuration config = new Configuration();
 			config.configure();
-			// local SessionFactory bean created
-			// SessionFactory sessionFactory = config.buildSessionFactory();
+			
 			SessionFactory factory = new Configuration().configure("hibernate.cfg.xml")
 					.addAnnotatedClass(CustomerCreditReports.class).buildSessionFactory();
+			/*
+			StandardPBEStringEncryptor strongEncryptor = new StandardPBEStringEncryptor();
+			  HibernatePBEEncryptorRegistry registry =
+			      HibernatePBEEncryptorRegistry.getInstance();
+			  registry.registerPBEStringEncryptor("strongHibernateStringEncryptor", strongEncryptor);
+			  */
 			session = factory.openSession();
+	            
 			transaction = session.beginTransaction();
-			// TODO
-			// List<ApplicationSettings> inputDays = appSettings.findAll();
-			// ApplicationSettings expireDays = inputDays.get(6);
-			// String daysExpire = expireDays.getValue();
 			String daysExpire = appSettings.findValueFromName("daysExpire");
 
 			log.info("daysExpire " + daysExpire);
@@ -1957,6 +1982,7 @@ public class CcrisController {
 		return "Server is up";
 	}
 
+	/*
 	@RequestMapping(value = { "/ekyc/initialize" }, method = RequestMethod.POST)
 	public JSONObject realIdInit(@RequestBody JSONObject request) {
 
@@ -2010,7 +2036,7 @@ public class CcrisController {
 		return response;
 	}
 
-	
+	*/
 	public CustomerSpendingLimitResponse creditCheckerSimulatorForSpendingLimit(JSONObject request) {
 		log.info("Inside simulator " + request);
 		ExperianReportResponse experianreportResponse = new ExperianReportResponse();

@@ -10,8 +10,12 @@ import my.mobypay.creditScore.dto.response.Item;
 import my.mobypay.creditScore.dto.response.Tokens;
 import my.mobypay.creditScore.utility.ParserUtility;
 
+import org.jasypt.encryption.StringEncryptor;
+import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
+import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -37,13 +41,42 @@ import java.util.stream.Collectors;
 // @EnableJpaRepositories("my.mobypay.creditScore.repository")
 // @EntityScan("my.mobypay.creditScore.dao")
 @SpringBootApplication
+
+
+
+
 public class CreditScoreApplication {
+	
+	@Value("${spring.datasource.password}")
+	String serverPassword;
+	
 	private static Logger logger = LoggerFactory.getLogger(CreditScoreApplication.class);
 	public static void main(String[] args) {
 		logger.info("Running the Application");
 		SpringApplication.run(CreditScoreApplication.class, args);
 
 	}
+	
+	public void run(String... args) throws Exception {
+        System.out.println("DB password is: " + serverPassword);
+    }
+	
+/*	@Bean("jasyptStringEncryptor")
+	public StringEncryptor stringEncryptor() {
+	PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
+	SimpleStringPBEConfig config = new SimpleStringPBEConfig();
+	 config.setPassword("Moby1234");
+	    config.setAlgorithm("PBEWithMD5AndDES");
+	    config.setKeyObtentionIterations("1000");
+	    config.setPoolSize("1");
+	    config.setProviderName("SunJCE");
+	    config.setSaltGeneratorClassName("org.jasypt.salt.RandomSaltGenerator");
+	    config.setStringOutputType("base64");
+	    config.setIvGeneratorClassName("org.jasypt.iv.NoIvGenerator");
+	    encryptor.setConfig(config);
+	    return encryptor;
+	}
+	*/
 	@Bean
 	public RestTemplate getRestTemplate() {
 		return new RestTemplate();

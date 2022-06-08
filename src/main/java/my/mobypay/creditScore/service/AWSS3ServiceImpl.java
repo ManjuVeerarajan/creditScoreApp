@@ -62,6 +62,8 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 	
 	@Autowired
 	DBConfig dbconfig;
+	
+	
 	@Bean
 	public String getS3BucketValueFromDB() {
 		//List<CreditScoreConfig> configValues = creditScoreConfigRepository.findAll();
@@ -131,7 +133,7 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 			// EmailUtility emailUtility=new EmailUtility();
 			//  emailUtility.sentEmail(ex.getLocalizedMessage());
 			 EmailUtility emailUtility=new EmailUtility();
-			  emailUtility.sentEmail(ex.getLocalizedMessage(),"premkumar@mobypay.my,selva@mobypay.my");
+			  emailUtility.sentEmail(ex.getLocalizedMessage(),"premkumar@mobypay.my,sushmidha@mobypay.my");
 			LOGGER.info("File upload is failed.");
 			LOGGER.error("Error= {} while uploading file.", ex.getMessage());
 		}
@@ -184,7 +186,7 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 	        }catch (Exception e) {
 	        	byte[] bytes = "File Not Found For This Customer!!!!!!".getBytes();  
 	        	 EmailUtility emailUtility=new EmailUtility();
-				  emailUtility.sentEmail(e.getLocalizedMessage(),"premkumar@mobypay.my,selva@mobypay.my");
+				  emailUtility.sentEmail(e.getLocalizedMessage(),"premkumar@mobypay.my,sushmidha@mobypay.my");
 			 
 	        	return bytes;
 			}
@@ -203,7 +205,7 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 			} catch (final IOException ex) {
 				LOGGER.error("Error converting the multi-part file to file= ", ex.getMessage());
 				 EmailUtility emailUtility=new EmailUtility();
-				  emailUtility.sentEmail(ex.getLocalizedMessage(),"premkumar@mobypay.my,selva@mobypay.my");
+				  emailUtility.sentEmail(ex.getLocalizedMessage(),"premkumar@mobypay.my,sushmidha@mobypay.my");
 			}
 			return file;
 		}

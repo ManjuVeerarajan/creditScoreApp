@@ -429,7 +429,7 @@ public class CcrisReportRetrievalService {
 					String finalvalue = dbvalues.get("sandbox.server"); 
 					log.info("Server name " +finalvalue);
 
-					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
+					filepaths = "http://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
 							+ filename + "";
 					File file = new File(filename);
 					log.info("delete the file from directory" + filename);
@@ -861,7 +861,6 @@ public class CcrisReportRetrievalService {
 									System.out.println("sibling " +sibling );
 									//Node siblings = nestedList.item(3);
 									if (sibling.getNodeName() != null && sibling.getNodeName() == "ccris_banking_summary") {
-										System.out.println("summary_liabilities "  );
 										Element element = (Element) node;
 										special_attention_account = element.getElementsByTagName("special_attention_account").item(0)
 												.getTextContent() ;
@@ -870,10 +869,11 @@ public class CcrisReportRetrievalService {
 									}
 									if (sibling.getNodeName() != null && sibling.getNodeName() == "ccris_banking_details") {
 										Element element = (Element) node;
+										if( element.getElementsByTagName("facility") != null) {
 										facility = element.getElementsByTagName("facility").item(0)
 												.getTextContent();
-										System.out.println("#### facility " +facility);
-										
+										log.info("#### facility " +facility);
+										}
 									}
 								}
 							
@@ -920,7 +920,7 @@ public class CcrisReportRetrievalService {
 					String finalvalue = dbvalues.get("sandbox.server"); 
 					log.info("Server name " +finalvalue);
 
-					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
+					filepaths = "http://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
 							+ filename + "";
 					File file = new File(filename);
 					log.info("delete the file from directory" + filename);
@@ -1482,7 +1482,7 @@ public class CcrisReportRetrievalService {
 		String finalvalue = dbvalues.get("sandbox.server"); 
 		log.info("Server name " +finalvalue);
 
-		filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName=" + filename + "";
+		filepaths = "http://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName=" + filename + "";
 		File file = new File(filename);
 		log.info("delete the file from directory" + filename);
 		System.out.println("delete the file from directory" + filename);
