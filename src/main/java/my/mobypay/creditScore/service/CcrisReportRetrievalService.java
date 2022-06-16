@@ -20,6 +20,7 @@ import my.mobypay.creditScore.repository.CreditCheckErrorRepository;
 import my.mobypay.creditScore.utility.EmailUtility;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.Fop;
@@ -1531,6 +1532,7 @@ public class CcrisReportRetrievalService {
 		renderer.layout();
 		renderer.createPDF(out);
 		out.close();
+		//FileUtils.re
 		return filename;
 
 	}
