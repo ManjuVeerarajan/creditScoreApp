@@ -5,6 +5,8 @@ import lombok.Data;
 import my.mobypay.creditScore.dto.response.Report;
 
 import javax.persistence.*;
+
+import java.sql.Blob;
 import java.util.Date;
 
 @Entity
@@ -57,4 +59,8 @@ public class CustomerCreditReports {
     private Integer customerId;
     @Column(name = "FilePath")
     private String filepath;
+    @Column(name = "pdfBlob")
+    private Blob pdfBlob;
+    @Column(name = "base64_pdf")
+    private String base64_pdf;
 }

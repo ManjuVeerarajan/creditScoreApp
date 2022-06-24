@@ -2,6 +2,7 @@ package my.mobypay.creditScore.repository;
 
 import my.mobypay.creditScore.dao.CustomerCreditReports;
 
+import java.sql.Blob;
 import java.util.Date;
 import java.util.List;
 
@@ -65,4 +66,14 @@ void updateTable(@Param("name")  String name,String nric, Integer bankruptcyCoun
 	 * public int findIscore(@Param("nric") String nric);
 	 */
 	//public  String findByName(String name);
+
+  @Modifying
+  @Transactional
+  @Query("UPDATE CustomerCreditReports p set p.pdfBlob = :pdfBlob WHERE p.nric= :nric")
+  void updatePdfBlob(String nric, Blob pdfBlob);
+
+  @Modifying
+  @Transactional
+  @Query("UPDATE CustomerCreditReports p set p.base64_pdf = :base64_pdf WHERE p.nric= :nric")
+  void updateBase64(String nric, String base64_pdf);
 }

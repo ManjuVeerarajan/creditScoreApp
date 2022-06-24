@@ -26,6 +26,7 @@ public class CreditCheckerAuthDao {
 	    @Column(name = "api_secret")
 	    private String api_secret;
 	    @Enumerated(EnumType.ORDINAL)
+	  //  @Enumerated(EnumType.STRING)
 	    @Column(name = "platform")
 	    private PlatformEnum platform;
 	    @Column(name = "version")
@@ -33,9 +34,9 @@ public class CreditCheckerAuthDao {
 	    @Column(name = "createdDate")
 	    private Date createdDate;
 	    @Column(name = "lastUsedDate")
-	    private String lastUsedDate;
+	    private Date lastUsedDate;
 	    @Column(name = "updatedDate")
-	    private String updatedDate;
+	    private Date updatedDate;
 }
 
 

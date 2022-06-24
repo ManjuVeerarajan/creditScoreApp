@@ -22,4 +22,6 @@ public class ExperianReportResponse {
     private int BankingCreditPendingCount;
     private double BankingCreditPendingAmount;
     private String Refxml;
+    private String Base64_pdf;
+    
 }

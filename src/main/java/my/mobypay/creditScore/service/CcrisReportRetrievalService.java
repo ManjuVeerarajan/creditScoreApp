@@ -83,12 +83,19 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.sql.Blob;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -121,27 +128,29 @@ public class CcrisReportRetrievalService {
 	@Autowired
 	DBConfig dbconfig;
 	
-	//@Value("${ExperianURLXML}")
 	protected String ExperianURLXML ;
 
-	// @Value("${ExperianUsername}")
 	protected String ExperianUsername;
 
-	//@Value("${ExperianPassword}")
 	protected String ExperianPassword;
 
-	//@Value("${Experianxmlfolder}")
 	protected String Experianxmlfolder;
 
-	// @Value("${Experianxslfolder}")
 	protected String Experianxslfolder;
 
-	//@Value("${ExperianPDFFolder}")
 	protected String ExperianPDFFolder;
 
-	//@Value("${ExperianHTMLfolder}")
 	protected String ExperianHTMLfolder;
 
+	@Value("${spring.datasource.url}")
+	String datasourceUrl;
+	
+	@Value("${spring.datasource.username}")
+	String username;
+	
+	@Value("${spring.datasource.password}")
+	String password;
+	
 	@Autowired
 	CcrisSearchService ccrisSearchService;
 
@@ -348,6 +357,7 @@ public class CcrisReportRetrievalService {
 		String name = "";
 
 		String filepaths = "";
+		//String encode = "";
 		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
 		// boolean InvalidFlag=false;
 		log.info("checking true or false-------------"
@@ -419,6 +429,8 @@ public class CcrisReportRetrievalService {
 					String filepath = convertToPDF(nricNumber, xmlResponse);
 					System.out.println(filepath + "file is generated or not");
 
+					String encode = convertXmlToBase64(filepath);
+					log.info("PDF encoded to base 64" );
 					String filename = awss3ServiceImpl.uploadFile(filepath);
 					String path = request.getRequestURL().toString();
 
@@ -430,7 +442,7 @@ public class CcrisReportRetrievalService {
 					String finalvalue = dbvalues.get("sandbox.server"); 
 					log.info("Server name " +finalvalue);
 
-					filepaths = "http://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
+					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
 							+ filename + "";
 					File file = new File(filename);
 					log.info("delete the file from directory" + filename);
@@ -885,7 +897,9 @@ public class CcrisReportRetrievalService {
 					/*
 					 * myWriter.close(); myWriter.flush();
 					 */
+					//TODO remove if blob conversion is not required
 					log.info("#### legalsuitcount #### " +legalsuitcount);
+
 					report = CustomerCreditReportRequest.builder().name(responsess).nric(nric)
 							.bankruptcyCount(bankruptcy_count).legalSuitCount(legalsuitcount)
 							.tradeBureauCount(trade_bureau_count).iScore(iscore).iScoreRiskGrade(i_score_risk_grade)
@@ -897,9 +911,9 @@ public class CcrisReportRetrievalService {
 							.bankingCreditPendingAmount(Banking_credit_pending_amount).xmlString(xmlResponse)
 							.Criss(ccris)/* .jsonString(xmlResponse) */.casesettled(casesettled)
 							.casewithdrawn(casewithdraw).paymentaging(dueDateInfo).PendingStatus(pendingstatus)
-							.LegalstatusCount(legalsuitcount).downaloadfilepath(filepaths).entityId(entity_id).entityKey(entity_key).specialAttentionAccount(special_attention_account).facility(facility)// *
-																							// .InvalidUserFlag(InvalidFlag)
-																							// */
+							.LegalstatusCount(legalsuitcount).downaloadfilepath(filepaths).entityId(entity_id)
+							.entityKey(entity_key).specialAttentionAccount(special_attention_account).facility(facility)
+							.base64_pdf(encode)
 							.build();
 					return report;
 
@@ -910,7 +924,8 @@ public class CcrisReportRetrievalService {
 					 */
 					String filepath = convertToPDF(nricNumber, xmlResponse);
 					log.info("filepath in else loop " +filepath);
-
+					String encode = convertXmlToBase64(filepath);
+					log.info("PDF encoded to base 64" );
 					String filename = awss3ServiceImpl.uploadFile(filepath);
 					String path = request.getRequestURL().toString();
 
@@ -921,7 +936,7 @@ public class CcrisReportRetrievalService {
 					String finalvalue = dbvalues.get("sandbox.server"); 
 					log.info("Server name " +finalvalue);
 
-					filepaths = "http://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
+					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
 							+ filename + "";
 					File file = new File(filename);
 					log.info("delete the file from directory" + filename);
@@ -1377,6 +1392,9 @@ public class CcrisReportRetrievalService {
 					 */
 					
 					log.info("++++ legalsuitcount ++++ " +legalsuitcount);
+					  
+					
+					    
 					report = CustomerCreditReportRequest.builder().name(responsess).nric(nric)
 							.bankruptcyCount(bankruptcy_count).legalSuitCount(legalsuitcount)
 							.tradeBureauCount(trade_bureau_count).iScore(iscore).iScoreRiskGrade(i_score_risk_grade)
@@ -1388,7 +1406,10 @@ public class CcrisReportRetrievalService {
 							.bankingCreditPendingAmount(Banking_credit_pending_amount).xmlString(xmlResponse)
 							/* .jsonString(xmlResponse) */.casesettled(casesettled).casewithdrawn(casewithdraw)
 							.paymentaging(dueDateInfo).PendingStatus(pendingstatus).LegalstatusCount(legalsuitcount)
-							.downaloadfilepath(filepaths).Criss(ccris).entityId(entity_id).entityKey(entity_key).specialAttentionAccount(special_attention_account).facility(facility)// * .InvalidUserFlag(InvalidFlag) */
+							.downaloadfilepath(filepaths).Criss(ccris).entityId(entity_id).entityKey(entity_key)
+							.specialAttentionAccount(special_attention_account).facility(facility)
+							// .pdfBlob(pdfBlob)
+							.base64_pdf(encode)
 							.build();
 					// System.out.println(report.toString() + "===========================");
 
@@ -1483,7 +1504,7 @@ public class CcrisReportRetrievalService {
 		String finalvalue = dbvalues.get("sandbox.server"); 
 		log.info("Server name " +finalvalue);
 
-		filepaths = "http://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName=" + filename + "";
+		filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName=" + filename + "";
 		File file = new File(filename);
 		log.info("delete the file from directory" + filename);
 		System.out.println("delete the file from directory" + filename);
@@ -1537,6 +1558,25 @@ public class CcrisReportRetrievalService {
 
 	}
 	
+	
+	public static String convertXmlToBase64(String filename) {
+		String xmlBase64 = null;
+		try {
+			System.out.println("Inside convertXmlToBase64 ");
+		    File pdfFile = new File(filename);
+		    byte[] encoded = Files.readAllBytes(Paths.get(pdfFile.getAbsolutePath()));
+		    Base64.Encoder enc = Base64.getEncoder();
+		    byte[] strenc = enc.encode(encoded);
+		    String encode = new String(strenc, "UTF-8");
+		   // pdfFile.delete();
+		    
+		    
+			    xmlBase64 = encode;
+		}catch(Exception ex) {
+			System.out.println("Exception " +ex);
+		}
+		return xmlBase64;
+	}
 	
 	
 	}

@@ -1,6 +1,9 @@
 package my.mobypay.creditScore.dto;
 
+import java.sql.Blob;
 import java.util.Date;
+
+import javax.persistence.Column;
 
 import lombok.Builder;
 import lombok.Data;
@@ -48,6 +51,8 @@ public class CustomerCreditReportRequest {
      private boolean entityId;
      private String specialAttentionAccount;
      private String facility;
+     private Blob pdfBlob;
+     private String base64_pdf;
    //	private Boolean InvalidUserFlag;
    
    	

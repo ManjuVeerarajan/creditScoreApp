@@ -8,6 +8,6 @@ public enum PlatformEnum {
  
     private PlatformEnum(int value)
     {
-        Value = value;
+        Value = value ;
     }
 }
