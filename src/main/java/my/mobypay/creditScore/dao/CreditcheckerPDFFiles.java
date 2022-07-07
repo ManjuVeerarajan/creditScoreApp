@@ -11,16 +11,16 @@ import javax.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name = "creditchecker_sysconfig")
+@Table(name = "creditchecker_pdffiles")
 @Data
-public class Creditcheckersysconfig {
+public class CreditcheckerPDFFiles {
 
 	@Id
 	@Column(name = "name")
 	private String name;
 	@Lob
 	@Column(name = "value")
-	private String value;
+	private byte[] value;
 	@Column(name = "description")
 	private String description;
 	@Column(name = "createdAt")

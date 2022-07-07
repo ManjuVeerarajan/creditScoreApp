@@ -6,7 +6,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import my.mobypay.creditScore.dao.AWSS3Details;
-import my.mobypay.creditScore.dto.CreditCheckError;
 
 @Repository
 public interface AWSS3Repository extends JpaRepository<AWSS3Details, Integer >{

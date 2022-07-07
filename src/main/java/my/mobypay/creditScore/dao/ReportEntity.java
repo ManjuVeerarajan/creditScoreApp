@@ -9,7 +9,7 @@ import javax.persistence.Table;
 import java.util.Date;
 
 @Entity
-@Table(name = "report_response")
+@Table(name = "c_report_response")
 @Data
 public class ReportEntity {
 

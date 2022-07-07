@@ -10,7 +10,7 @@ import java.sql.Blob;
 import java.util.Date;
 
 @Entity
-@Table(name = "CustomerCreditReports")
+@Table(name = "cc_customerCreditReports")
 @Data
 public class CustomerCreditReports {
 
@@ -47,8 +47,10 @@ public class CustomerCreditReports {
     private Integer bankingCreditPendingCount;
     @Column(name = "BankingCreditPendingAmount")
     private Double bankingCreditPendingAmount;
+    @Lob
     @Column(name = "XmlString")
     private String xmlString;
+    @Lob
     @Column(name = "JsonString")
     private String jsonString;
     @Column(name = "CreatedAt")
@@ -61,6 +63,7 @@ public class CustomerCreditReports {
     private String filepath;
     @Column(name = "pdfBlob")
     private Blob pdfBlob;
+    @Lob
     @Column(name = "base64_pdf")
     private String base64_pdf;
 }

@@ -2,8 +2,8 @@ package my.mobypay.creditScore.service;
 
 import lombok.extern.slf4j.Slf4j;
 import my.mobypay.creditScore.controller.CcrisController;
+import my.mobypay.creditScore.dao.TokensRequest;
 import my.mobypay.creditScore.dao.CustomerCreditReports;
-import my.mobypay.creditScore.dao.CustomerTokenRequest;
 import my.mobypay.creditScore.dto.CreditCheckResponse;
 import my.mobypay.creditScore.dto.CustomerCreditReportRequest;
 import my.mobypay.creditScore.dto.UserConfirmCCRISEntityRequest;
@@ -554,8 +554,8 @@ public class CcrisUnifiedService {
 						.lastKnownAddress("asdas").consentGranted("Y").enquiryPurpose("REVIEW").build();
 				UserTokensRequest userTokensRequest;
 
-				CustomerTokenRequest checkToken = new CustomerTokenRequest();
-				CustomerTokenRequest customerTokenRequest = new CustomerTokenRequest();
+				TokensRequest checkToken = new TokensRequest();
+				TokensRequest customerTokenRequest = new TokensRequest();
 				TokenMap = customerUserTokenRepository.findTokenByNric(userSearchRequest.getEntityId());
 
 				// checkToken=customerUserTokenRepository.findTokenByNric(userSearchRequest.getEntityId());

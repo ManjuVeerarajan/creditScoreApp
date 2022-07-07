@@ -4,17 +4,17 @@ import lombok.extern.slf4j.Slf4j;
 import my.mobypay.creditScore.DBConfig;
 import my.mobypay.creditScore.dao.ApplicationSettings;
 import my.mobypay.creditScore.dao.ApplicationSettingsRepository;
+import my.mobypay.creditScore.dao.TokensRequest;
 import my.mobypay.creditScore.dao.CreditCheckerLogs;
 import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
 import my.mobypay.creditScore.dao.CustomerCreditReports;
 import my.mobypay.creditScore.dao.CustomerSpendingLimitResponse;
-import my.mobypay.creditScore.dao.CustomerTokenRequest;
 import my.mobypay.creditScore.dao.ExperianPropertyResponse;
 import my.mobypay.creditScore.dao.ExperianReportResponse;
 import my.mobypay.creditScore.dao.ReportEntity;
 import my.mobypay.creditScore.dao.UserRequest;
 
-import my.mobypay.creditScore.dto.CreditCheckError;
+import my.mobypay.creditScore.dto.CustomerCreditError;
 import my.mobypay.creditScore.dto.CreditCheckResponse;
 import my.mobypay.creditScore.dto.CustomerCreditReportRequest;
 import my.mobypay.creditScore.dto.UserConfirmCCRISEntityRequest;
@@ -314,7 +314,7 @@ public class CcrisController {
 			String daysExpire = appSettings.findValueFromName("daysExpire");
 
 			log.info("daysExpire " + daysExpire);
-			String hqlQuery = "SELECT p.nric from CustomerCreditReports p WHERE p.nric = " + nric
+			String hqlQuery = "SELECT p.nric from cc_customerCreditReports p WHERE p.nric = " + nric
 					+ " AND p.UpdatedAt >= date_sub(now(),interval " + daysExpire + ")";
 			org.hibernate.query.Query query = session.createSQLQuery(hqlQuery);
 			log.info("Query Response" + query.getResultList());
@@ -368,7 +368,7 @@ public class CcrisController {
 			// List<ApplicationSettings> inputDays = appSettings.findAll();
 			// ApplicationSettings expireDays = inputDays.get(6);
 			// String daysExpire = expireDays.getValue();
-			String hqlQuery = "SELECT p.name,p.nric from CustomerCreditReports p WHERE p.nric= "+nric;
+			String hqlQuery = "SELECT p.name,p.nric from cc_customerCreditReports p WHERE p.nric= "+nric;
 			org.hibernate.query.Query query = session.createSQLQuery(hqlQuery);
 			log.info("Query Response" + query.getResultList());
 			if (!query.getResultList().isEmpty()) {
@@ -415,7 +415,7 @@ public class CcrisController {
 		// Integer
 		// dbsaveRetrival=creditCheckErrorRepository.updateRetivalCount(1,userSearchRequest.getEntityId());
 		// System.out.println(dbsaveRetrival);
-		CustomerTokenRequest checkToken = new CustomerTokenRequest();
+		TokensRequest checkToken = new TokensRequest();
 		// String TokenMap=null;
 		/*
 		 * String
@@ -1162,7 +1162,7 @@ public class CcrisController {
 	private void SavetoCreditCheckError(String statusCode, String errorMessage, String name, String regexexpression,
 			int retrival) {
 		log.info("Retival COunt: " + retrival);
-		CreditCheckError checkError = new CreditCheckError();
+		CustomerCreditError checkError = new CustomerCreditError();
 		// int i=0;
 		// checkError.setId(i++);
 		System.out.println(String.valueOf(statusCode));
@@ -1226,7 +1226,7 @@ public class CcrisController {
 			// }
 			// creditCheckErrorRepository.save(checkError1);
 			// }
-			CreditCheckError checkError = new CreditCheckError();
+			CustomerCreditError checkError = new CustomerCreditError();
 			checkError.setErrorCode(utilityEntities.getCodes());
 			if (utilityEntities.getDBMessage() != null) {
 				checkError.setErrorStatus(utilityEntities.getDBMessage());
@@ -2234,7 +2234,7 @@ public class CcrisController {
 	private void SavetoCreditCheckErrors(String responseCode, String responseMsg, String name, String regexexpression,
 			int retival) {
 		try {
-			CreditCheckError checkError = new CreditCheckError();
+			CustomerCreditError checkError = new CustomerCreditError();
 			/*
 			 * checkErrors=creditCheckErrorRepository.findbyAll(regexexpression);
 			 * if(checkErrors!=null) { DateTimeFormatter dtf =
@@ -2499,7 +2499,7 @@ public class CcrisController {
 		 userSearchRequest.setServiceName("GetReport");
 		 String to = null;
 		 try {
-		 CustomerCreditReportRequest cc = ccrisReportRetrievalService.processReport( xml, false, false, userSearchRequest, 0,to);
+		 CustomerCreditReportRequest cc = ccrisReportRetrievalService.processReport( xml, false, true, userSearchRequest, 0,to);
 		 log.info("CustomerCreditReportRequest " +cc);
 		 experianreportResponse.setResponseCode("00");
 			experianreportResponse.setResponseMsg("Success");
@@ -2820,54 +2820,6 @@ public class CcrisController {
 	    }
 	 */
 	 
-	 @GetMapping(value = "/creditchecker/getblob")
-		public String getBlobFromPdf() {
-		 log.info("Inside getBlobFromPdf");
-		 String returnStr = null;
-		 List<CustomerCreditReports> customerCredit = customerCreditReportsRepository.findAll();
-		 for (int i=0 ;i<customerCredit.size(); i++) { // for (int i=70 ;i<79; i++) {
-			 
-			 log.info("Nric  " +customerCredit.get(i).getNric());
-			// customerReportMap.put(customerCredit.get(i).getNric(),customerCredit.get(i).getFilepath());
-			 if(customerCredit.get(i).getFilepath() != null) { // if(customerCredit.get(i).getNric().equals("790223085105")) {
-				 
-				 log.info("Nric final  " +customerCredit.get(i).getNric());
-					try {
-						// byte[] pdfBlob = FileUtils.readFileToByteArray(new
-						// File(customerCredit.get(i).getFilepath()));
-						String fileName = customerCredit.get(i).getFilepath();
-						log.info("fileName " +fileName);
-						if(fileName.contains("http://sandbox")){
-							log.info("fileName# " +fileName);
-							fileName = fileName.replace("http://sandbox", "https://sandbox");
-							log.info("fileName## " +fileName);
-							}
-						//Path to be replaced to /var/tmp/creditChecker/pdfBlobTest in higher environments
-						Files.copy(
-							    new URL(fileName).openStream(),
-							    Paths.get("D:\\Official\\Mobypay\\creditChecker\\"+customerCredit.get(i).getNric()+ ".pdf"),StandardCopyOption.REPLACE_EXISTING);
-						
-						byte[] pdfByte = FileUtils.readFileToByteArray(new File("D:\\Official\\Mobypay\\creditChecker\\"+customerCredit.get(i).getNric() + ".pdf"));
-						Connection conn = DriverManager.getConnection(datasourceUrl, username, password);
-						Blob pdfBlob = conn.createBlob();
-						pdfBlob.setBytes(1, pdfByte);
-
-						log.info("Before update");
-						customerCreditReportsRepository.updatePdfBlob(customerCredit.get(i).getNric(), pdfBlob);
-						
-						log.info("Updated Nric  " + customerCredit.get(i).getNric());
-						returnStr = "Done";
-						conn.close();
-					}catch(Exception e) {
-					// log.info("Exception in getBlobFromPdf " +e);
-						e.printStackTrace();
-					 returnStr = e.getLocalizedMessage();
-				 }
-			 }
-			}
-		 
-			return returnStr;
-		}
 	 
 	 @GetMapping(value = "/creditchecker/getBase64")
 		public String getBase64() {

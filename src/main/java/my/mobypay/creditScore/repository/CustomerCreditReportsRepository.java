@@ -67,10 +67,10 @@ void updateTable(@Param("name")  String name,String nric, Integer bankruptcyCoun
 	 */
 	//public  String findByName(String name);
 
-  @Modifying
-  @Transactional
-  @Query("UPDATE CustomerCreditReports p set p.pdfBlob = :pdfBlob WHERE p.nric= :nric")
-  void updatePdfBlob(String nric, Blob pdfBlob);
+//  @Modifying
+//  @Transactional
+//  @Query("UPDATE CustomerCreditReports p set p.pdfBlob = :pdfBlob WHERE p.nric= :nric")
+//  void updatePdfBlob(String nric, Blob pdfBlob);
 
   @Modifying
   @Transactional

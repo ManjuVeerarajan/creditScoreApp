@@ -3,9 +3,12 @@ package my.mobypay.creditScore.service;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
 import my.mobypay.creditScore.DBConfig;
+import my.mobypay.creditScore.controller.GlobalConstants;
 import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
+import my.mobypay.creditScore.dao.CreditScorepPDFFilesrepo;
+import my.mobypay.creditScore.dao.CreditcheckerPDFFiles;
 import my.mobypay.creditScore.dao.CustomerCreditReports;
-import my.mobypay.creditScore.dto.CreditCheckError;
+import my.mobypay.creditScore.dto.CustomerCreditError;
 import my.mobypay.creditScore.dto.CustomerCreditReportRequest;
 import my.mobypay.creditScore.dto.UserConfirmCCRISEntityRequest;
 import my.mobypay.creditScore.dto.UserSearchRequest;
@@ -57,6 +60,7 @@ import org.xml.sax.SAXException;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -71,6 +75,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -87,6 +92,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.Blob;
@@ -134,8 +140,6 @@ public class CcrisReportRetrievalService {
 
 	protected String ExperianPassword;
 
-	protected String Experianxmlfolder;
-
 	protected String Experianxslfolder;
 
 	protected String ExperianPDFFolder;
@@ -156,6 +160,9 @@ public class CcrisReportRetrievalService {
 
 	@Autowired
 	CreditCheckErrorRepository creditCheckErrorRepository;
+	
+	@Autowired
+	CreditScorepPDFFilesrepo creditScorepPDFFilesrepo;
 
 	public static final String RESOURCES_DIR;
 	public static final String OUTPUT_DIR;
@@ -215,7 +222,7 @@ public class CcrisReportRetrievalService {
 		log.info("_count = " + count + "_" + xmlRequest);
 		if (count > 6) {
 			int count1 = 0;
-			CreditCheckError checkError = new CreditCheckError();
+			CustomerCreditError checkError = new CustomerCreditError();
 			do {
 				ExperianURLXML = dbvalues.get("ExperianURLXML");
 				response = restTemplate.postForEntity(ExperianURLXML, request, String.class);
@@ -255,7 +262,7 @@ public class CcrisReportRetrievalService {
 						} else {
 							try {
 								log.info("new Error Entry to ErrorTable");
-								CreditCheckError checkError1 = new CreditCheckError();
+								CustomerCreditError checkError1 = new CustomerCreditError();
 							//	String message = "we are unable to process your application as our 3rd party services provider is not available at the moment. Please try again later.";
 								String message = "Experian API connection issue";
 								String code = "102";
@@ -428,10 +435,10 @@ public class CcrisReportRetrievalService {
 
 					String filepath = convertToPDF(nricNumber, xmlResponse);
 					System.out.println(filepath + "file is generated or not");
-
+					String filename = awss3ServiceImpl.uploadFile(filepath);
 					String encode = convertXmlToBase64(filepath);
 					log.info("PDF encoded to base 64" );
-					String filename = awss3ServiceImpl.uploadFile(filepath);
+					
 					String path = request.getRequestURL().toString();
 
 					String[] urlvalue = path.split("//");
@@ -1487,7 +1494,6 @@ public class CcrisReportRetrievalService {
 	 */
 
 	public String FilepathdownloadforExisitingCustomer(String xmlResponse, String nricnumber) throws Exception {
-		System.out.println(Experianxmlfolder);
 		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
 		System.out.println(nricnumber + "==================");
 		String filepaths = "";
@@ -1514,17 +1520,55 @@ public class CcrisReportRetrievalService {
 	}
 
 	public String convertToPDF(String nricNumber, String xmlResponse) throws Exception {
-		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
-		Experianxmlfolder = dbvalues.get("Experianxmlfolder");
-		Experianxslfolder = dbvalues.get("Experianxslfolder");
-		ExperianHTMLfolder = dbvalues.get("ExperianHTMLfolder");
-		ExperianPDFFolder = dbvalues.get("ExperianPDFFolder");
-		String path = Experianxmlfolder + "//data.xml";
+		HashMap<String, byte[]> filesFromDb = dbconfig.getFilesFromDB();
+
+		byte[] spkssFile = filesFromDb.get(GlobalConstants.SPKCSS_XSL);
+		String filePathForSpkcss = inputStreamFile(spkssFile, GlobalConstants.SPKCSS_XSL);
+		log.info("writing file into project folder -------->" + GlobalConstants.SPKCSS_XSL);
+		InputStream targetStream = new FileInputStream(filePathForSpkcss);
+
+		byte[] dataXml = filesFromDb.get(GlobalConstants.DATA_XML);
+		String dataXmlPath = inputStreamFile(dataXml, GlobalConstants.DATA_XML);
+		log.info("writing file into project folder -------->" + dataXmlPath);
+
+		byte[] xslt2IntoDB = filesFromDb.get(GlobalConstants.XSLT2_CSS);
+		String xslt2Path = inputStreamFile(xslt2IntoDB, GlobalConstants.XSLT2_CSS);
+		log.info("writing file into project folder -------->" + xslt2Path);
+
+		byte[] errorIntoDB = filesFromDb.get(GlobalConstants.ERROR);
+		String errPath = inputStreamFile(errorIntoDB, GlobalConstants.ERROR);
+		log.info("writing file into project folder -------->" + errPath);
+
+		byte[] spga_generalIntoDB = filesFromDb.get(GlobalConstants.SPGA_GENERAL);
+		String spga_generalPath = inputStreamFile(spga_generalIntoDB, GlobalConstants.SPGA_GENERAL);
+		log.info("writing file into project folder -------->" + spga_generalPath);
+
+		byte[] quick_purchaseIntoDB = filesFromDb.get(GlobalConstants.QUICK_PURCHASE);
+		String quick_purchasePath = inputStreamFile(quick_purchaseIntoDB, GlobalConstants.QUICK_PURCHASE);
+		log.info("writing file into project folder -------->" + quick_purchasePath);
+
+		byte[] irissIntoDB = filesFromDb.get(GlobalConstants.IRISS);
+		String irissPath = inputStreamFile(irissIntoDB, GlobalConstants.IRISS);
+		log.info("writing file into project folder -------->" + irissPath);
+
+		byte[] experianLogoIntoDB = filesFromDb.get(GlobalConstants.EXPERIAN_LOGO);
+		String ExperianLogoPath = inputStreamFile(experianLogoIntoDB, GlobalConstants.EXPERIAN_LOGO);
+		log.info("writing file into project folder -------->" + ExperianLogoPath);
+
+		byte[] generalIntoDB = filesFromDb.get(GlobalConstants.GENERAL);
+		String generalPath = inputStreamFile(generalIntoDB, GlobalConstants.GENERAL);
+		log.info("writing file into project folder -------->" + generalPath);
+
+		byte[] ccris_generalIntoDB = filesFromDb.get(GlobalConstants.CCRIS_GENERAL);
+		String ccris_generalPath = inputStreamFile(ccris_generalIntoDB, GlobalConstants.CCRIS_GENERAL);
+		log.info("writing file into project folder -------->" + ccris_generalPath);
+
+		byte[] angkasaIntoDB = filesFromDb.get(GlobalConstants.ANGKASA);
+		String angkasaPath = inputStreamFile(angkasaIntoDB, GlobalConstants.ANGKASA);
+		log.info("writing file into project folder -------->" + angkasaPath);
+
 		TransformerFactory tFactory = TransformerFactory.newInstance();
-		// specify the input xsl file location to apply the styles for the pdf
-		// output file
-		
-		Transformer transformer = tFactory.newTransformer(new StreamSource(Experianxslfolder + "//spkccs.xsl"));
+		Transformer transformer = tFactory.newTransformer(new StreamSource(targetStream));
 		transformer.setOutputProperty("method", "xhtml");
 		// specify the input xml file location
 		// FileOutputStream fos = new FileOutputStream(path, true);
@@ -1533,18 +1577,24 @@ public class CcrisReportRetrievalService {
 		 * File file=new File(path); if (file.exists() && file.isFile()) {
 		 * file.delete(); }
 		 */
-		FileOutputStream fos = new FileOutputStream(path, false);
+		FileOutputStream fos = new FileOutputStream(dataXmlPath, false);
 		byte[] b = xmlResponse.getBytes();
 		fos.write(b);
-		transformer.transform(new StreamSource(path),
-				new StreamResult(new FileOutputStream(ExperianHTMLfolder + "//ExperianReport.html")));
-		String File_To_Convert = ExperianHTMLfolder + "//ExperianReport.html";
+		byte[] htmLfile = filesFromDb.get(GlobalConstants.EXPERIAN_HTML);
+		String HTMLPath = inputStreamFile(htmLfile, GlobalConstants.EXPERIAN_HTML);
+		log.info("writing file into project folder -------->" + HTMLPath);
+		transformer.transform(new StreamSource(dataXmlPath), new StreamResult(new FileOutputStream(HTMLPath)));
+		String File_To_Convert = HTMLPath;
+		log.info("File_To_Convert ------>" + File_To_Convert);
 		String url = new File(File_To_Convert).toURI().toURL().toString();
 		System.out.println("" + url);
 
-		String filename = ExperianPDFFolder + nricNumber + ".pdf";
+		String filename = nricNumber + ".pdf";
 		System.out.println("=========" + filename);
 		System.out.println(filename);
+		File pdfFile = new File(filename);
+		String absolutePath = pdfFile.getAbsolutePath();
+		log.info(pdfFile.getAbsolutePath());
 		OutputStream out;
 		out = new java.io.FileOutputStream(filename);
 
@@ -1553,12 +1603,19 @@ public class CcrisReportRetrievalService {
 		renderer.layout();
 		renderer.createPDF(out);
 		out.close();
-		//FileUtils.re
-		return filename;
+		return absolutePath;
 
 	}
-	
-	
+
+	private String inputStreamFile(byte[] spkssFile, String fileName) throws FileNotFoundException, IOException {
+		File outputFile = new File(fileName);
+		OutputStream spkssFOS = new FileOutputStream(outputFile);
+			spkssFOS.write(spkssFile);
+			outputFile.getAbsolutePath();
+			log.info(outputFile.getAbsolutePath());
+		return outputFile.getAbsolutePath();
+	}
+
 	public static String convertXmlToBase64(String filename) {
 		String xmlBase64 = null;
 		try {
@@ -1568,7 +1625,7 @@ public class CcrisReportRetrievalService {
 		    Base64.Encoder enc = Base64.getEncoder();
 		    byte[] strenc = enc.encode(encoded);
 		    String encode = new String(strenc, "UTF-8");
-		   // pdfFile.delete();
+		    pdfFile.delete();
 		    
 		    
 			    xmlBase64 = encode;
@@ -1576,6 +1633,19 @@ public class CcrisReportRetrievalService {
 			System.out.println("Exception " +ex);
 		}
 		return xmlBase64;
+	}
+	
+	private static Document convertStringToDocument(String xmlStr) {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder;
+		try {
+			builder = factory.newDocumentBuilder();
+			Document doc = builder.parse(new InputSource(new StringReader(xmlStr)));
+			return doc;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	

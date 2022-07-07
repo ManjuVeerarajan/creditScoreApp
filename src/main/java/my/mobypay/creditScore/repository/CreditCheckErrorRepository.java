@@ -9,17 +9,16 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import my.mobypay.creditScore.dao.CustomerCreditReports;
-import my.mobypay.creditScore.dto.CreditCheckError;
+import my.mobypay.creditScore.dto.CustomerCreditError;
 
 @Repository
 @Transactional 
-public interface CreditCheckErrorRepository extends JpaRepository<CreditCheckError, Integer >  {
+public interface CreditCheckErrorRepository extends JpaRepository<CustomerCreditError, Integer >  {
 
 	
 	 
 	 
-	@Query("SELECT DISTINCT  p.RetrivalCount from CreditCheckError p WHERE p.nric= :nric")
+	@Query("SELECT DISTINCT p.retrivalCount from CustomerCreditError p WHERE p.nric= :nric")
 	Integer findbynric(@Param("nric") String nricnumber);
 	
 	/*
@@ -30,11 +29,11 @@ public interface CreditCheckErrorRepository extends JpaRepository<CreditCheckErr
 	
 
 	@Modifying
-   @Query("update CreditCheckError f set f.RetrivalCount= :RetrivalCount,f.updatedAt = :updatedAt  WHERE f.nric= :nric and f.ErrorCode= :ErrorCode")
-    void updateRetivalCount(@Param("RetrivalCount") int retivalCount, @Param("nric") String nricnumber,@Param("updatedAt") Date updatedAt,@Param("ErrorCode") String ErrorCode);
+   @Query("update CustomerCreditError f set f.retrivalCount= :retrivalCount,f.updatedAt = :updatedAt  WHERE f.nric= :nric and f.ErrorCode= :ErrorCode")
+    void updateRetivalCount(@Param("retrivalCount") int retivalCount, @Param("nric") String nricnumber,@Param("updatedAt") Date updatedAt,@Param("ErrorCode") String ErrorCode);
 
-	 @Query("SELECT p from CreditCheckError p WHERE p.nric= :nric and p.ErrorCode= :ErrorCode")
-	CreditCheckError findbyErrorcode(@Param("nric")  String nricnumber,@Param("ErrorCode") String ErrorCode);
+	 @Query("SELECT p from CustomerCreditError p WHERE p.nric= :nric and p.ErrorCode= :ErrorCode")
+	 CustomerCreditError findbyErrorcode(@Param("nric")  String nricnumber,@Param("ErrorCode") String ErrorCode);
 
 	//String updateRetivalCount(String valueOf);
 	

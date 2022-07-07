@@ -8,12 +8,10 @@ import lombok.Data;
 @Data
 
 public class Error {
-	
-	
+
 	@JsonProperty("Errorcode")
-	    private String Errorcode;
-	    @JsonProperty("Errormessage")
-	    private String Errormessage;
-	
+	private String Errorcode;
+	@JsonProperty("Errormessage")
+	private String Errormessage;
 
 }

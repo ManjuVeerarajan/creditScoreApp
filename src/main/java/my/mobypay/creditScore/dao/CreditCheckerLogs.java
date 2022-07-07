@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -32,8 +33,10 @@ public class CreditCheckerLogs {
     private String ip_address;
     @Column(name = "client_id")
     private String client_id;
+    @Lob
     @Column(name = "request")
     private String request;
+    @Lob
     @Column(name = "response")
     private String response;
     @Column(name = "timestamp")

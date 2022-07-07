@@ -8,7 +8,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import lombok.Data;
-import my.mobypay.creditScore.dto.CreditCheckError;
 @Entity
 @Table(name = "application_settings")
 @Data

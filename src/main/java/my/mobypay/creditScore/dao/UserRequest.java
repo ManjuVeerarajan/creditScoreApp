@@ -10,7 +10,7 @@ import javax.persistence.Table;
 import java.util.Date;
 
 @Entity
-@Table(name = "user_request")
+@Table(name = "cc_user_request")
 @Data
 public class UserRequest {
 

@@ -8,10 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import my.mobypay.creditScore.dao.CustomerTokenRequest;
+import my.mobypay.creditScore.dao.TokensRequest;
 @Repository
-public interface CustomerUserTokenRepository extends JpaRepository<CustomerTokenRequest, Integer>  {
+public interface CustomerUserTokenRepository extends JpaRepository<TokensRequest, Integer>  {
 
-	@Query("SELECT f.token1,f.token2 FROM CustomerTokenRequest f WHERE DATE(createdDate) = CURDATE() and f.nric= :nric")
+	@Query("SELECT f.token1,f.token2 FROM TokensRequest f WHERE DATE(createdDate) = CURDATE() and f.nric= :nric")
 	  String findTokenByNric(@Param("nric") String paramString);
 }

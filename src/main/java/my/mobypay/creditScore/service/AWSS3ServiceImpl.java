@@ -7,10 +7,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,21 +96,22 @@ public class AWSS3ServiceImpl implements AWSS3Service {
 	 * ex.getMessage()); } return file; }
 	 */
 	private String uploadFileToS3Bucket(final String bucketName, final File file, String oUTPUT_DIR) {
-		System.out.println(oUTPUT_DIR+"...................,,,,,,,,,,,,,,,,,,,,,??????");
-		
-		 String response[]=oUTPUT_DIR.split("/"); 
-		//String response[]=oUTPUT_DIR.split("//");
-		String finalpath=response[4].toString();
-			final String uniqueFileName = /* LocalDateTime.now() + "_" + */finalpath;
-			System.out.println(uniqueFileName);
+		System.out.println(oUTPUT_DIR + "...................,,,,,,,,,,,,,,,,,,,,,??????");
+		Path path = Paths.get(oUTPUT_DIR);
+		String[] filenameFetch = StreamSupport.stream(path.spliterator(), false).map(Path::toString)
+				.toArray(String[]::new);
+		String fileName = filenameFetch[filenameFetch.length - 1];
+		String finalpath = fileName;
+		final String uniqueFileName = /* LocalDateTime.now() + "_" + */finalpath;
+		System.out.println(uniqueFileName);
 		LOGGER.info("Uploading file with name= " + uniqueFileName);
 		final PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, uniqueFileName, file);
 		LOGGER.info("Establishing AWS Connection start####");
-		//awss3Config.getAmazonS3Cient();
-		AmazonS3 amazonS3=awss3Config.getAmazonS3Cient();
+		// awss3Config.getAmazonS3Cient();
+		AmazonS3 amazonS3 = awss3Config.getAmazonS3Cient();
 		amazonS3.putObject(putObjectRequest);
 		LOGGER.info("Established AWS Connection ####");
-		//amazonS3.putObject(putObjectRequest);
+		// amazonS3.putObject(putObjectRequest);
 		return uniqueFileName;
 	}
 
