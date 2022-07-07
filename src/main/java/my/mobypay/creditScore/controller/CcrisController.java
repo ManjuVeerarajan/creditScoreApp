@@ -137,9 +137,9 @@ public class CcrisController {
 	@Autowired
 	CcrisReportRetrievalService ccrisReportRetrievalService;
 
-	// @Autowired
+//	 @Autowired
 	OpenApiClient openApiClient = new OpenApiClient();
-	// @Autowired
+//	 @Autowired
 	EkycService ekycService = new EkycService();
 	/*
 	 * @Autowired private CcrisReportRetrievalService ccrisReportRetrievalService;
@@ -2306,7 +2306,7 @@ public class CcrisController {
 		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
 		
 		//openApiClient = setValuesToOpenApi();
-		openApiClient = ekycService.setValuesToOpenApiHardCoded();
+		openApiClient = ekycService.setValuesToOpenApiHardCoded(dbvalues);
 		log.info("openApiClient " +openApiClient);
 		log.info("merchantPublicKey set to openApi in initialize " + openApiClient.getOpenApiPublicKey());
 		log.info("Host url set to openApi in initialize  " + openApiClient.getHostUrl());
@@ -2333,7 +2333,7 @@ public class CcrisController {
 		log.info("Inside checkresult =" + request);
 		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
 		// openApiClient = setValuesToOpenApi();
-		openApiClient =	ekycService.setValuesToOpenApiHardCoded();
+		openApiClient =	ekycService.setValuesToOpenApiHardCoded(dbvalues);
 		
 		String checkResultApi =  dbvalues.get("zolos.checkresult");
 		log.info("openApiClient " +openApiClient);
@@ -2778,10 +2778,10 @@ public class CcrisController {
 		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
 		//log.info("CLIENTID VALUE VS " + creditScoreConfigRepository.findValueFromName("clientId"));
 		
-		hostUrl = dbvalues.get("zolos.server");
-		clientId = dbvalues.get("clientId");
-		merchantPrivatekey = dbvalues.get("merchant.privatekey");
-		merchantPublicKey = dbvalues.get("merchant.publickey");
+		hostUrl = dbvalues.get(GlobalConstants.ZOLO_SERVER);
+		clientId = dbvalues.get(GlobalConstants.ZOLO_CLIENTID);
+		merchantPrivatekey = dbvalues.get(GlobalConstants.ZOLO_MERCHANT_PRIVATE_KEY);
+		merchantPublicKey = dbvalues.get(GlobalConstants.ZOLO_MERCHANT_PUBLIC_KEY);
 		openApiClient.setHostUrl(hostUrl);
 		openApiClient.setClientId(clientId);
 		openApiClient.setMerchantPrivateKey(merchantPrivatekey);

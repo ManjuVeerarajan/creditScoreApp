@@ -14,4 +14,10 @@ public class GlobalConstants {
 	public static final String CCRIS_GENERAL = "ccris_general.xsl";
 	public static final String ANGKASA = "angkasa";
 	public static final String ERROR = "error.xsl";
+	public static final String ZOLO_SERVER = "zolos.server";
+	public static final String ZOLO_INIT = "zolos.initialize";
+	public static final String ZOLO_CKECKRESULT = "zolos.checkresult";
+	public static final String ZOLO_MERCHANT_PRIVATE_KEY = "merchant.privatekey";
+	public static final String ZOLO_MERCHANT_PUBLIC_KEY = "merchant.publickey";
+	public static final String ZOLO_CLIENTID = "clientId";
 }

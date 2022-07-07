@@ -48,8 +48,12 @@ import com.zoloz.api.sdk.util.GenSignUtil;
 import com.zoloz.api.sdk.util.OpenApiData;
 import com.zoloz.api.sdk.util.RSAUtil;
 import lombok.Data;
+import my.mobypay.creditScore.DBConfig;
+import my.mobypay.creditScore.controller.GlobalConstants;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * OpenApiClient
@@ -71,6 +75,11 @@ public class OpenApiClient {
     private static boolean signed;
 
     private static boolean encrypted;
+    
+    private static HashMap<String, String> valueFromDB;
+    
+    @Autowired
+    DBConfig dbConfig;
 
     /**
      * default constructor with signature and encryption
@@ -81,6 +90,7 @@ public class OpenApiClient {
 
         this.signed = true;
         this.encrypted = true;
+        valueFromDB = dbConfig.getValueFromDB();
     }
 
     /**
@@ -200,15 +210,17 @@ public class OpenApiClient {
 			 * "00000001003"); apiReq.put("pages", "1"); apiReq.put("metaInfo", metaInfo);
 			 * apiReq.put("userId", userId);
 			*/
+			
 			Properties prop = null;
 			prop = readPropertiesFile("D:\\Official\\Mobypay\\Code\\mobytech1-prodcreditchecker3.0.0-73d5f16f50df\\mobytech1-prodcreditchecker3.0.0-73d5f16f50df\\src\\main\\resources\\application.properties");
-			hostUrl = prop.getProperty("zolos.server");
-System.out.println("hostUrl##### "+hostUrl);
-			clientId = prop.getProperty("clientId");
+			hostUrl = valueFromDB.get(GlobalConstants.ZOLO_SERVER);
+			System.out.println("hostUrl##### "+hostUrl);
+			clientId = prop.getProperty(valueFromDB.get(GlobalConstants.ZOLO_CLIENTID));
 
-			merchantPrivateKey = prop.getProperty("merchant.privatekey");
-
-			openApiPublicKey = prop.getProperty("merchant.publickey");
+//			merchantPrivateKey = prop.getProperty("merchant.privatekey");
+			merchantPrivateKey = valueFromDB.get(GlobalConstants.ZOLO_MERCHANT_PRIVATE_KEY);
+			logger.debug("*****************************"+merchantPrivateKey+"*****************************************");
+			openApiPublicKey =valueFromDB.get(GlobalConstants.ZOLO_MERCHANT_PUBLIC_KEY);
 
 			signed = true;
 
