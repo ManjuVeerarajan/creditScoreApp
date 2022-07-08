@@ -18,8 +18,7 @@ public class Creditcheckersysconfig {
 	@Id
 	@Column(name = "name")
 	private String name;
-	@Lob
-	@Column(name = "value")
+	@Column(name = "value",columnDefinition="varchar(2056)")
 	private String value;
 	@Column(name = "description")
 	private String description;
