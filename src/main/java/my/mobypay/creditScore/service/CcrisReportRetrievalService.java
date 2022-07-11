@@ -107,6 +107,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 //@Slf4j
 @Service
@@ -119,9 +120,6 @@ public class CcrisReportRetrievalService {
 	// private String experianReportUrl
 	// ="https://b2buat.experian.com.my/index.php/moby/xml";
 	private String experianReportUrl = "C:\\backupcode - Copy - Copy\\creditScore\\src\\main\\resources\\report.xml";
-
-	@Autowired
-	AWSS3ServiceImpl awss3ServiceImpl;
 
 	@Autowired
 	private HttpServletRequest request;
@@ -435,7 +433,7 @@ public class CcrisReportRetrievalService {
 
 					String filepath = convertToPDF(nricNumber, xmlResponse);
 					System.out.println(filepath + "file is generated or not");
-					String filename = awss3ServiceImpl.uploadFile(filepath);
+					String filename = getFileNameFromPath(filepath);
 					String encode = convertXmlToBase64(filepath);
 					log.info("PDF encoded to base 64" );
 					
@@ -933,7 +931,7 @@ public class CcrisReportRetrievalService {
 					log.info("filepath in else loop " +filepath);
 					String encode = convertXmlToBase64(filepath);
 					log.info("PDF encoded to base 64" );
-					String filename = awss3ServiceImpl.uploadFile(filepath);
+					String filename = getFileNameFromPath(filepath);
 					String path = request.getRequestURL().toString();
 
 					String[] urlvalue = path.split("//");
@@ -1457,6 +1455,14 @@ public class CcrisReportRetrievalService {
 
 	}
 
+	private String getFileNameFromPath(String filepath) {
+		Path pathFileName = Paths.get(filepath);
+		String[] filenameFetch = StreamSupport.stream(pathFileName.spliterator(), false).map(Path::toString)
+				.toArray(String[]::new);
+		String filename = filenameFetch[filenameFetch.length - 1];
+		return filename;
+	}
+
 	private boolean IsEmpty(NodeList list1) {
 		boolean d = list1.item(0).hasChildNodes();
 		return d;
@@ -1500,7 +1506,7 @@ public class CcrisReportRetrievalService {
 		String filepath = convertToPDF(nricnumber, xmlResponse);
 		System.out.println(filepath);
 
-		String filename = awss3ServiceImpl.uploadFile(filepath);
+		String filename = getFileNameFromPath(filepath);
 		String path = request.getRequestURL().toString();
 
 		String[] urlvalue = path.split("//");
