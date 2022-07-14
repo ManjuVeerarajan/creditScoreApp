@@ -20,4 +20,5 @@ public class GlobalConstants {
 	public static final String ZOLO_MERCHANT_PRIVATE_KEY = "merchant.privatekey";
 	public static final String ZOLO_MERCHANT_PUBLIC_KEY = "merchant.publickey";
 	public static final String ZOLO_CLIENTID = "clientId";
+	public static final String PLATFORM_AUTH = "platform.auth";
 }

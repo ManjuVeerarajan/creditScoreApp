@@ -2738,6 +2738,9 @@ public class CcrisController {
 
 	
 	public void saveLogsToDB(CreditCheckerLogs ccLogs) {
+		HashMap<String, String> valueFromDB = dbconfig.getValueFromDB();
+		String authEnableOrDisable = valueFromDB.get(GlobalConstants.PLATFORM_AUTH);
+		if(StringUtils.isNotEmpty(authEnableOrDisable) && StringUtils.equalsIgnoreCase(authEnableOrDisable, "1")) {
 		String ipAddress = null;
 		String clientName = null;
 		String key = APIKeyAuthFilter.setKeyAndValue().get("headerKey");
@@ -2755,6 +2758,7 @@ public class CcrisController {
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		ccLogs.setTimestamp(timestamp);
 		creditCheckerLogRepository.save(ccLogs);
+		}
 	}
 	 
 
