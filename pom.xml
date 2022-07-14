@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -18,22 +16,22 @@
 		<java.version>11</java.version>
 	</properties>
 	<dependencies>
-	<!-- https://mvnrepository.com/artifact/junit/junit -->
-<dependency>
-    <groupId>junit</groupId>
-    <artifactId>junit</artifactId>
-    <version>4.13.2</version>
-    <scope>test</scope>
-</dependency>
-	
+		<!-- https://mvnrepository.com/artifact/junit/junit -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.2</version>
+			<scope>test</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 			<exclusions>
-				  <exclusion>
+				<exclusion>
 					<groupId>org.apache.tomcat</groupId>
 					<artifactId>tomcat-jdbc</artifactId>
-				</exclusion> 
+				</exclusion>
 				<!-- <exclusion>
 					<groupId>com.zaxxer</groupId>
 					<artifactId>HikariCP</artifactId>
@@ -49,16 +47,16 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 			<exclusions>
-    <exclusion>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-logging</artifactId>
-    </exclusion>
-        <exclusion>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-tomcat</artifactId>
-        </exclusion>
-   
-  </exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-tomcat</artifactId>
+				</exclusion>
+
+			</exclusions>
 		</dependency>
 		<!-- <dependency> <groupId>com.zaxxer</groupId> <artifactId>HikariCP</artifactId> 
 			<version>4.0.3</version>$NO-MVN-MAN-VER$ </dependency> -->
@@ -108,13 +106,13 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.20</version><!--$NO-MVN-MAN-VER$ -->
+			<version>1.18.20</version> <!--$NO-MVN-MAN-VER$ -->
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-xml</artifactId>
-			<version>2.13.0</version><!--$NO-MVN-MAN-VER$ -->
+			<version>2.13.0</version> <!--$NO-MVN-MAN-VER$ -->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -122,94 +120,94 @@
 			<scope>provided</scope>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
-<dependency>
-    <groupId>commons-io</groupId>
-    <artifactId>commons-io</artifactId>
-    <version>2.6</version>
-</dependency>
 		<dependency>
-    <groupId>org.apache.commons</groupId>
-    <artifactId>commons-lang3</artifactId>
-    </dependency>
-    <dependency>
-  <groupId>org.apache.xmlgraphics</groupId>
-  <artifactId>fop</artifactId>
-  <version>2.3</version>
-  <exclusions>
-    <exclusion>
-      <groupId>xml-apis</groupId>
-      <artifactId>xml-apis</artifactId>
-    </exclusion>
-  </exclusions>
-</dependency>
-<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
-<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3 -->
-<dependency>
-   <groupId>com.amazonaws</groupId>
-   <artifactId>aws-java-sdk</artifactId>
-   <version>1.11.133</version>
-</dependency>
-<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>fop</artifactId>
+			<version>2.3</version>
+			<exclusions>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk -->
+		<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3 -->
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk</artifactId>
+			<version>1.11.133</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
 
-<!-- Thanks for using https://jar-download.com -->
+		<!-- Thanks for using https://jar-download.com -->
 
 
-<!-- https://mvnrepository.com/artifact/org.codehaus.mojo/xslt-maven-plugin -->
-<dependency>
-    <groupId>org.codehaus.mojo</groupId>
-    <artifactId>xslt-maven-plugin</artifactId>
-    <version>1.0</version>
-</dependency>
-<!-- https://mvnrepository.com/artifact/com.jcraft/jsch -->
-<dependency>
-    <groupId>com.jcraft</groupId>
-    <artifactId>jsch</artifactId>
-    <version>0.1.54</version>
-</dependency>
-<!-- <dependency>
+		<!-- https://mvnrepository.com/artifact/org.codehaus.mojo/xslt-maven-plugin -->
+		<dependency>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>xslt-maven-plugin</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.jcraft/jsch -->
+		<dependency>
+			<groupId>com.jcraft</groupId>
+			<artifactId>jsch</artifactId>
+			<version>0.1.54</version>
+		</dependency>
+		<!-- <dependency>
     <groupId>org.springframework</groupId>
     <artifactId>spring-mock</artifactId>
     <version>2.0.8</version>
     <scope>test</scope>
 </dependency> -->
 		<dependency>
-    <groupId>org.springframework</groupId>
-    <artifactId>spring-test</artifactId>
-</dependency>
-<!-- https://mvnrepository.com/artifact/de.mwvb/xmldocument -->
-<dependency>
-	<groupId>org.dom4j</groupId>
-	<artifactId>dom4j</artifactId>
-	<version>2.1.0</version>
-</dependency>
-<!-- Thanks for using https://jar-download.com -->
-<!-- https://mvnrepository.com/artifact/org.xhtmlrenderer/flying-saucer-pdf-itext5 -->
-<dependency>
-    <groupId>org.xhtmlrenderer</groupId>
-    <artifactId>flying-saucer-pdf-itext5</artifactId>
-    <version>9.0.1</version>
-</dependency>
- <dependency>
-          <groupId>org.glassfish.jersey.inject</groupId>
-          <artifactId>jersey-hk2</artifactId>
-          <version>2.26</version><!--$NO-MVN-MAN-VER$-->
-    </dependency> 
- <dependency>
-            <groupId>net.sargue</groupId>
-            <artifactId>mailgun</artifactId>
-            <version>1.10.0</version>
-        </dependency>
-        <dependency>
-  <groupId>de.dentrassi.crypto</groupId>
-  <artifactId>pem-keystore</artifactId>
-  <version>2.0.0</version>
-</dependency>
-<dependency>
-    <groupId>com.zoloz.api.sdk</groupId>
-    <artifactId>zoloz-api-sdk</artifactId>
-    <version>0.1.0</version>
-</dependency>
-<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-dbcp2 
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/de.mwvb/xmldocument -->
+		<dependency>
+			<groupId>org.dom4j</groupId>
+			<artifactId>dom4j</artifactId>
+			<version>2.1.0</version>
+		</dependency>
+		<!-- Thanks for using https://jar-download.com -->
+		<!-- https://mvnrepository.com/artifact/org.xhtmlrenderer/flying-saucer-pdf-itext5 -->
+		<dependency>
+			<groupId>org.xhtmlrenderer</groupId>
+			<artifactId>flying-saucer-pdf-itext5</artifactId>
+			<version>9.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
+			<version>2.26</version> <!--$NO-MVN-MAN-VER$-->
+		</dependency>
+		<dependency>
+			<groupId>net.sargue</groupId>
+			<artifactId>mailgun</artifactId>
+			<version>1.10.0</version>
+		</dependency>
+		<dependency>
+			<groupId>de.dentrassi.crypto</groupId>
+			<artifactId>pem-keystore</artifactId>
+			<version>2.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.zoloz.api.sdk</groupId>
+			<artifactId>zoloz-api-sdk</artifactId>
+			<version>0.1.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-dbcp2 
 <dependency>
     <groupId>org.apache.commons</groupId>
     <artifactId>commons-dbcp2</artifactId>
@@ -219,19 +217,19 @@
     <groupId>org.hibernate</groupId>
     <artifactId>hibernate-core</artifactId>
 </dependency> -->
-<dependency>
-    <groupId>jakarta.xml.bind</groupId>
-    <artifactId>jakarta.xml.bind-api</artifactId>
-    <version>2.3.2</version>
-</dependency>
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<version>2.3.2</version>
+		</dependency>
 
-<!-- Runtime, com.sun.xml.bind module -->
-<dependency>
-    <groupId>org.glassfish.jaxb</groupId>
-    <artifactId>jaxb-runtime</artifactId>
-    <version>2.3.2</version>
-</dependency>
-<!--
+		<!-- Runtime, com.sun.xml.bind module -->
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-runtime</artifactId>
+			<version>2.3.2</version>
+		</dependency>
+		<!--
 <dependency>
     <groupId>org.hibernate.orm</groupId>
     <artifactId>hibernate-core</artifactId>
@@ -247,35 +245,35 @@
     <artifactId>c3p0</artifactId>
     <version>0.9.5.5</version>
 </dependency>-->
-<dependency>
-    <groupId>com.github.ulisesbocchio</groupId>
-    <artifactId>jasypt-spring-boot-starter</artifactId>
-    <version>2.1.2</version>
-</dependency>
-<!-- <dependency>
+		<dependency>
+			<groupId>com.github.ulisesbocchio</groupId>
+			<artifactId>jasypt-spring-boot-starter</artifactId>
+			<version>2.1.2</version>
+		</dependency>
+		<!-- <dependency>
     <groupId>org.jasypt</groupId>
     <artifactId>jasypt-hibernate4</artifactId>
     <version>1.9.2</version>
     <scope>compile</scope>
 </dependency>-->
-<!--  <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-security</artifactId>
-   </dependency> -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
-	<plugins>
-		<plugin>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-maven-plugin</artifactId>
-		</plugin>
-		<plugin>
-			<groupId>com.github.ulisesbocchio</groupId>
-			<artifactId>jasypt-maven-plugin</artifactId>
-			<version>2.1.2</version>
-		</plugin>
-	</plugins>
-</build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>com.github.ulisesbocchio</groupId>
+				<artifactId>jasypt-maven-plugin</artifactId>
+				<version>2.1.2</version>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>

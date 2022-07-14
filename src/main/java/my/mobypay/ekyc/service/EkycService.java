@@ -124,6 +124,10 @@ public class EkycService {
 			String transactionId = request.getString("transactionId");
 			apiReq.put("transactionId", transactionId);
 		}
+		if (request.getString("isReturnImage") != null) {
+			String isReturnImage = request.getString("isReturnImage");
+			apiReq.put("isReturnImage", isReturnImage);
+		}
 
 		String apiRespStr = openApiClient.callOpenApi(checkResultApi, JSON.toJSONString(apiReq));
 		return apiRespStr;

@@ -1,10 +1,12 @@
 package my.mobypay.creditScore.controller;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.sql.Timestamp;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,6 +42,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zoloz.api.sdk.client.OpenApiClient;
 
 import lombok.extern.slf4j.Slf4j;
+import my.mobypay.creditScore.APIKeyAuthFilter;
 import my.mobypay.creditScore.DBConfig;
 import my.mobypay.creditScore.dao.ApplicationSettingsRepository;
 import my.mobypay.creditScore.dao.CreditCheckerLogs;
@@ -422,11 +425,11 @@ public class CcrisController {
 					log.info("Inside  res.getStatusCode()!= null" + res.getStatusCode());
 
 					// To add logs in DB
-					/*
-					 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-					 * ccLogs.setRequest(userSearchRequest.toString());
-					 * ccLogs.setResponse(res.toString()); saveLogsToDB(ccLogs);
-					 */
+					
+					  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+					  ccLogs.setRequest(userSearchRequest.toString());
+					  ccLogs.setResponse(res.toString()); saveLogsToDB(ccLogs);
+					 
 					return res;
 				}
 			}
@@ -501,11 +504,11 @@ public class CcrisController {
 								log.info("customer already exist so returning json response");
 
 								// To add logs in DB
-								/*
-								 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-								 * ccLogs.setRequest(userSearchRequest.toString());
-								 * ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
-								 */
+								
+								  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+								  ccLogs.setRequest(userSearchRequest.toString());
+								  ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
+								 
 
 								return jsonresponse;
 							} else {
@@ -522,11 +525,11 @@ public class CcrisController {
 								// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
 
 								// To add logs in DB
-								/*
-								 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-								 * ccLogs.setRequest(userSearchRequest.toString());
-								 * ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
-								 */
+								
+								  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+								  ccLogs.setRequest(userSearchRequest.toString());
+								  ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
+								 
 								return jsonresponse;
 							}
 
@@ -552,11 +555,11 @@ public class CcrisController {
 									regexexpression, 0);
 
 							// To add logs in DB
-							/*
-							 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-							 * ccLogs.setRequest(userSearchRequest.toString());
-							 * ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
-							 */
+							
+							  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+							  ccLogs.setRequest(userSearchRequest.toString());
+							  ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
+							 
 							return jsonresponse;
 
 						} else {
@@ -587,11 +590,11 @@ public class CcrisController {
 									regexexpression, 0);
 
 							// To add logs in DB
-							/*
-							 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-							 * ccLogs.setRequest(userSearchRequest.toString());
-							 * ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
-							 */
+							
+							  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+							  ccLogs.setRequest(userSearchRequest.toString());
+							  ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
+							 
 							return jsonresponse;
 						}
 					} else if (inputResponse != null) {
@@ -622,11 +625,11 @@ public class CcrisController {
 								// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
 
 								// To add logs in DB
-								/*
-								 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-								 * ccLogs.setRequest(userSearchRequest.toString());
-								 * ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
-								 */
+								
+								  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+								  ccLogs.setRequest(userSearchRequest.toString());
+								  ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
+								 
 								return jsonresponse;
 							}
 
@@ -657,11 +660,11 @@ public class CcrisController {
 									regexexpression, 0);
 
 							// To add logs in DB
-							/*
-							 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-							 * ccLogs.setRequest(userSearchRequest.toString());
-							 * ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
-							 */
+							
+							  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+							  ccLogs.setRequest(userSearchRequest.toString());
+							  ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
+							 
 							return jsonresponse;
 						}
 
@@ -685,11 +688,11 @@ public class CcrisController {
 								regexexpression, 0);
 
 						// To add logs in DB
-						/*
-						 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-						 * ccLogs.setRequest(userSearchRequest.toString());
-						 * ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
-						 */
+						
+						  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+						  ccLogs.setRequest(userSearchRequest.toString());
+						  ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
+						 
 						return jsonresponse;
 					} else {
 						/*
@@ -716,11 +719,11 @@ public class CcrisController {
 								regexexpression, 0);
 
 						// To add logs in DB
-						/*
-						 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-						 * ccLogs.setRequest(userSearchRequest.toString());
-						 * ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
-						 */
+						
+						  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+						  ccLogs.setRequest(userSearchRequest.toString());
+						  ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
+						 
 						return jsonresponse;
 					}
 				} else {
@@ -789,12 +792,12 @@ public class CcrisController {
 							log.info("added new customer to database1: " + customercreditreportrequest.getNric());
 
 							// To add logs in DB
-							/*
-							 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-							 * ccLogs.setRequest(userSearchRequest.toString());
-							 * ccLogs.setResponse(customerSpendingLimitResponse.toString());
-							 * saveLogsToDB(ccLogs);
-							 */
+							
+							  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+							  ccLogs.setRequest(userSearchRequest.toString());
+							  ccLogs.setResponse(customerSpendingLimitResponse.toString());
+							  saveLogsToDB(ccLogs);
+							 
 							return customerSpendingLimitResponse;
 						} else if (CrissFlag != null && CrissFlag == true) {
 							log.info("CrissFlag============================");
@@ -814,12 +817,12 @@ public class CcrisController {
 							customerSpendingLimitResponse.setErrorMessage(errormessage);
 
 							// To add logs in DB
-							/*
-							 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-							 * ccLogs.setRequest(userSearchRequest.toString());
-							 * ccLogs.setResponse(customerSpendingLimitResponse.toString());
-							 * saveLogsToDB(ccLogs);
-							 */
+							
+							  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+							  ccLogs.setRequest(userSearchRequest.toString());
+							  ccLogs.setResponse(customerSpendingLimitResponse.toString());
+							  saveLogsToDB(ccLogs);
+							 
 							return customerSpendingLimitResponse;
 						}
 
@@ -841,12 +844,12 @@ public class CcrisController {
 							customerSpendingLimitResponse.setErrorMessage(errormessage);
 
 							// To add logs in DB
-							/*
-							 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-							 * ccLogs.setRequest(userSearchRequest.toString());
-							 * ccLogs.setResponse(customerSpendingLimitResponse.toString());
-							 * saveLogsToDB(ccLogs);
-							 */
+							
+							  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+							  ccLogs.setRequest(userSearchRequest.toString());
+							  ccLogs.setResponse(customerSpendingLimitResponse.toString());
+							  saveLogsToDB(ccLogs);
+							 
 							return customerSpendingLimitResponse;
 						} else if (checkcreditscoreResponse.getIsBelowscoreFlag() == true) {
 
@@ -873,12 +876,12 @@ public class CcrisController {
 							// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
 
 							// To add logs in DB
-							/*
-							 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-							 * ccLogs.setRequest(userSearchRequest.toString());
-							 * ccLogs.setResponse(customerSpendingLimitResponse.toString());
-							 * saveLogsToDB(ccLogs);
-							 */
+							
+							  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+							  ccLogs.setRequest(userSearchRequest.toString());
+							  ccLogs.setResponse(customerSpendingLimitResponse.toString());
+							  saveLogsToDB(ccLogs);
+							 
 							return customerSpendingLimitResponse;
 						} else {
 							error.setErrorcode(utilityEntities.getCodes());
@@ -886,11 +889,11 @@ public class CcrisController {
 							// SavetoCreditCheckError(error,name,regexexpression);
 
 							// To add logs in DB
-							/*
-							 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-							 * ccLogs.setRequest(userSearchRequest.toString());
-							 * ccLogs.setResponse(error.toString()); saveLogsToDB(ccLogs);
-							 */
+							
+							  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+							  ccLogs.setRequest(userSearchRequest.toString());
+							  ccLogs.setResponse(error.toString()); saveLogsToDB(ccLogs);
+							 
 							return error;
 						}
 					} else if (utilityEntities.getInvalidUserFlag() != null
@@ -922,12 +925,12 @@ public class CcrisController {
 						SavetoCreditCheckErrorwithResponsefromExperian(utilityEntities, name, regexexpression, 0);
 
 						// To add logs in DB
-						/*
-						 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-						 * ccLogs.setRequest(userSearchRequest.toString());
-						 * ccLogs.setResponse(customerSpendingLimitResponse.toString());
-						 * saveLogsToDB(ccLogs);
-						 */
+						
+						  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+						  ccLogs.setRequest(userSearchRequest.toString());
+						  ccLogs.setResponse(customerSpendingLimitResponse.toString());
+						  saveLogsToDB(ccLogs);
+						 
 						return customerSpendingLimitResponse;
 
 					} else if (utilityEntities.getExperianServerFlag() != null
@@ -960,12 +963,12 @@ public class CcrisController {
 						// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
 
 						// To add logs in DB
-						/*
-						 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-						 * ccLogs.setRequest(userSearchRequest.toString());
-						 * ccLogs.setResponse(customerSpendingLimitResponse.toString());
-						 * saveLogsToDB(ccLogs);
-						 */
+						
+						  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+						  ccLogs.setRequest(userSearchRequest.toString());
+						  ccLogs.setResponse(customerSpendingLimitResponse.toString());
+						  saveLogsToDB(ccLogs);
+						 
 						return customerSpendingLimitResponse;
 
 					} else if (utilityEntities.getInvalidUsernameflag() != null
@@ -986,12 +989,12 @@ public class CcrisController {
 
 						SavetoCreditCheckErrorwithResponsefromExperian(utilityEntities, name, regexexpression, 0);
 						// To add logs in DB
-						/*
-						 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-						 * ccLogs.setRequest(userSearchRequest.toString());
-						 * ccLogs.setResponse(customerSpendingLimitResponse.toString());
-						 * saveLogsToDB(ccLogs);
-						 */
+						
+						  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+						  ccLogs.setRequest(userSearchRequest.toString());
+						  ccLogs.setResponse(customerSpendingLimitResponse.toString());
+						  saveLogsToDB(ccLogs);
+						 
 						return customerSpendingLimitResponse;
 
 					} else {
@@ -1020,12 +1023,12 @@ public class CcrisController {
 						// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
 
 						// To add logs in DB
-						/*
-						 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-						 * ccLogs.setRequest(userSearchRequest.toString());
-						 * ccLogs.setResponse(customerSpendingLimitResponse.toString());
-						 * saveLogsToDB(ccLogs);
-						 */
+						
+						  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+						  ccLogs.setRequest(userSearchRequest.toString());
+						  ccLogs.setResponse(customerSpendingLimitResponse.toString());
+						  saveLogsToDB(ccLogs);
+						 
 						return customerSpendingLimitResponse;
 					}
 
@@ -1052,11 +1055,11 @@ public class CcrisController {
 				// SavetoCreditCheckError(jsonresponse.getStatusCode(),jsonresponse.getErrorMessage(),name,regexexpression);
 
 				// To add logs in DB
-				/*
-				 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-				 * ccLogs.setRequest(userSearchRequest.toString());
-				 * ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
-				 */
+				
+				  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+				  ccLogs.setRequest(userSearchRequest.toString());
+				  ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
+				 
 				return jsonresponse;
 			}
 		}
@@ -1073,11 +1076,11 @@ public class CcrisController {
 		// SavetoCreditCheckError(jsonresponse.getStatusCode(),jsonresponse.getErrorMessage(),name,regexexpression);
 
 		// To add logs in DB
-		/*
-		 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-		 * ccLogs.setRequest(userSearchRequest.toString());
-		 * ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
-		 */
+		
+		  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+		  ccLogs.setRequest(userSearchRequest.toString());
+		  ccLogs.setResponse(jsonresponse.toString()); saveLogsToDB(ccLogs);
+		 
 		return jsonresponse;
 
 	}
@@ -1444,11 +1447,11 @@ public class CcrisController {
 				if (experianreportResponse.getResponseCode() != null) {
 					log.info("Returning response from Simulator");
 					// To add logs in DB
-					/*
-					 * CreditCheckerLogs ccLogs = new CreditCheckerLogs();
-					 * ccLogs.setRequest(userSearchRequest.toString());
-					 * ccLogs.setResponse(experianreportResponse.toString()); saveLogsToDB(ccLogs);
-					 */
+					
+					  CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+					  ccLogs.setRequest(userSearchRequest.toString());
+					  ccLogs.setResponse(experianreportResponse.toString()); saveLogsToDB(ccLogs);
+					 
 					return experianreportResponse;
 				}
 
@@ -1544,7 +1547,7 @@ public class CcrisController {
 								CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 								ccLogs.setRequest(userSearchRequest.toString());
 								ccLogs.setResponse(experianreportResponse.toString());
-								// saveLogsToDB(ccLogs);
+								 saveLogsToDB(ccLogs);
 								return experianreportResponse;
 							} else {
 
@@ -1567,7 +1570,7 @@ public class CcrisController {
 								CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 								ccLogs.setRequest(userSearchRequest.toString());
 								ccLogs.setResponse(experianreportResponse.toString());
-								// saveLogsToDB(ccLogs);
+								 saveLogsToDB(ccLogs);
 								return experianreportResponse;
 							}
 
@@ -1597,7 +1600,7 @@ public class CcrisController {
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(experianreportResponse.toString());
-							// saveLogsToDB(ccLogs);
+							 saveLogsToDB(ccLogs);
 							return experianreportResponse;
 
 						}
@@ -1628,7 +1631,7 @@ public class CcrisController {
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(experianreportResponse.toString());
-							// saveLogsToDB(ccLogs);
+							 saveLogsToDB(ccLogs);
 							return experianreportResponse;
 						}
 					} else if (inputResponseName != null) {
@@ -1658,7 +1661,7 @@ public class CcrisController {
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(experianreportResponse.toString());
-							// saveLogsToDB(ccLogs);
+							 saveLogsToDB(ccLogs);
 							return experianreportResponse;
 						} else
 							experianreportResponse.setResponseCode("404");
@@ -1686,7 +1689,7 @@ public class CcrisController {
 						CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 						ccLogs.setRequest(userSearchRequest.toString());
 						ccLogs.setResponse(experianreportResponse.toString());
-						// saveLogsToDB(ccLogs);
+						 saveLogsToDB(ccLogs);
 						return experianreportResponse;
 
 					} else {
@@ -1720,7 +1723,7 @@ public class CcrisController {
 						CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 						ccLogs.setRequest(userSearchRequest.toString());
 						ccLogs.setResponse(experianreportResponse.toString());
-						// saveLogsToDB(ccLogs);
+						 saveLogsToDB(ccLogs);
 						return experianreportResponse;
 
 					}
@@ -1843,7 +1846,7 @@ public class CcrisController {
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(experianreportResponse.toString());
-							// saveLogsToDB(ccLogs);
+							 saveLogsToDB(ccLogs);
 							return experianreportResponse;
 						} else if (CrissFlag == true) {
 							boolean nricExist = checkcreditscoreResponse.getIsNricExist();
@@ -1865,7 +1868,7 @@ public class CcrisController {
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(experianreportResponse.toString());
-							// saveLogsToDB(ccLogs);
+							 saveLogsToDB(ccLogs);
 
 							return customerSpendingLimitResponse;
 						} else if (checkcreditscoreResponse.getIsBelowscoreFlag() != null
@@ -1922,7 +1925,7 @@ public class CcrisController {
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(experianreportResponse.toString());
-							// saveLogsToDB(ccLogs);
+							 saveLogsToDB(ccLogs);
 							return experianreportResponse;
 						} else {
 							error.setErrorcode(utilityEntities.getCodes());
@@ -1967,7 +1970,7 @@ public class CcrisController {
 						CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 						ccLogs.setRequest(userSearchRequest.toString());
 						ccLogs.setResponse(experianreportResponse.toString());
-						// saveLogsToDB(ccLogs);
+						 saveLogsToDB(ccLogs);
 
 						return experianreportResponse;
 
@@ -2013,7 +2016,7 @@ public class CcrisController {
 						CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 						ccLogs.setRequest(userSearchRequest.toString());
 						ccLogs.setResponse(experianreportResponse.toString());
-						// saveLogsToDB(ccLogs);
+						 saveLogsToDB(ccLogs);
 
 						return experianreportResponse;
 
@@ -2047,7 +2050,7 @@ public class CcrisController {
 						CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 						ccLogs.setRequest(userSearchRequest.toString());
 						ccLogs.setResponse(experianreportResponse.toString());
-						// saveLogsToDB(ccLogs);
+						 saveLogsToDB(ccLogs);
 
 						return experianreportResponse;
 
@@ -2084,7 +2087,7 @@ public class CcrisController {
 						CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 						ccLogs.setRequest(userSearchRequest.toString());
 						ccLogs.setResponse(experianreportResponse.toString());
-						// saveLogsToDB(ccLogs);
+						 saveLogsToDB(ccLogs);
 
 						return experianreportResponse;
 					}
@@ -2123,7 +2126,7 @@ public class CcrisController {
 				CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 				ccLogs.setRequest(userSearchRequest.toString());
 				ccLogs.setResponse(experianreportResponse.toString());
-				// saveLogsToDB(ccLogs);
+				 saveLogsToDB(ccLogs);
 
 				return experianreportResponse;
 			}
@@ -2152,7 +2155,7 @@ public class CcrisController {
 		CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 		ccLogs.setRequest(userSearchRequest.toString());
 		ccLogs.setResponse(experianreportResponse.toString());
-		// saveLogsToDB(ccLogs);
+		 saveLogsToDB(ccLogs);
 
 		return experianreportResponse;
 	}
@@ -2273,7 +2276,6 @@ public class CcrisController {
 			response.put("errorMsg", "Zoloc response is null");
 
 		}
-		log.info("response in checkresult =" + response);
 		return response;
 	}
 
@@ -2730,25 +2732,31 @@ public class CcrisController {
 
 		log.info("Host url set to openApi " + openApiClient.getHostUrl());
 		log.info("clientId set to openApi " + openApiClient.getClientId());
-		log.info("merchantPrivatekey url set to openApi " + openApiClient.getMerchantPrivateKey());
-		log.info("merchantPublicKey set to openApi " + openApiClient.getOpenApiPublicKey());
 
 		return openApiClient;
 	}
 
-	/*
-	 * public void saveLogsToDB(CreditCheckerLogs ccLogs) { String ipAddress = null;
-	 * String clientName = null; String key =
-	 * APIKeyAuthFilter.setKeyAndValue().get("headerKey"); try { InetAddress
-	 * inetAddress = InetAddress.getLocalHost(); ipAddress =
-	 * inetAddress.getHostAddress(); }catch(Exception e) { log.info("Exception "
-	 * +e); } log.info("key " +key); clientName =
-	 * creditCheckerAuthRepository.findClientNameFromKey(key);
-	 * ccLogs.setIp_address(ipAddress); ccLogs.setClient_id(clientName);
-	 * log.info("clientName " +clientName); Timestamp timestamp = new
-	 * Timestamp(System.currentTimeMillis()); ccLogs.setTimestamp(timestamp);
-	 * creditCheckerLogRepository.save(ccLogs); }
-	 */
+	
+	public void saveLogsToDB(CreditCheckerLogs ccLogs) {
+		String ipAddress = null;
+		String clientName = null;
+		String key = APIKeyAuthFilter.setKeyAndValue().get("headerKey");
+		try {
+			InetAddress inetAddress = InetAddress.getLocalHost();
+			ipAddress = inetAddress.getHostAddress();
+		} catch (Exception e) {
+			log.info("Exception " + e);
+		}
+		log.info("key " + key);
+		clientName = creditCheckerAuthRepository.findClientNameFromKey(key);
+		ccLogs.setIp_address(ipAddress);
+		ccLogs.setClient_id(clientName);
+		log.info("clientName " + clientName);
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		ccLogs.setTimestamp(timestamp);
+		creditCheckerLogRepository.save(ccLogs);
+	}
+	 
 
 	@GetMapping(value = "/creditchecker/getBase64")
 	public String getBase64() {
