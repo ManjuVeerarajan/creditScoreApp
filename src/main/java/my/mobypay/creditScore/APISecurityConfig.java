@@ -23,9 +23,8 @@ import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
 import my.mobypay.creditScore.dao.Creditcheckersysconfig;
 import my.mobypay.creditScore.repository.CreditCheckerAuthRepository;
 
-@Configuration
-//@EnableWebSecurity
-//@Order(1)
+@EnableWebSecurity
+@Order(1)
 public class APISecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
@@ -70,7 +69,6 @@ public class APISecurityConfig extends WebSecurityConfigurerAdapter {
 				.anyRequest().authenticated();
 	}
 
-	@Bean
 	public HashMap<String, String> getKeySecretValueFromDB() {
 		HashMap<String, String> keyMap = new HashMap<String, String>();
 		List<CreditCheckerAuthDao> configValues = creditCheckerAuthRepository.findAll();
@@ -82,18 +80,6 @@ public class APISecurityConfig extends WebSecurityConfigurerAdapter {
 		return keyMap;
 	}
 
-	/*
-	 * @Bean public HashMap<String,String> getSecretValueFromDB() {
-	 * HashMap<String,String> secretMap = new HashMap<String,String>();
-	 * List<PaymentProcessorAuthDao> configValues =
-	 * paymentProcessorAuthRepository.findAll(); System.out.println("configValues 1"
-	 * +configValues.get(0).getApi_key()); System.out.println("Size "
-	 * +configValues.size()); for (int i=0 ;i<configValues.size(); i++) {
-	 * secretMap.put(configValues.get(i).getId(),configValues.get(i).getApi_secret()
-	 * ); } System.out.println("secretMap " +secretMap);
-	 * 
-	 * return secretMap; }
-	 */
 	public String[] getKeyValueFromDBString() {
 		HashMap<String, String> keyMap = new HashMap<String, String>();
 
@@ -108,7 +94,6 @@ public class APISecurityConfig extends WebSecurityConfigurerAdapter {
 		return keyfromDb;
 	}
 
-	@Bean
 	public String[] getSecretValueFromDB() {
 		HashMap<String, String> keyMap = new HashMap<String, String>();
 
@@ -123,7 +108,6 @@ public class APISecurityConfig extends WebSecurityConfigurerAdapter {
 		return secretfromDb;
 	}
 
-	@Bean
 	public String getAuthEnableDetailsFromDB() {
 		String configValues = creditScoreConfigRepository.findValueFromName(GlobalConstants.PLATFORM_AUTH);
 		return configValues;
