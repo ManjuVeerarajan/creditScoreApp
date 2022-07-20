@@ -1,0 +1,44 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+		http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+		http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
+
+	<changeSet author="manjuv" id="july-19-cr-40"
+		runOnChange="true">
+		<sqlFile dbms="mysql" path="/db/changelog/liquibaseTest.sql"
+			endDelimiter=";;" />
+	</changeSet>
+
+	<changeSet author="manjuv" id="july-19-refNoTable"
+		runOnChange="true">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/creditchecker_pdffiles_tabl.sql"
+			endDelimiter=";;" />
+	</changeSet>
+
+	<changeSet author="manjuv" id="insert-example"
+		runOnChange="true">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="0">
+				SELECT COUNT(*) FROM
+				creditchecker_pdffiles WHERE name='angkasa' OR
+				name='ccris_general.xsl' OR name='data.xml' OR name='error.xsl' OR
+				name='ExperianLogo.png' OR name='ExperianReport.html'
+				OR
+				name='general.xsl' OR name='iriss.xsl' OR name='quick_purchase.xsl'
+				OR name='spga_general.xsl' OR name='spkccs.xsl' OR name='xslt2.css';
+			</sqlCheck>
+		</preConditions>
+		<sqlFile dbms="mysql"
+			path="/db/changelog/creditchecker_pdffiles_insert.sql" />
+	</changeSet>
+
+
+</databaseChangeLog>
+
