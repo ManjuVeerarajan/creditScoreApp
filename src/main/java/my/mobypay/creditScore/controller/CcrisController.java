@@ -44,7 +44,6 @@ import com.zoloz.api.sdk.client.OpenApiClient;
 import lombok.extern.slf4j.Slf4j;
 import my.mobypay.creditScore.APIKeyAuthFilter;
 import my.mobypay.creditScore.DBConfig;
-import my.mobypay.creditScore.dao.ApplicationSettingsRepository;
 import my.mobypay.creditScore.dao.CreditCheckerLogs;
 import my.mobypay.creditScore.dao.CustomerCreditReports;
 import my.mobypay.creditScore.dao.CustomerSpendingLimitResponse;
@@ -110,9 +109,6 @@ public class CcrisController {
 	 */
 	@Autowired
 	CustomerUserTokenRepository customerUserTokenRepository;
-
-	@Autowired
-	ApplicationSettingsRepository appSettings;
 
 	@Autowired
 	SimulatorService simulatorService;
@@ -239,7 +235,7 @@ public class CcrisController {
 	@Transactional
 	public boolean retrieveNricFromDB(String nric) {
 		log.info("Inside retrieveNricFromDB ");
-
+		HashMap<String, String> dbvalues = dbconfig.getValueFromDB();
 		boolean ispresent = false;
 
 		Session session = null;
@@ -264,8 +260,7 @@ public class CcrisController {
 			session = factory.openSession();
 
 			transaction = session.beginTransaction();
-			String daysExpire = appSettings.findValueFromName("daysExpire");
-
+			String daysExpire = dbvalues.get("daysExpire");
 			log.info("daysExpire " + daysExpire);
 			String hqlQuery = "SELECT p.nric from cc_customerCreditReports p WHERE p.nric = " + nric
 					+ " AND p.UpdatedAt >= date_sub(now(),interval " + daysExpire + ")";
@@ -314,10 +309,6 @@ public class CcrisController {
 					.addAnnotatedClass(CustomerCreditReports.class).buildSessionFactory();
 			session = factory.openSession();
 			transaction = session.beginTransaction();
-			// TODO
-			// List<ApplicationSettings> inputDays = appSettings.findAll();
-			// ApplicationSettings expireDays = inputDays.get(6);
-			// String daysExpire = expireDays.getValue();
 			String hqlQuery = "SELECT p.name,p.nric from cc_customerCreditReports p WHERE p.nric= " + nric;
 			org.hibernate.query.Query query = session.createSQLQuery(hqlQuery);
 			log.info("Query Response" + query.getResultList());
