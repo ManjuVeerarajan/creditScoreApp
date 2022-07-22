@@ -27,7 +27,6 @@ import my.mobypay.creditScore.repository.CreditCheckerAuthRepository;
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableWebSecurity
-//@Order(1)
 public class APISecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
@@ -44,7 +43,6 @@ public class APISecurityConfig extends WebSecurityConfigurerAdapter {
 				.authorizeRequests().anyRequest().authenticated();
 	}
 
-	@Bean
 	public String[] getSecretValueFromDB() {
 		HashMap<String, String> keyMap = new HashMap<String, String>();
 

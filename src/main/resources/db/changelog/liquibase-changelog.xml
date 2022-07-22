@@ -39,6 +39,26 @@
 			path="/db/changelog/creditchecker_pdffiles_insert.sql" />
 	</changeSet>
 
+	<changeSet author="manjuv"
+		id="dropTable-application_settings">
+		<preConditions onFail="MARK_RAN">
+			<tableExists tableName="application_settings" />
+		</preConditions>
+		<dropTable tableName="application_settings" />
+	</changeSet>
+	
+	<changeSet author="manjuv" id="appSettings_to_sysConfig"
+		runOnChange="true">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="0">
+				SELECT COUNT(*) FROM
+				creditchecker_sysconfig WHERE name='experian-trigger-time' OR
+				name='experian-trigger-count' OR name='daysExpire';
+			</sqlCheck>
+		</preConditions>
+		<sqlFile dbms="mysql"
+			path="/db/changelog/app_settings_to_syconfig.sql" />
+	</changeSet>
 
 </databaseChangeLog>
 
