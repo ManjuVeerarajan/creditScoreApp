@@ -1,6 +1,7 @@
 package my.mobypay.creditScore.service;
 
 import lombok.extern.slf4j.Slf4j;
+import my.mobypay.creditScore.DBConfig;
 import my.mobypay.creditScore.controller.CcrisController;
 import my.mobypay.creditScore.dao.TokensRequest;
 import my.mobypay.creditScore.dao.CustomerCreditReports;
@@ -17,7 +18,6 @@ import my.mobypay.creditScore.dto.response.Item;
 import my.mobypay.creditScore.dto.response.Report;
 import my.mobypay.creditScore.dto.response.Tokens;
 import my.mobypay.creditScore.repository.CustomerUserTokenRepository;
-import my.mobypay.creditScore.repository.ExperianPropertyRepository;
 import my.mobypay.creditScore.utility.EmailUtility;
 
 import java.io.IOException;
@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -48,12 +49,10 @@ public class CcrisUnifiedService {
 	 */
 
 	@Autowired
-	ExperianPropertyRepository experianPropertyRepository;
-
-	@Autowired
 	CustomerUserTokenRepository customerUserTokenRepository;
 
-
+	@Autowired
+	DBConfig dbconfig;
 	
 	
 	private void delay(long l) {
@@ -493,8 +492,9 @@ public class CcrisUnifiedService {
 	@SuppressWarnings("unused")
 	public Utility getCcrisReport(UserSearchRequest userSearchRequest, boolean reportFlag, String triggersleeptime,
 			String triggerreconnectCount, Integer retivalCount) throws Exception {
+		HashMap<String, String> dbvalues = dbconfig.getValueFromDB();
 		String key = "experian-erroremail-cc";
-		String emailSending = experianPropertyRepository.findemailIdbyName(key);
+		String emailSending = dbvalues.get(key);
 		System.out.println(emailSending + "=========");
 	
 		CcrisXml ccrisXml = ccrisSearchService.ccrisSearch(userSearchRequest, emailSending);
