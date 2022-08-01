@@ -21,4 +21,10 @@ public class GlobalConstants {
 	public static final String ZOLO_MERCHANT_PUBLIC_KEY = "merchant.publickey";
 	public static final String ZOLO_CLIENTID = "clientId";
 	public static final String PLATFORM_AUTH = "platform.auth";
+	public static final String EXPERIAN_USERNAME = "ExperianUsername";
+	public static final String EXPERIAN_PWD = "ExperianPassword";
+	public static final String EXPERIAN_URL_XML = "ExperianURLXML";
+	public static final String SANDBOX_SERVER = "sandbox.server";
+	public static final String EXP_URL_REPORT = "ExperianURLReport";
+	public static final String EXP_ERRMAIL_CC = "experian-erroremail-cc";
 }

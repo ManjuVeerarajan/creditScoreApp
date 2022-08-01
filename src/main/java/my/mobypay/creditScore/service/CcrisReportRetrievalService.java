@@ -7,6 +7,7 @@ import my.mobypay.creditScore.controller.GlobalConstants;
 import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
 import my.mobypay.creditScore.dao.CreditScorepPDFFilesrepo;
 import my.mobypay.creditScore.dao.CreditcheckerPDFFiles;
+import my.mobypay.creditScore.dao.Creditcheckersysconfig;
 import my.mobypay.creditScore.dao.CustomerCreditReports;
 import my.mobypay.creditScore.dto.CustomerCreditError;
 import my.mobypay.creditScore.dto.CustomerCreditReportRequest;
@@ -61,6 +62,7 @@ import org.xml.sax.SAXException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.DatatypeConverter;
+import javax.xml.bind.annotation.XmlElementDecl.GLOBAL;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -174,12 +176,13 @@ public class CcrisReportRetrievalService {
 	public CustomerCreditReportRequest retrieveReport(UserTokensRequest userTokensRequest, boolean reportFlag,
 			UserSearchRequest userSearchRequest, String triggerreconnectCount, String triggersleeptime, String to)
 			throws Exception {
-		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
+		Creditcheckersysconfig expUsernameFromRedis = dbconfig.getDataFromRedis(GlobalConstants.EXPERIAN_USERNAME);
+		Creditcheckersysconfig expPwdFromRedis = dbconfig.getDataFromRedis(GlobalConstants.EXPERIAN_PWD);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_XML);
 		// headers.setBasicAuth("MOBYUAT1", "Mobyuat.1");
-		ExperianUsername = dbvalues.get("ExperianUsername");
-		ExperianPassword = dbvalues.get("ExperianPassword");
+		ExperianUsername = expUsernameFromRedis.getValue();
+		ExperianPassword = expPwdFromRedis.getValue();
 		headers.setBasicAuth(ExperianUsername, ExperianPassword);
 		ResponseEntity<String> response = null;
 		boolean ExperianServerDownFlag = false;
@@ -222,7 +225,8 @@ public class CcrisReportRetrievalService {
 			int count1 = 0;
 			CustomerCreditError checkError = new CustomerCreditError();
 			do {
-				ExperianURLXML = dbvalues.get("ExperianURLXML");
+				Creditcheckersysconfig expUrlFromRedis = dbconfig.getDataFromRedis(GlobalConstants.EXPERIAN_URL_XML);
+				ExperianURLXML = expUrlFromRedis.getValue();
 				response = restTemplate.postForEntity(ExperianURLXML, request, String.class);
 				System.out.println("***********response**************");
 				System.out.println(response.getBody());
@@ -363,7 +367,6 @@ public class CcrisReportRetrievalService {
 
 		String filepaths = "";
 		//String encode = "";
-		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
 		// boolean InvalidFlag=false;
 		log.info("checking true or false-------------"
 				+ (!content.equals("Request body is empty") && !content.equals("Result is processing")));
@@ -443,8 +446,9 @@ public class CcrisReportRetrievalService {
 
 					String contextvalue = urlvalue[1].toString();
 					String[] g = contextvalue.split("/");
-					// String finalvalue = g[0].toString(); 
-					String finalvalue = dbvalues.get("sandbox.server"); 
+					// String finalvalue = g[0].toString();
+					Creditcheckersysconfig sandboxServerFromRedis = dbconfig.getDataFromRedis(GlobalConstants.SANDBOX_SERVER);
+					String finalvalue = sandboxServerFromRedis.getValue(); 
 					log.info("Server name " +finalvalue);
 
 					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
@@ -938,7 +942,8 @@ public class CcrisReportRetrievalService {
 
 					String contextvalue = urlvalue[1].toString();
 					String[] g = contextvalue.split("/");
-					String finalvalue = dbvalues.get("sandbox.server"); 
+					Creditcheckersysconfig sandboxServerFromRedis = dbconfig.getDataFromRedis(GlobalConstants.SANDBOX_SERVER);
+					String finalvalue = sandboxServerFromRedis.getValue();
 					log.info("Server name " +finalvalue);
 
 					filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName="
@@ -1500,7 +1505,6 @@ public class CcrisReportRetrievalService {
 	 */
 
 	public String FilepathdownloadforExisitingCustomer(String xmlResponse, String nricnumber) throws Exception {
-		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
 		System.out.println(nricnumber + "==================");
 		String filepaths = "";
 		String filepath = convertToPDF(nricnumber, xmlResponse);
@@ -1513,7 +1517,8 @@ public class CcrisReportRetrievalService {
 
 		String contextvalue = urlvalue[1].toString();
 		String[] g = contextvalue.split("/");
-		String finalvalue = dbvalues.get("sandbox.server"); 
+		Creditcheckersysconfig sandboxServerFromRedis = dbconfig.getDataFromRedis(GlobalConstants.SANDBOX_SERVER);
+		String finalvalue = sandboxServerFromRedis.getValue();
 		log.info("Server name " +finalvalue);
 
 		filepaths = "https://" + finalvalue + "/api/creditchecker/DownloadExperianReport?fileName=" + filename + "";
@@ -1527,49 +1532,74 @@ public class CcrisReportRetrievalService {
 
 	public String convertToPDF(String nricNumber, String xmlResponse) throws Exception {
 		HashMap<String, byte[]> filesFromDb = dbconfig.getFilesFromDB();
-
-		byte[] spkssFile = filesFromDb.get(GlobalConstants.SPKCSS_XSL);
+		
+		CreditcheckerPDFFiles getSpkssFromRedis = dbconfig.getpdfFilesFromRedis(GlobalConstants.SPKCSS_XSL);
+		byte[] spkssFile = getSpkssFromRedis.getValue();
+//		byte[] spkssFile = filesFromDb.get(GlobalConstants.SPKCSS_XSL);
 		String filePathForSpkcss = inputStreamFile(spkssFile, GlobalConstants.SPKCSS_XSL);
 		log.info("writing file into project folder -------->" + GlobalConstants.SPKCSS_XSL);
 		InputStream targetStream = new FileInputStream(filePathForSpkcss);
 
-		byte[] dataXml = filesFromDb.get(GlobalConstants.DATA_XML);
+		
+		CreditcheckerPDFFiles getDataXmlFromRedis = dbconfig.getpdfFilesFromRedis(GlobalConstants.DATA_XML);
+		byte[] dataXml = getDataXmlFromRedis.getValue();
+//		byte[] dataXml = filesFromDb.get(GlobalConstants.DATA_XML);
 		String dataXmlPath = inputStreamFile(dataXml, GlobalConstants.DATA_XML);
 		log.info("writing file into project folder -------->" + dataXmlPath);
 
-		byte[] xslt2IntoDB = filesFromDb.get(GlobalConstants.XSLT2_CSS);
+		
+		CreditcheckerPDFFiles getXclt2FromRedis = dbconfig.getpdfFilesFromRedis(GlobalConstants.XSLT2_CSS);
+		byte[] xslt2IntoDB = getXclt2FromRedis.getValue();
+//		byte[] xslt2IntoDB = filesFromDb.get(GlobalConstants.XSLT2_CSS);
 		String xslt2Path = inputStreamFile(xslt2IntoDB, GlobalConstants.XSLT2_CSS);
 		log.info("writing file into project folder -------->" + xslt2Path);
 
-		byte[] errorIntoDB = filesFromDb.get(GlobalConstants.ERROR);
+		
+		CreditcheckerPDFFiles getErrorFromRedis = dbconfig.getpdfFilesFromRedis(GlobalConstants.ERROR);
+		byte[] errorIntoDB = getErrorFromRedis.getValue();
+//		byte[] errorIntoDB = filesFromDb.get(GlobalConstants.ERROR);
 		String errPath = inputStreamFile(errorIntoDB, GlobalConstants.ERROR);
 		log.info("writing file into project folder -------->" + errPath);
 
-		byte[] spga_generalIntoDB = filesFromDb.get(GlobalConstants.SPGA_GENERAL);
+		CreditcheckerPDFFiles getSpgaFromRedis = dbconfig.getpdfFilesFromRedis(GlobalConstants.SPGA_GENERAL);
+		byte[] spga_generalIntoDB = getSpgaFromRedis.getValue();
+//		byte[] spga_generalIntoDB = filesFromDb.get(GlobalConstants.SPGA_GENERAL);
 		String spga_generalPath = inputStreamFile(spga_generalIntoDB, GlobalConstants.SPGA_GENERAL);
 		log.info("writing file into project folder -------->" + spga_generalPath);
 
-		byte[] quick_purchaseIntoDB = filesFromDb.get(GlobalConstants.QUICK_PURCHASE);
+		CreditcheckerPDFFiles getQuickPurchaseFromRedis = dbconfig.getpdfFilesFromRedis(GlobalConstants.QUICK_PURCHASE);
+		byte[] quick_purchaseIntoDB = getQuickPurchaseFromRedis.getValue();
+//		byte[] quick_purchaseIntoDB = filesFromDb.get(GlobalConstants.QUICK_PURCHASE);
 		String quick_purchasePath = inputStreamFile(quick_purchaseIntoDB, GlobalConstants.QUICK_PURCHASE);
 		log.info("writing file into project folder -------->" + quick_purchasePath);
 
-		byte[] irissIntoDB = filesFromDb.get(GlobalConstants.IRISS);
+		CreditcheckerPDFFiles getIrissFromRedis = dbconfig.getpdfFilesFromRedis(GlobalConstants.IRISS);
+		byte[] irissIntoDB = getIrissFromRedis.getValue();
+//		byte[] irissIntoDB = filesFromDb.get(GlobalConstants.IRISS);
 		String irissPath = inputStreamFile(irissIntoDB, GlobalConstants.IRISS);
 		log.info("writing file into project folder -------->" + irissPath);
 
-		byte[] experianLogoIntoDB = filesFromDb.get(GlobalConstants.EXPERIAN_LOGO);
+		CreditcheckerPDFFiles getLogoFromRedis = dbconfig.getpdfFilesFromRedis(GlobalConstants.EXPERIAN_LOGO);
+		byte[] experianLogoIntoDB = getLogoFromRedis.getValue();
+//		byte[] experianLogoIntoDB = filesFromDb.get(GlobalConstants.EXPERIAN_LOGO);
 		String ExperianLogoPath = inputStreamFile(experianLogoIntoDB, GlobalConstants.EXPERIAN_LOGO);
 		log.info("writing file into project folder -------->" + ExperianLogoPath);
 
-		byte[] generalIntoDB = filesFromDb.get(GlobalConstants.GENERAL);
+		CreditcheckerPDFFiles getGeneralFromRedis = dbconfig.getpdfFilesFromRedis(GlobalConstants.GENERAL);
+		byte[] generalIntoDB = getGeneralFromRedis.getValue();
+//		byte[] generalIntoDB = filesFromDb.get(GlobalConstants.GENERAL);
 		String generalPath = inputStreamFile(generalIntoDB, GlobalConstants.GENERAL);
 		log.info("writing file into project folder -------->" + generalPath);
 
-		byte[] ccris_generalIntoDB = filesFromDb.get(GlobalConstants.CCRIS_GENERAL);
+		CreditcheckerPDFFiles getCCrisFromRedis = dbconfig.getpdfFilesFromRedis(GlobalConstants.CCRIS_GENERAL);
+		byte[] ccris_generalIntoDB = getCCrisFromRedis.getValue();
+//		byte[] ccris_generalIntoDB = filesFromDb.get(GlobalConstants.CCRIS_GENERAL);
 		String ccris_generalPath = inputStreamFile(ccris_generalIntoDB, GlobalConstants.CCRIS_GENERAL);
 		log.info("writing file into project folder -------->" + ccris_generalPath);
 
-		byte[] angkasaIntoDB = filesFromDb.get(GlobalConstants.ANGKASA);
+		CreditcheckerPDFFiles getANGKASAFromRedis = dbconfig.getpdfFilesFromRedis(GlobalConstants.ANGKASA);
+		byte[] angkasaIntoDB = getANGKASAFromRedis.getValue();
+//		byte[] angkasaIntoDB = filesFromDb.get(GlobalConstants.ANGKASA);
 		String angkasaPath = inputStreamFile(angkasaIntoDB, GlobalConstants.ANGKASA);
 		log.info("writing file into project folder -------->" + angkasaPath);
 

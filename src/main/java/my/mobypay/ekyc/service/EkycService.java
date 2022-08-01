@@ -20,6 +20,7 @@ import com.zoloz.api.sdk.client.OpenApiClient;
 import lombok.extern.slf4j.Slf4j;
 import my.mobypay.creditScore.DBConfig;
 import my.mobypay.creditScore.controller.GlobalConstants;
+import my.mobypay.creditScore.dao.Creditcheckersysconfig;
 import my.mobypay.ekyc.dao.CheckResultRequest;
 import my.mobypay.ekyc.dao.CheckResultResponse;
 import my.mobypay.ekyc.dao.InitializeRequest;
@@ -39,7 +40,6 @@ public class EkycService {
 
 	public OpenApiClient setValuesToOpenApiHardCoded(HashMap<String,String> dbvalues) {
 		log.info("Hard coded..!!");
-		
 		openApiClient.setHostUrl(dbvalues.get(GlobalConstants.ZOLO_SERVER));
 		openApiClient.setClientId(dbvalues.get(GlobalConstants.ZOLO_CLIENTID));
 		openApiClient.setMerchantPrivateKey(dbvalues.get(GlobalConstants.ZOLO_MERCHANT_PRIVATE_KEY));

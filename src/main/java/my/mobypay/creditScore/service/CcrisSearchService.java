@@ -3,7 +3,9 @@ package my.mobypay.creditScore.service;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
 import my.mobypay.creditScore.DBConfig;
+import my.mobypay.creditScore.controller.GlobalConstants;
 import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
+import my.mobypay.creditScore.dao.Creditcheckersysconfig;
 import my.mobypay.creditScore.dto.UserConfirmCCRISEntityRequest;
 import my.mobypay.creditScore.dto.UserSearchRequest;
 import my.mobypay.creditScore.dto.request.CcrisRequestXml;
@@ -63,10 +65,10 @@ public class CcrisSearchService {
 	 String message="Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! e 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.";
 			
 	public CcrisXml ccrisSearch(UserSearchRequest userSearchRequest, String emailSending) throws Exception {
-		HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
-		
-		ExperianUsername = dbvalues.get("ExperianUsername");
-		ExperianPassword = dbvalues.get("ExperianPassword");
+		Creditcheckersysconfig expUsernameFromRedis = dbconfig.getDataFromRedis(GlobalConstants.EXPERIAN_USERNAME);
+		Creditcheckersysconfig expPwdFromRedis = dbconfig.getDataFromRedis(GlobalConstants.EXPERIAN_PWD);
+		ExperianUsername = expUsernameFromRedis.getValue();
+		ExperianPassword = expPwdFromRedis.getValue();
 		System.out.println(ExperianUsername+"========"+ExperianPassword);
 		//ResponseEntity<String> response = null;
 		HttpHeaders headers = new HttpHeaders();
@@ -105,7 +107,8 @@ public class CcrisSearchService {
 		 * propertyFlag=false; String user = file.getvaluefromproperty(propertyFlag);
 		 */
 		try {
-			ExperianURLReport = dbvalues.get("ExperianURLReport");
+			Creditcheckersysconfig expUrlReportFromRedis = dbconfig.getDataFromRedis(GlobalConstants.EXP_URL_REPORT);
+			ExperianURLReport = expUrlReportFromRedis.getValue();
 			 ResponseEntity<String> response =  restTemplate.postForEntity(ExperianURLReport,request,String.class);
 		    	String responsess=response.getBody().trim().replaceAll("[ ]{2,}", " ");
 		    	   if(responsess.contains("BINTI")) {
@@ -190,10 +193,10 @@ public class CcrisSearchService {
 		 
 
     public Tokens ccrisConfirm(UserConfirmCCRISEntityRequest userConfirmCCRISEntityRequest, String to) throws Exception{
-    	HashMap<String,String> dbvalues = dbconfig.getValueFromDB();
-    	
-    	ExperianUsername = dbvalues.get("ExperianUsername");
-		ExperianPassword = dbvalues.get("ExperianPassword");
+    	Creditcheckersysconfig expUsernameFromRedis = dbconfig.getDataFromRedis(GlobalConstants.EXPERIAN_USERNAME);
+    	Creditcheckersysconfig expPwdFromRedis = dbconfig.getDataFromRedis(GlobalConstants.EXPERIAN_PWD);
+    	ExperianUsername = expUsernameFromRedis.getValue();
+		ExperianPassword = expPwdFromRedis.getValue();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_XML);
        // headers.setBasicAuth("MOBYUAT1","Mobyuat.1");

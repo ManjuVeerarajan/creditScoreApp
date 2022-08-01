@@ -2,10 +2,12 @@ package my.mobypay.creditScore;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import lombok.extern.slf4j.Slf4j;
 import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
@@ -22,6 +24,12 @@ public class DBConfig {
 
 	@Autowired
 	CreditScorepPDFFilesrepo pPDFFilesrepo;
+
+	@Autowired
+	private RedisTemplate<String, Creditcheckersysconfig> redisTemplate;
+
+	@Autowired
+	private RedisTemplate<String, CreditcheckerPDFFiles> redisTemplateForFiles;
 
 	@Bean
 	public HashMap<String, String> getValueFromDB() {
@@ -49,4 +57,32 @@ public class DBConfig {
 		}
 		return dbValuesMap;
 	}
+
+	@Bean
+	public void setDataToRedis() {
+		List<Creditcheckersysconfig> configValues = creditScoreConfigRepository.findAll();
+		for (int i = 0; i < configValues.size(); i++) {
+			redisTemplate.opsForValue().set(configValues.get(i).getName(), configValues.get(i));
+		}
+	}
+
+	public Creditcheckersysconfig getDataFromRedis(String key) {
+		Creditcheckersysconfig creditcheckersysconfigFromRedis = redisTemplate.opsForValue().get(key);
+		return creditcheckersysconfigFromRedis;
+	}
+
+	@Bean
+	public void setPdfDataToRedis() {
+		List<CreditcheckerPDFFiles> expReportFiles = pPDFFilesrepo.findAll();
+		for (int i = 0; i < expReportFiles.size(); i++) {
+			redisTemplateForFiles.opsForValue().set(expReportFiles.get(i).getName(), expReportFiles.get(i));
+		}
+
+	}
+
+	public CreditcheckerPDFFiles getpdfFilesFromRedis(String key) {
+		CreditcheckerPDFFiles exportFilesFromRedis = redisTemplateForFiles.opsForValue().get(key);
+		return exportFilesFromRedis;
+	}
+
 }

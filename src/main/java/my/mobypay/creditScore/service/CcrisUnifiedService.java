@@ -3,7 +3,9 @@ package my.mobypay.creditScore.service;
 import lombok.extern.slf4j.Slf4j;
 import my.mobypay.creditScore.DBConfig;
 import my.mobypay.creditScore.controller.CcrisController;
+import my.mobypay.creditScore.controller.GlobalConstants;
 import my.mobypay.creditScore.dao.TokensRequest;
+import my.mobypay.creditScore.dao.Creditcheckersysconfig;
 import my.mobypay.creditScore.dao.CustomerCreditReports;
 import my.mobypay.creditScore.dto.CreditCheckResponse;
 import my.mobypay.creditScore.dto.CustomerCreditReportRequest;
@@ -492,9 +494,16 @@ public class CcrisUnifiedService {
 	@SuppressWarnings("unused")
 	public Utility getCcrisReport(UserSearchRequest userSearchRequest, boolean reportFlag, String triggersleeptime,
 			String triggerreconnectCount, Integer retivalCount) throws Exception {
-		HashMap<String, String> dbvalues = dbconfig.getValueFromDB();
+		Creditcheckersysconfig expErrCCFromRedis = dbconfig.getDataFromRedis(GlobalConstants.EXP_ERRMAIL_CC);
+		HashMap<String, String> valueFromDB = dbconfig.getValueFromDB();
 		String key = "experian-erroremail-cc";
-		String emailSending = dbvalues.get(key);
+		String emailSending = null;
+		if (expErrCCFromRedis != null) {
+			emailSending = expErrCCFromRedis.getValue();
+		}else {
+			emailSending = valueFromDB.get(GlobalConstants.EXP_ERRMAIL_CC);
+			System.out.println("*****************************Redis Not Read***********************************");
+		}
 		System.out.println(emailSending + "=========");
 	
 		CcrisXml ccrisXml = ccrisSearchService.ccrisSearch(userSearchRequest, emailSending);

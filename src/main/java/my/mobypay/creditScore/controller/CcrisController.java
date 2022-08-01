@@ -45,6 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 import my.mobypay.creditScore.APIKeyAuthFilter;
 import my.mobypay.creditScore.DBConfig;
 import my.mobypay.creditScore.dao.CreditCheckerLogs;
+import my.mobypay.creditScore.dao.Creditcheckersysconfig;
 import my.mobypay.creditScore.dao.CustomerCreditReports;
 import my.mobypay.creditScore.dao.CustomerSpendingLimitResponse;
 import my.mobypay.creditScore.dao.ExperianReportResponse;
@@ -230,7 +231,6 @@ public class CcrisController {
 	@Transactional
 	public boolean retrieveNricFromDB(String nric) {
 		log.info("Inside retrieveNricFromDB ");
-		HashMap<String, String> dbvalues = dbconfig.getValueFromDB();
 		boolean ispresent = false;
 
 		Session session = null;
@@ -255,7 +255,9 @@ public class CcrisController {
 			session = factory.openSession();
 
 			transaction = session.beginTransaction();
-			String daysExpire = dbvalues.get("daysExpire");
+//			String daysExpire = dbvalues.get("daysExpire");
+			Creditcheckersysconfig dataFromRedis = dbconfig.getDataFromRedis("daysExpire");
+			String daysExpire = dataFromRedis.getValue();
 			log.info("daysExpire " + daysExpire);
 			String hqlQuery = "SELECT p.nric from cc_customerCreditReports p WHERE p.nric = " + nric
 					+ " AND p.UpdatedAt >= date_sub(now(),interval " + daysExpire + ")";
@@ -342,10 +344,13 @@ public class CcrisController {
 				+ userSearchRequest.getEntityId());
 		boolean reportFlag = false;
 
-		HashMap<String, String> dbvalues = dbconfig.getValueFromDB();
 		CreditCheckResponse checkcreditscoreResponse = null;
-		String triggerTime = dbvalues.get("experian-trigger-time");
-		String triggerCount = dbvalues.get("experian-trigger-count");
+		Creditcheckersysconfig triggerTimeFromRedis = dbconfig.getDataFromRedis("experian-trigger-time");
+		String triggerTime = triggerTimeFromRedis.getValue();
+		Creditcheckersysconfig triggerCountFromRedis = dbconfig.getDataFromRedis("experian-trigger-count");
+		String triggerCount = triggerCountFromRedis.getValue();
+//		String triggerTime = dbvalues.get("experian-trigger-time");
+//		String triggerCount = dbvalues.get("experian-trigger-count");
 		log.info("Experian trigger :" + triggerTime + " Count- " + triggerCount);
 		String triggersleeptime = triggerTime;
 		String triggerreconnectCount = triggerCount;
@@ -353,7 +358,9 @@ public class CcrisController {
 		log.info("Request :" + userSearchRequest.toString());
 		String nricnumber = NricRegchecking(userSearchRequest.getEntityId());
 		Integer retivalCount = 0;
-		simulator = dbvalues.get("simulator.call");
+//		simulator = dbvalues.get("simulator.call");
+		Creditcheckersysconfig simulatorCallFromRedis = dbconfig.getDataFromRedis("simulator.call");
+		simulator = simulatorCallFromRedis.getValue();
 		CustomerSpendingLimitResponse res = new CustomerSpendingLimitResponse();
 		if (simulator.equals("true")) {
 			if ((userSearchRequest.getEntityId().contains("500101")
@@ -1208,7 +1215,6 @@ public class CcrisController {
 		Error error = new Error();
 		boolean reportFlag = false;
 		String valuePresent = null;
-		HashMap<String, String> dbvalues = dbconfig.getValueFromDB();
 		CustomerSpendingLimitResponse customerSpendingLimitResponse = new CustomerSpendingLimitResponse();
 		CreditCheckResponse checkcreditscoreResponse = null;
 		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
@@ -1216,13 +1222,20 @@ public class CcrisController {
 				+ userSearchRequest.getEntityId().trim());
 		// String simulator =
 		// creditScoreConfigRepository.findValueFromName("simulator.call");
-		simulator = dbvalues.get("simulator.call");
+//		simulator = dbvalues.get("simulator.call");
+		Creditcheckersysconfig simulatorCallFromRedis = dbconfig.getDataFromRedis("simulator.call");
+		simulator = simulatorCallFromRedis.getValue();
 		String TokenMap = null;
 		TokenMap = customerUserTokenRepository.findTokenByNric(userSearchRequest.getEntityId());
 		triggersleep.add("experian-trigger-time");
 		triggersleep.add("experian-trigger-count");
-		String triggerTime = dbvalues.get("experian-trigger-time");
-		String triggerCount = dbvalues.get("experian-trigger-count");
+		Creditcheckersysconfig triggerTimeFromRedis = dbconfig.getDataFromRedis("experian-trigger-time");
+		String triggerTime = triggerTimeFromRedis.getValue();
+		Creditcheckersysconfig triggerCountFromRedis = dbconfig.getDataFromRedis("experian-trigger-count");
+		String triggerCount = triggerCountFromRedis.getValue();
+		
+//		String triggerTime = dbvalues.get("experian-trigger-time");
+//		String triggerCount = dbvalues.get("experian-trigger-count");
 		log.info("Experian trigger :" + triggerTime+" Count- "+triggerCount);
 		String triggersleeptime = triggerTime;
 		String triggerreconnectCount = triggerCount;
@@ -2043,7 +2056,9 @@ public class CcrisController {
 		log.info("merchantPublicKey set to openApi in initialize " + openApiClient.getOpenApiPublicKey());
 		log.info("Host url set to openApi in initialize  " + openApiClient.getHostUrl());
 		log.info("clientId set to openApi in initialize " + openApiClient.getClientId());
-		initializeApi = dbvalues.get("zolos.initialize");
+		Creditcheckersysconfig zolosFromRedis = dbconfig.getDataFromRedis("zolos.initialize");
+		initializeApi = zolosFromRedis.getValue();
+//		initializeApi = dbvalues.get("zolos.initialize");
 		String apiRespStr = ekycService.callInitializeOpenApi(request, initializeApi);
 		if (apiRespStr != null) {
 			com.alibaba.fastjson.JSONObject apiResp = JSON.parseObject(apiRespStr);
@@ -2066,8 +2081,8 @@ public class CcrisController {
 		HashMap<String, String> dbvalues = dbconfig.getValueFromDB();
 		// openApiClient = setValuesToOpenApi();
 		openApiClient = ekycService.setValuesToOpenApiHardCoded(dbvalues);
-
-		String checkResultApi = dbvalues.get("zolos.checkresult");
+		Creditcheckersysconfig zoloCheckResultFromRedis = dbconfig.getDataFromRedis("zolos.checkresult");
+		String checkResultApi = zoloCheckResultFromRedis.getValue();
 		log.info("openApiClient " + openApiClient);
 		String apiRespStr = ekycService.callCheckStatusOpenApi(request, checkResultApi);
 
@@ -2516,14 +2531,15 @@ public class CcrisController {
 
 	public OpenApiClient setValuesToOpenApi() {
 		log.info("Pulling from properties");
-		HashMap<String, String> dbvalues = dbconfig.getValueFromDB();
-		// log.info("CLIENTID VALUE VS " +
-		// creditScoreConfigRepository.findValueFromName("clientId"));
-
-		hostUrl = dbvalues.get(GlobalConstants.ZOLO_SERVER);
-		clientId = dbvalues.get(GlobalConstants.ZOLO_CLIENTID);
-		merchantPrivatekey = dbvalues.get(GlobalConstants.ZOLO_MERCHANT_PRIVATE_KEY);
-		merchantPublicKey = dbvalues.get(GlobalConstants.ZOLO_MERCHANT_PUBLIC_KEY);
+		Creditcheckersysconfig zoloServerFromRedis = dbconfig.getDataFromRedis(GlobalConstants.ZOLO_SERVER);
+		Creditcheckersysconfig zoloClientIdFromRedis = dbconfig.getDataFromRedis(GlobalConstants.ZOLO_CLIENTID);
+		Creditcheckersysconfig zoloMerchantPrivateKeyFromRedis = dbconfig.getDataFromRedis(GlobalConstants.ZOLO_MERCHANT_PRIVATE_KEY);
+		Creditcheckersysconfig zoloMerchantPublicKeyFromRedis = dbconfig.getDataFromRedis(GlobalConstants.ZOLO_MERCHANT_PUBLIC_KEY);
+		
+		hostUrl = zoloServerFromRedis.getValue();
+		clientId = zoloClientIdFromRedis.getValue();
+		merchantPrivatekey = zoloMerchantPrivateKeyFromRedis.getValue();
+		merchantPublicKey = zoloMerchantPrivateKeyFromRedis.getValue();
 		openApiClient.setHostUrl(hostUrl);
 		openApiClient.setClientId(clientId);
 		openApiClient.setMerchantPrivateKey(merchantPrivatekey);
@@ -2541,8 +2557,8 @@ public class CcrisController {
 
 	
 	public void saveLogsToDB(CreditCheckerLogs ccLogs) {
-		HashMap<String, String> valueFromDB = dbconfig.getValueFromDB();
-		String authEnableOrDisable = valueFromDB.get(GlobalConstants.PLATFORM_AUTH);
+		Creditcheckersysconfig platformAuthFromRedis = dbconfig.getDataFromRedis(GlobalConstants.PLATFORM_AUTH);
+		String authEnableOrDisable = platformAuthFromRedis.getValue();
 		if(StringUtils.isNotEmpty(authEnableOrDisable) && StringUtils.equalsIgnoreCase(authEnableOrDisable, "1")) {
 		String ipAddress = null;
 		String clientName = null;
