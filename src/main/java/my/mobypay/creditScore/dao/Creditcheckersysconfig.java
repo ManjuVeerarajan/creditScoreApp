@@ -9,6 +9,8 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 
+import org.springframework.data.redis.core.RedisHash;
+
 import lombok.Data;
 
 @Entity

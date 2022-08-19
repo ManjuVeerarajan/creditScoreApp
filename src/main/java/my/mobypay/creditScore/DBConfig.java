@@ -62,12 +62,12 @@ public class DBConfig {
 	public void setDataToRedis() {
 		List<Creditcheckersysconfig> configValues = creditScoreConfigRepository.findAll();
 		for (int i = 0; i < configValues.size(); i++) {
-			redisTemplate.opsForValue().set(configValues.get(i).getName(), configValues.get(i));
+			redisTemplate.opsForValue().set("creditChecker/"+configValues.get(i).getName(), configValues.get(i));
 		}
 	}
 
 	public Creditcheckersysconfig getDataFromRedis(String key) {
-		Creditcheckersysconfig creditcheckersysconfigFromRedis = redisTemplate.opsForValue().get(key);
+		Creditcheckersysconfig creditcheckersysconfigFromRedis = redisTemplate.opsForValue().get("creditChecker/"+key);
 		return creditcheckersysconfigFromRedis;
 	}
 
@@ -75,13 +75,13 @@ public class DBConfig {
 	public void setPdfDataToRedis() {
 		List<CreditcheckerPDFFiles> expReportFiles = pPDFFilesrepo.findAll();
 		for (int i = 0; i < expReportFiles.size(); i++) {
-			redisTemplateForFiles.opsForValue().set(expReportFiles.get(i).getName(), expReportFiles.get(i));
+			redisTemplateForFiles.opsForValue().set("creditChecker/"+expReportFiles.get(i).getName(), expReportFiles.get(i));
 		}
 
 	}
 
 	public CreditcheckerPDFFiles getpdfFilesFromRedis(String key) {
-		CreditcheckerPDFFiles exportFilesFromRedis = redisTemplateForFiles.opsForValue().get(key);
+		CreditcheckerPDFFiles exportFilesFromRedis = redisTemplateForFiles.opsForValue().get("creditChecker/"+key);
 		return exportFilesFromRedis;
 	}
 

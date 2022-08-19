@@ -9,13 +9,15 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 
+import org.springframework.data.redis.core.RedisHash;
+
 import lombok.Data;
 
 @Entity
 @Table(name = "creditchecker_pdffiles")
 @Data
 public class CreditcheckerPDFFiles implements Serializable {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 9876654321L;
 	@Id
 	@Column(name = "name")
 	private String name;
