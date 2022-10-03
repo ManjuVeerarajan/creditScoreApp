@@ -343,7 +343,8 @@ public class CcrisController {
 		log.info("Inside CreditCheckOnRegisterUats for user " + userSearchRequest.getName() + "entity "
 				+ userSearchRequest.getEntityId());
 		boolean reportFlag = false;
-
+		CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
+		try {
 		CreditCheckResponse checkcreditscoreResponse = null;
 		Creditcheckersysconfig triggerTimeFromRedis = dbconfig.getDataFromRedis("experian-trigger-time");
 		String triggerTime = triggerTimeFromRedis.getValue();
@@ -457,7 +458,7 @@ public class CcrisController {
 							String xmlresponse = customerCreditReportsRepository.findbyXMLpath(regexexpression);
 							String jsonString = customerCreditReportsRepository.findbynameandnric(regexexpression);
 							if (xmlresponse != null) {
-								CustomerSpendingLimitResponse jsonresponse = new ObjectMapper().readValue(jsonString,
+								CustomerSpendingLimitResponse spendingLimitResponse = new ObjectMapper().readValue(jsonString,
 										CustomerSpendingLimitResponse.class);
 								log.info("customer already exist so returning json response");
 
@@ -465,20 +466,20 @@ public class CcrisController {
 
 								CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 								ccLogs.setRequest(userSearchRequest.toString());
-								ccLogs.setResponse(jsonresponse.toString());
+								ccLogs.setResponse(spendingLimitResponse.toString());
 								saveLogsToDB(ccLogs);
 
 								return jsonresponse;
 							} else {
 								log.info("xmlresponse is empty!!: ");
-								CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
-								jsonresponse.setIsNricExist(true);
-								jsonresponse.setIsNameNricMatched(true);
-								jsonresponse.setIsRegistrationAllowed(false);
-								jsonresponse.setMaximumAllowedInstallments(0);
-								jsonresponse.setMaximumSpendingLimit(0);
-								jsonresponse.setStatusCode("1");
-								jsonresponse.setErrorMessage(
+								CustomerSpendingLimitResponse emptyResponse= new CustomerSpendingLimitResponse();
+								emptyResponse.setIsNricExist(true);
+								emptyResponse.setIsNameNricMatched(true);
+								emptyResponse.setIsRegistrationAllowed(false);
+								emptyResponse.setMaximumAllowedInstallments(0);
+								emptyResponse.setMaximumSpendingLimit(0);
+								emptyResponse.setStatusCode("1");
+								emptyResponse.setErrorMessage(
 										"We are sorry,We are unable to provide AiraPay services to you. Upon our internal checks and verifications, we regret to inform you that you did not meet certain requirements we are looking for to enable the instalment payments under AiraPay for your account.");
 								// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
 
@@ -486,48 +487,48 @@ public class CcrisController {
 
 								CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 								ccLogs.setRequest(userSearchRequest.toString());
-								ccLogs.setResponse(jsonresponse.toString());
+								ccLogs.setResponse(emptyResponse.toString());
 								saveLogsToDB(ccLogs);
 
-								return jsonresponse;
+								return emptyResponse;
 							}
 
 						} else if (!responseName.equals(name)) {
-							CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
-							jsonresponse.setIsNricExist(false);
-							jsonresponse.setIsNameNricMatched(false);
-							jsonresponse.setIsRegistrationAllowed(false);
-							jsonresponse.setMaximumAllowedInstallments(0);
-							jsonresponse.setMaximumSpendingLimit(0);
-							jsonresponse.setStatusCode("404");
+							CustomerSpendingLimitResponse invalidResponse = new CustomerSpendingLimitResponse();
+							invalidResponse.setIsNricExist(false);
+							invalidResponse.setIsNameNricMatched(false);
+							invalidResponse.setIsRegistrationAllowed(false);
+							invalidResponse.setMaximumAllowedInstallments(0);
+							invalidResponse.setMaximumSpendingLimit(0);
+							invalidResponse.setStatusCode("404");
 
-							jsonresponse.setErrorMessage("Invalid Input"); // 10-05
-							SavetoCreditCheckError(jsonresponse.getStatusCode(), jsonresponse.getErrorMessage(), name,
+							invalidResponse.setErrorMessage("Invalid Input"); // 10-05
+							SavetoCreditCheckError(invalidResponse.getStatusCode(), invalidResponse.getErrorMessage(), name,
 									regexexpression, 0);
 							// To add logs in DB
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
-							ccLogs.setResponse(jsonresponse.toString());
+							ccLogs.setResponse(invalidResponse.toString());
 							saveLogsToDB(ccLogs);
-							return jsonresponse;
+							return invalidResponse;
 						} else {
 							log.info("name and nric not matched!!");
-							CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
-							jsonresponse.setIsNricExist(false);
-							jsonresponse.setIsNameNricMatched(false);
-							jsonresponse.setIsRegistrationAllowed(false);
-							jsonresponse.setMaximumAllowedInstallments(0);
-							jsonresponse.setMaximumSpendingLimit(0);
-							jsonresponse.setStatusCode("400");
-							jsonresponse.setErrorMessage("Invalid Input"); // 10-05
-							SavetoCreditCheckError(jsonresponse.getStatusCode(), jsonresponse.getErrorMessage(), name,
+							CustomerSpendingLimitResponse unmatchedResponse = new CustomerSpendingLimitResponse();
+							unmatchedResponse.setIsNricExist(false);
+							unmatchedResponse.setIsNameNricMatched(false);
+							unmatchedResponse.setIsRegistrationAllowed(false);
+							unmatchedResponse.setMaximumAllowedInstallments(0);
+							unmatchedResponse.setMaximumSpendingLimit(0);
+							unmatchedResponse.setStatusCode("400");
+							unmatchedResponse.setErrorMessage("Invalid Input"); // 10-05
+							SavetoCreditCheckError(unmatchedResponse.getStatusCode(), unmatchedResponse.getErrorMessage(), name,
 									regexexpression, 0);
 							// To add logs in DB
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
-							ccLogs.setResponse(jsonresponse.toString());
+							ccLogs.setResponse(unmatchedResponse.toString());
 							saveLogsToDB(ccLogs);
-							return jsonresponse;
+							return unmatchedResponse;
 						}
 					} else if (inputResponse != null) {
 
@@ -539,80 +540,80 @@ public class CcrisController {
 							String xmlresponse = customerCreditReportsRepository.findbyXMLpath(regexexpression);
 							String jsonString = customerCreditReportsRepository.findbynameandnric(regexexpression);
 							if (xmlresponse != null) {
-								CustomerSpendingLimitResponse jsonresponse = new ObjectMapper().readValue(jsonString,
+								CustomerSpendingLimitResponse xmlResponseNull = new ObjectMapper().readValue(jsonString,
 										CustomerSpendingLimitResponse.class);
 								log.info("customer already exist so returning json response");
-								return jsonresponse;
+								return xmlResponseNull;
 							} else {
-								CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
-								jsonresponse.setIsNricExist(true);
-								jsonresponse.setIsNameNricMatched(true);
-								jsonresponse.setIsRegistrationAllowed(false);
-								jsonresponse.setMaximumAllowedInstallments(0);
-								jsonresponse.setMaximumSpendingLimit(0);
-								jsonresponse.setStatusCode("1");
-								jsonresponse.setErrorMessage(
+								CustomerSpendingLimitResponse errResponse = new CustomerSpendingLimitResponse();
+								errResponse.setIsNricExist(true);
+								errResponse.setIsNameNricMatched(true);
+								errResponse.setIsRegistrationAllowed(false);
+								errResponse.setMaximumAllowedInstallments(0);
+								errResponse.setMaximumSpendingLimit(0);
+								errResponse.setStatusCode("1");
+								errResponse.setErrorMessage(
 										"We are sorry,We are unable to provide AiraPay services to you. Upon our internal checks and verifications, we regret to inform you that you did not meet certain requirements we are looking for to enable the instalment payments under AiraPay for your account.");
 								// To add logs in DB
 								CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 								ccLogs.setRequest(userSearchRequest.toString());
-								ccLogs.setResponse(jsonresponse.toString());
+								ccLogs.setResponse(errResponse.toString());
 								saveLogsToDB(ccLogs);
-								return jsonresponse;
+								return errResponse;
 							}
 						} else {
-							CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
-							jsonresponse.setIsNricExist(false);
-							jsonresponse.setIsNameNricMatched(false);
-							jsonresponse.setIsRegistrationAllowed(false);
-							jsonresponse.setMaximumAllowedInstallments(0);
-							jsonresponse.setMaximumSpendingLimit(0);
-							jsonresponse.setStatusCode("400");
-							jsonresponse.setErrorMessage("Invalid Input"); // 10-05
-							SavetoCreditCheckError(jsonresponse.getStatusCode(), jsonresponse.getErrorMessage(), name,
+							CustomerSpendingLimitResponse notFoundResponse = new CustomerSpendingLimitResponse();
+							notFoundResponse.setIsNricExist(false);
+							notFoundResponse.setIsNameNricMatched(false);
+							notFoundResponse.setIsRegistrationAllowed(false);
+							notFoundResponse.setMaximumAllowedInstallments(0);
+							notFoundResponse.setMaximumSpendingLimit(0);
+							notFoundResponse.setStatusCode("400");
+							notFoundResponse.setErrorMessage("Invalid Input"); // 10-05
+							SavetoCreditCheckError(notFoundResponse.getStatusCode(), notFoundResponse.getErrorMessage(), name,
 									regexexpression, 0);
 							// To add logs in DB
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
-							ccLogs.setResponse(jsonresponse.toString());
+							ccLogs.setResponse(notFoundResponse.toString());
 							saveLogsToDB(ccLogs);
-							return jsonresponse;
+							return notFoundResponse;
 						}
 					} else if (inputResponseName != null && !inputResponseName.equals(userSearchRequest.getName())) {
-						CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
-						jsonresponse.setIsNricExist(false);
-						jsonresponse.setIsNameNricMatched(false);
-						jsonresponse.setIsRegistrationAllowed(false);
-						jsonresponse.setMaximumAllowedInstallments(0);
-						jsonresponse.setMaximumSpendingLimit(0);
-						jsonresponse.setStatusCode("404");
-						jsonresponse.setErrorMessage("Name mismatch"); // 10-05
-						SavetoCreditCheckError(jsonresponse.getStatusCode(), jsonresponse.getErrorMessage(), name,
+						CustomerSpendingLimitResponse mismatchResponse = new CustomerSpendingLimitResponse();
+						mismatchResponse.setIsNricExist(false);
+						mismatchResponse.setIsNameNricMatched(false);
+						mismatchResponse.setIsRegistrationAllowed(false);
+						mismatchResponse.setMaximumAllowedInstallments(0);
+						mismatchResponse.setMaximumSpendingLimit(0);
+						mismatchResponse.setStatusCode("404");
+						mismatchResponse.setErrorMessage("Name mismatch"); // 10-05
+						SavetoCreditCheckError(mismatchResponse.getStatusCode(), mismatchResponse.getErrorMessage(), name,
 								regexexpression, 0);
 						// To add logs in DB
 						CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 						ccLogs.setRequest(userSearchRequest.toString());
-						ccLogs.setResponse(jsonresponse.toString());
+						ccLogs.setResponse(mismatchResponse.toString());
 						saveLogsToDB(ccLogs);
 
-						return jsonresponse;
+						return mismatchResponse;
 					} else {
-						CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
-						jsonresponse.setIsNricExist(false);
-						jsonresponse.setIsNameNricMatched(false);
-						jsonresponse.setIsRegistrationAllowed(false);
-						jsonresponse.setMaximumAllowedInstallments(0);
-						jsonresponse.setMaximumSpendingLimit(0);
-						jsonresponse.setStatusCode("400");
-						jsonresponse.setErrorMessage("Invalid input"); // 10-05
-						SavetoCreditCheckError(jsonresponse.getStatusCode(), jsonresponse.getErrorMessage(), name,
+						CustomerSpendingLimitResponse invalidInputResponse = new CustomerSpendingLimitResponse();
+						invalidInputResponse.setIsNricExist(false);
+						invalidInputResponse.setIsNameNricMatched(false);
+						invalidInputResponse.setIsRegistrationAllowed(false);
+						invalidInputResponse.setMaximumAllowedInstallments(0);
+						invalidInputResponse.setMaximumSpendingLimit(0);
+						invalidInputResponse.setStatusCode("400");
+						invalidInputResponse.setErrorMessage("Invalid input"); // 10-05
+						SavetoCreditCheckError(invalidInputResponse.getStatusCode(), invalidInputResponse.getErrorMessage(), name,
 								regexexpression, 0);
 						// To add logs in DB
 						CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 						ccLogs.setRequest(userSearchRequest.toString());
-						ccLogs.setResponse(jsonresponse.toString());
+						ccLogs.setResponse(invalidInputResponse.toString());
 						saveLogsToDB(ccLogs);
-						return jsonresponse;
+						return invalidInputResponse;
 					}
 				} else {
 					Utility utilityEntities = new Utility();
@@ -862,24 +863,24 @@ public class CcrisController {
 				}
 			} else {
 				log.info("NRIC length is not 14");
-				CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
-				jsonresponse.setIsNricExist(false);
-				jsonresponse.setIsNameNricMatched(false);
-				jsonresponse.setIsRegistrationAllowed(false);
-				jsonresponse.setMaximumAllowedInstallments(0);
-				jsonresponse.setMaximumSpendingLimit(0);
-				jsonresponse.setStatusCode("404");
-				jsonresponse.setErrorMessage(
+				CustomerSpendingLimitResponse nricLengthResponse = new CustomerSpendingLimitResponse();
+				nricLengthResponse.setIsNricExist(false);
+				nricLengthResponse.setIsNameNricMatched(false);
+				nricLengthResponse.setIsRegistrationAllowed(false);
+				nricLengthResponse.setMaximumAllowedInstallments(0);
+				nricLengthResponse.setMaximumSpendingLimit(0);
+				nricLengthResponse.setStatusCode("404");
+				nricLengthResponse.setErrorMessage(
 						"Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.");
 				CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 				ccLogs.setRequest(userSearchRequest.toString());
-				ccLogs.setResponse(jsonresponse.toString());
+				ccLogs.setResponse(nricLengthResponse.toString());
 				saveLogsToDB(ccLogs);
-				return jsonresponse;
+				return nricLengthResponse;
 			}
 		}
 		log.info("Simulator response is null");
-		CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
+		
 		jsonresponse.setIsNricExist(false);
 		jsonresponse.setIsNameNricMatched(false);
 		jsonresponse.setIsRegistrationAllowed(false);
@@ -891,7 +892,15 @@ public class CcrisController {
 		ccLogs.setRequest(userSearchRequest.toString());
 		ccLogs.setResponse(jsonresponse.toString());
 		saveLogsToDB(ccLogs);
+		}catch(Exception e) {
+			log.error(e.getMessage());
+			CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+			ccLogs.setRequest(userSearchRequest.toString());
+			ccLogs.setResponse(e.getMessage());
+			saveLogsToDB(ccLogs);
+		}
 		return jsonresponse;
+		
 	}
 
 	private void SavetoCreditCheckError(String statusCode, String errorMessage, String name, String regexexpression,
@@ -1211,13 +1220,15 @@ public class CcrisController {
 	@SuppressWarnings({ "null", "unused" })
 	@PostMapping(value = "/creditchecker/ExperianReport")
 	public Object RequestdownloadFile(@RequestBody UserSearchRequest userSearchRequest) throws Exception {
+		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
+		try {
 		List<String> triggersleep = new LinkedList<String>();
 		Error error = new Error();
 		boolean reportFlag = false;
 		String valuePresent = null;
 		CustomerSpendingLimitResponse customerSpendingLimitResponse = new CustomerSpendingLimitResponse();
 		CreditCheckResponse checkcreditscoreResponse = null;
-		ExperianReportResponse experianreportResponse = new ExperianReportResponse();
+		
 		log.info("Inside ExperianReport for user :" + userSearchRequest.getName() + "entity "
 				+ userSearchRequest.getEntityId().trim());
 		// String simulator =
@@ -1972,7 +1983,13 @@ public class CcrisController {
 		ccLogs.setRequest(userSearchRequest.toString());
 		ccLogs.setResponse(experianreportResponse.toString());
 		 saveLogsToDB(ccLogs);
-
+		}catch(Exception e) {
+			log.error(e.getMessage());
+			CreditCheckerLogs ccLogs = new CreditCheckerLogs();
+			ccLogs.setRequest(userSearchRequest.toString());
+			ccLogs.setResponse(e.getMessage());
+			saveLogsToDB(ccLogs);
+		}
 		return experianreportResponse;
 	}
 
