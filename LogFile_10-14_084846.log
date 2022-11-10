@@ -1,0 +1,8 @@
+Oct 14, 2022 8:49:59 AM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: coming inside controller retival count if block
+Oct 14, 2022 8:49:59 AM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: Request->UserSearchRequest(clientId=1, name=MXXXXXXX XXXXX MXXXXX, entityId=720517125558, purchaseAmount=null, serviceName=null, DOB=null, country=MY)
+Oct 14, 2022 8:49:59 AM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: Customer spending limit Response ->CustomerSpendingLimitResponse(isRegistrationAllowed=false, isNricExist=false, isNameNricMatched=false, maximumAllowedInstallments=0, maximumSpendingLimit=0, statusCode=404, errorMessage=Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! e 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.)
+Oct 14, 2022 8:50:39 AM my.mobypay.creditScore.controller.CcrisController RequestdownloadFile
+SEVERE: Checking namemistach Response ->ExperianReportResponse(responseCode=400, responseMsg=Invalid Input, URL=null, BankruptcyCount=0, LegalSuitCount=0, TradeBureauCount=0, IScore=0, IScoreRiskGrade=0, IScoreGradeFormat=null, LegalActionBankingCount=0, BorrowerOutstanding=0.0, BankingCreditApprovedCount=0, BankingCreditApprovedAmount=0.0, BankingCreditPendingCount=0, BankingCreditPendingAmount=0.0, Refxml=null, Base64_pdf=null)

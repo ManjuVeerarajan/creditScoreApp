@@ -3,6 +3,7 @@ package my.mobypay.creditScore.service;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
 import my.mobypay.creditScore.DBConfig;
+import my.mobypay.creditScore.controller.EmailUtility;
 import my.mobypay.creditScore.controller.GlobalConstants;
 import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
 import my.mobypay.creditScore.dao.Creditcheckersysconfig;
@@ -15,7 +16,6 @@ import my.mobypay.creditScore.dto.response.CcrisXml;
 import my.mobypay.creditScore.dto.response.Item;
 import my.mobypay.creditScore.dto.response.Tokens;
 import my.mobypay.creditScore.repository.UserRequestEntityRepository;
-import my.mobypay.creditScore.utility.EmailUtility;
 import my.mobypay.creditScore.utility.ParserUtility;
 
 import org.apache.commons.lang3.StringUtils;
@@ -97,7 +97,7 @@ public class CcrisSearchService {
 				 ccrisXml.setCode("401");
 				 ccrisXml.setError(message);
 			EmailUtility emailUtility=new EmailUtility();
-			emailUtility.sentEmail(e.getLocalizedMessage(),emailSending);
+			emailUtility.sentEmail(e.getLocalizedMessage(),dbconfig);
 			 
 	    		return ccrisXml;
 		}
@@ -172,7 +172,7 @@ public class CcrisSearchService {
 		 log.info("Experian ccrisXml:"+ccrisXml);
 		 System.out.println("Experian ccrisXml:"+ccrisXml);
 		 EmailUtility emailUtility=new EmailUtility();
-			emailUtility.sentEmail(e.getLocalizedMessage(),emailSending);
+			emailUtility.sentEmail(e.getLocalizedMessage(),dbconfig);
 		  //emailUtility.sentEmail(e.getLocalizedMessage());
 	 
 		 return ccrisXml;
@@ -232,7 +232,7 @@ public class CcrisSearchService {
     		tokens.setCode("401");
     		tokens.setError(message);
     	 EmailUtility emailUtility=new EmailUtility();
-    		emailUtility.sentEmail(e.getLocalizedMessage(),to);
+    		emailUtility.sentEmail(e.getLocalizedMessage(),dbconfig);
 			//  emailUtility.sentEmail(e.getLocalizedMessage());
 		 
     		return tokens;
@@ -268,7 +268,7 @@ public class CcrisSearchService {
 		tokens.setError(message);
 		tokens.setDataBaseMessage(e.getMessage());
 		EmailUtility emailUtility=new EmailUtility();
-		emailUtility.sentEmail(e.getLocalizedMessage(),to);
+		emailUtility.sentEmail(e.getLocalizedMessage(),dbconfig);
 		//  emailUtility.sentEmail(e.getLocalizedMessage());
 	 
 		return tokens;

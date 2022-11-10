@@ -3,6 +3,7 @@ package my.mobypay.creditScore.service;
 import lombok.extern.slf4j.Slf4j;
 import my.mobypay.creditScore.DBConfig;
 import my.mobypay.creditScore.controller.CcrisController;
+import my.mobypay.creditScore.controller.EmailUtility;
 import my.mobypay.creditScore.controller.GlobalConstants;
 import my.mobypay.creditScore.dao.TokensRequest;
 import my.mobypay.creditScore.dao.Creditcheckersysconfig;
@@ -20,7 +21,6 @@ import my.mobypay.creditScore.dto.response.Item;
 import my.mobypay.creditScore.dto.response.Report;
 import my.mobypay.creditScore.dto.response.Tokens;
 import my.mobypay.creditScore.repository.CustomerUserTokenRepository;
-import my.mobypay.creditScore.utility.EmailUtility;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;

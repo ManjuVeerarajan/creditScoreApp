@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import my.mobypay.creditScore.dao.Creditcheckersysconfig;
 
 @Slf4j
 @Configuration
+@Order(1)
 public class DBConfig {
 
 	@Autowired

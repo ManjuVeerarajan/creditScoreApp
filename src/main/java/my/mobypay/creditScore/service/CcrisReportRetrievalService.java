@@ -3,6 +3,7 @@ package my.mobypay.creditScore.service;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
 import my.mobypay.creditScore.DBConfig;
+import my.mobypay.creditScore.controller.EmailUtility;
 import my.mobypay.creditScore.controller.GlobalConstants;
 import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
 import my.mobypay.creditScore.dao.CreditScorepPDFFilesrepo;
@@ -21,7 +22,6 @@ import my.mobypay.creditScore.dto.response.Error;
 import my.mobypay.creditScore.dto.response.Report;
 import my.mobypay.creditScore.dto.response.Tokens;
 import my.mobypay.creditScore.repository.CreditCheckErrorRepository;
-import my.mobypay.creditScore.utility.EmailUtility;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.io.FileUtils;
@@ -1453,7 +1453,7 @@ public class CcrisReportRetrievalService {
 		} catch (Exception e) {
 			e.printStackTrace();
 			EmailUtility emailUtility = new EmailUtility();
-			emailUtility.sentEmail(e.getLocalizedMessage(), to);
+			emailUtility.sentEmail(e.getLocalizedMessage(),dbconfig);
 
 		}
 		return report;
