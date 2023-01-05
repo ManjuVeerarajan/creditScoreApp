@@ -2671,7 +2671,7 @@ public class CcrisController {
 	}
 
 	public void saveLogsToDB(CreditCheckerLogs ccLogs) {
-		Creditcheckersysconfig platformAuthFromRedis = dbconfig.getDataFromRedis(GlobalConstants.PLATFORM_AUTH);
+		Creditcheckersysconfig platformAuthFromRedis = dbconfig.getDataFromRedis(GlobalConstants.PLATFORM_LOG_ENABLE);
 		String authEnableOrDisable = platformAuthFromRedis.getValue();
 		if (StringUtils.isNotEmpty(authEnableOrDisable) && StringUtils.equalsIgnoreCase(authEnableOrDisable, "1")) {
 			String ipAddress = null;

@@ -77,6 +77,12 @@
 			path="/db/changelog/alterSysConfigTable.sql" />
 	</changeSet>
 	
+	<changeSet author="manjuv"
+		id="insert_logenabling_creditChecker_settings">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/sysconfig-logenabling-insert.sql" />
+	</changeSet>
+	
 	<changeSet author="manjuv" id="mailGunProps"
 		runOnChange="true">
 		<preConditions onFail="MARK_RAN">

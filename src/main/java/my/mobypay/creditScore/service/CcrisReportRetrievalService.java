@@ -231,6 +231,8 @@ public class CcrisReportRetrievalService {
 				System.out.println("***********response**************");
 				System.out.println(response.getBody());
 				log.info("Experian Report response:" + response.getBody());
+				EmailUtility emailUtility = new EmailUtility();
+				emailUtility.sentEmail("Experian Report response:" + response.getBody(),dbconfig);
 				String checkcode = response.getBody().toString();
 				Boolean check = response.getBody().toString().contains("Result is processing");
 				log.info("Experian Report response:" + check);
@@ -333,6 +335,8 @@ public class CcrisReportRetrievalService {
 		System.out.println("***********response**************");
 		System.out.println(response.getBody());
 		log.info("Experian Report response:" + response.getBody());
+		EmailUtility emailUtility = new EmailUtility();
+		emailUtility.sentEmail("Experian Report response:" + response.getBody(),dbconfig);
 		String checkcode = response.getBody().toString();
 		Boolean check = response.getBody().toString().contains("Result is processing");
 		log.info("Experian Report response:" + check);

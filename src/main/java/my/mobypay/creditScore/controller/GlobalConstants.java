@@ -32,4 +32,5 @@ public class GlobalConstants {
 	public static final String MAILGUN_TO_EMAILS = "platform.email.notification.experian_fail";
 	public static final String MAILGUN_FROM_EMAILS = "platform.email.mailgun.MAILGUN_FROM";
 	public static final String MAILGUN_MAIL_TEMPLATE = "platform.email.notification.experian_fail.template";
+	public static final String PLATFORM_LOG_ENABLE = "platform.log.enable";
 }
