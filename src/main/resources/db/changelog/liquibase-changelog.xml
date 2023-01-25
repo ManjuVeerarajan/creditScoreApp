@@ -96,5 +96,31 @@
 		<sqlFile dbms="mysql"
 			path="/db/changelog/mailGunProps.sql" />
 	</changeSet>
+	<changeSet author="manjuv"
+		id="creditReportError-addColumn-XmlString">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/creditReportError.sql" />
+	</changeSet>
+	<changeSet author="manjuv"
+		id="ccLogAddNewColumns">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/ccLogAddColumns.sql" />
+	</changeSet>
+	<changeSet author="manjuv"
+		id="ccLogAlterColumns">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/alterCCLogTable.sql" />
+	</changeSet>
+	<changeSet author="manjuv"
+		id="creditErrorAlterColumns">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/alterCreditErrorTable.sql" />
+	</changeSet>
+	<changeSet author="manjuv"
+		id="creditReportAddColumns">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/creditReportAddColumn.sql" />
+	</changeSet>
+	
 </databaseChangeLog>
 

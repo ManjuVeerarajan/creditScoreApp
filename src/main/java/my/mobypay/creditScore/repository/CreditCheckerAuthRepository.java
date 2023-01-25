@@ -7,10 +7,12 @@ import org.springframework.stereotype.Repository;
 
 import my.mobypay.creditScore.dao.CreditCheckerAuthDao;
 
-
 @Repository
-public interface CreditCheckerAuthRepository extends JpaRepository<CreditCheckerAuthDao, Integer >{
+public interface CreditCheckerAuthRepository extends JpaRepository<CreditCheckerAuthDao, Integer> {
 
-	@Query( value = "SELECT p.client_name from creditchecker_auth p where p.api_key = :api_key", nativeQuery = true)
-	 String findClientNameFromKey(@Param("api_key") String string);
+	@Query(value = "SELECT p.client_name from creditchecker_auth p where p.api_key = :api_key", nativeQuery = true)
+	String findClientNameFromKey(@Param("api_key") String string);
+
+	@Query(value = "SELECT p.client_name from creditchecker_auth p where p.id = :id", nativeQuery = true)
+	String findClientnameById(@Param("id") String id);
 }

@@ -577,8 +577,8 @@ public class CcrisUnifiedService {
 			// item.setEntityName(name);
 			if (names.equalsIgnoreCase(userSearchRequest.getName())) {
 				UserConfirmCCRISEntityRequest userConfirmCCRISEntityRequest = UserConfirmCCRISEntityRequest.builder()
-						.refId(CrefId).entityKey(Entitykey).mobileNo("12345").emailAddress("sssssss")
-						.lastKnownAddress("asdas").consentGranted("Y").enquiryPurpose("REVIEW").build();
+						.refId(CrefId).entityKey(Entitykey).mobileNo("").emailAddress("")
+						.lastKnownAddress("").consentGranted("Y").enquiryPurpose("REVIEW").build();
 				UserTokensRequest userTokensRequest;
 
 				TokensRequest checkToken = new TokensRequest();

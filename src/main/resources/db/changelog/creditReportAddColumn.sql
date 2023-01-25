@@ -1,0 +1,1 @@
+ALTER TABLE cc_customerCreditReports ADD COLUMN experianRequest LONGTEXT;

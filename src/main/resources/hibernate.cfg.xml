@@ -11,13 +11,13 @@
 			configurationHibernateEncryptor
 		</property> -->
 		<property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
-		<!-- property name="connection.driver_class">com.mysql.jdbc.Driver</property -->
-		<property name="connection.url">jdbc:mysql://rm-zf8xb9s67e605l651.mysql.kualalumpur.rds.aliyuncs.com:3306/creditchecker</property>
-		<!-- <property name="connection.url">jdbc:mysql://airapay-sandbox.c3rilhzfezwb.ap-southeast-1.rds.amazonaws.com:3306/creditchecker_dev</property> -->
+		<!-- <property name="connection.driver_class">com.mysql.jdbc.Driver</property> -->
+		<!-- <property name="connection.url">jdbc:mysql://rm-zf8xb9s67e605l651.mysql.kualalumpur.rds.aliyuncs.com:3306/creditchecker</property> -->
+		<property name="connection.url">jdbc:mysql://airapay-sandbox.c3rilhzfezwb.ap-southeast-1.rds.amazonaws.com:3306/creditchecker_dev</property>
 		
 		<property name="connection.username">creditcheckerapp</property>
-		<!-- <property name="connection.password">admin123qwe</property> -->
-		<property name="connection.password">PYi6Fq9u!v@uc6t</property>
+		<property name="connection.password">admin123qwe</property>
+		<!-- <property name="connection.password">PYi6Fq9u!v@uc6t</property> -->
 		<!-- <property name="connection.password">ENC(Ksdw9iCd4u9apHrfTAXA+mHe43+iNAu7)</property> -->
 		<property name="dialect">org.hibernate.dialect.MySQL8Dialect</property>
 		<property name="current_session_context_class">thread</property>

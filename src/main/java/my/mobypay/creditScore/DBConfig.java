@@ -11,10 +11,12 @@ import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import lombok.extern.slf4j.Slf4j;
+import my.mobypay.creditScore.dao.CreditCheckerAuthDao;
 import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
 import my.mobypay.creditScore.dao.CreditScorepPDFFilesrepo;
 import my.mobypay.creditScore.dao.CreditcheckerPDFFiles;
 import my.mobypay.creditScore.dao.Creditcheckersysconfig;
+import my.mobypay.creditScore.repository.CreditCheckerAuthRepository;
 
 @Slf4j
 @Configuration
@@ -26,12 +28,18 @@ public class DBConfig {
 
 	@Autowired
 	CreditScorepPDFFilesrepo pPDFFilesrepo;
+	
+	@Autowired
+	CreditCheckerAuthRepository creditCheckerAuthRepo;
 
 	@Autowired
 	private RedisTemplate<String, Creditcheckersysconfig> redisTemplate;
 
 	@Autowired
 	private RedisTemplate<String, CreditcheckerPDFFiles> redisTemplateForFiles;
+	
+//	@Autowired
+//	private RedisTemplate<String, CreditCheckerAuthDao> redisTemplateForAuth;
 
 	@Bean
 	public HashMap<String, String> getValueFromDB() {
@@ -59,6 +67,23 @@ public class DBConfig {
 		}
 		return dbValuesMap;
 	}
+	
+	public HashMap<String, String> getcreditCheckerAuthFromDB() {
+		HashMap<String, String> dbValuesMap = new HashMap<String, String>();
+		List<CreditCheckerAuthDao> configValues = creditCheckerAuthRepo.findAll();
+		for (int i = 0; i < configValues.size(); i++) {
+			dbValuesMap.put(configValues.get(i).getId(), configValues.get(i).getClient_name());
+		}
+		return dbValuesMap;
+	}
+//	
+//	@Bean
+//	public void setAuthDataToRedis() {
+//		List<CreditCheckerAuthDao> configValues = creditCheckerAuthRepo.findAll();
+//		for (int i = 0; i < configValues.size(); i++) {
+//			redisTemplateForAuth.opsForValue().set("creditChecker/"+configValues.get(i).getId(), configValues.get(i));
+//		}
+//	}
 
 	@Bean
 	public void setDataToRedis() {

@@ -41,5 +41,9 @@ public class CreditCheckerLogs {
     private String response;
     @Column(name = "timestamp")
     private Date timestamp;
+    @Column( name = "nric")
+    private String nric;
+    @Column(name = "experianRequest")
+    private String experianRequest;
 
 }
