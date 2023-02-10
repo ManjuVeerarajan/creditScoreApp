@@ -1,0 +1,24 @@
+Feb 10, 2023 10:41:18 AM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Inside CreditCheckOnRegisterUats for user MXXX XXXXXXXXX XXX XXXXXXXXXXentity 790509-11-5425
+Feb 10, 2023 10:41:18 AM my.mobypay.creditScore.controller.CcrisController NricRegchecking
+INFO: In [CcrisController:NricRegchecking] = NRIC with - Validation790509-11-5425
+Feb 10, 2023 10:43:56 AM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Inside Controller retrival count if block
+Feb 10, 2023 10:45:57 AM my.mobypay.creditScore.controller.CcrisController saveResponseToDB
+INFO: In [CcrisController:saveResponseToDB] = Data updated 790509115425
+Feb 10, 2023 10:45:57 AM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Request->UserSearchRequest(clientId=1, name=MXXX XXXXXXXXX XXX XXXXXXXXXX, entityId=790509-11-5425, purchaseAmount=null, serviceName=null, DOB=null, country=MY)
+Feb 10, 2023 10:45:57 AM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Customer spending limit Response ->CustomerSpendingLimitResponse(isRegistrationAllowed=true, isNricExist=true, isNameNricMatched=true, maximumAllowedInstallments=6, maximumSpendingLimit=5000, statusCode=00, errorMessage=null)
+Feb 10, 2023 10:46:34 AM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Inside CreditCheckOnRegisterUats for user MXXX XXXXXXXXX XXX XXXXXXXXXXentity 790509-11-5425
+Feb 10, 2023 10:46:34 AM my.mobypay.creditScore.controller.CcrisController NricRegchecking
+INFO: In [CcrisController:NricRegchecking] = NRIC with - Validation790509-11-5425
+Feb 10, 2023 10:46:48 AM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Inside Controller retrival count if block
+Feb 10, 2023 10:51:29 AM my.mobypay.creditScore.controller.CcrisController saveResponseToDB
+INFO: In [CcrisController:saveResponseToDB] = Data updated 790509115425
+Feb 10, 2023 10:51:30 AM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Request->UserSearchRequest(clientId=1, name=MXXX XXXXXXXXX XXX XXXXXXXXXX, entityId=790509-11-5425, purchaseAmount=null, serviceName=null, DOB=null, country=MY)
+Feb 10, 2023 10:51:30 AM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Customer spending limit Response ->CustomerSpendingLimitResponse(isRegistrationAllowed=true, isNricExist=true, isNameNricMatched=true, maximumAllowedInstallments=6, maximumSpendingLimit=5000, statusCode=00, errorMessage=null)

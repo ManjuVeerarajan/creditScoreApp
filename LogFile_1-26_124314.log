@@ -1,0 +1,42 @@
+Jan 26, 2023 12:44:26 PM my.mobypay.creditScore.controller.CcrisController RequestdownloadFile
+INFO: In [CcrisController:RequestdownloadFile] = Inside ExperianReport for user :NG SUET THENGentity 970925085016
+Jan 26, 2023 12:44:26 PM my.mobypay.creditScore.controller.CcrisController NricRegchecking
+INFO: In [CcrisController:NricRegchecking] = NRIC without - Validation
+Jan 26, 2023 12:56:15 PM my.mobypay.creditScore.controller.CcrisController RequestdownloadFile
+SEVERE: In [CcrisController:RequestdownloadFile] = Checking Name Mismatch Response ->ExperianReportResponse(responseCode=401, responseMsg=401 Unauthorized: [no body]*********Caused By**********null, URL=null, BankruptcyCount=0, LegalSuitCount=0, TradeBureauCount=0, IScore=0, IScoreRiskGrade=0, IScoreGradeFormat=null, LegalActionBankingCount=0, BorrowerOutstanding=0.0, BankingCreditApprovedCount=0, BankingCreditApprovedAmount=0.0, BankingCreditPendingCount=0, BankingCreditPendingAmount=0.0, Refxml=null, Base64_pdf=null)
+Jan 26, 2023 12:58:01 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Inside CreditCheckOnRegisterUats for user MXXXXXXX XXXXX MXXXXXentity 72051712 5 558
+Jan 26, 2023 12:58:18 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Request->UserSearchRequest(clientId=1, name=MXXXXXXX XXXXX MXXXXX, entityId=72051712 5 558, purchaseAmount=null, serviceName=null, DOB=null, country=MY)
+Jan 26, 2023 12:58:18 PM my.mobypay.creditScore.controller.CcrisController processReports
+SEVERE: In [CcrisController:processReports] = NRIC lenght is not 14 Response ->CustomerSpendingLimitResponse(isRegistrationAllowed=false, isNricExist=false, isNameNricMatched=false, maximumAllowedInstallments=0, maximumSpendingLimit=0, statusCode=404, errorMessage=Oops, maybe it is us and not you, but we can’t seem to validate this MyKad number/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin/Binti/ A/L / A/P and without any abbreviations.)
+Jan 26, 2023 1:00:10 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Inside CreditCheckOnRegisterUats for user JON GERYLEY JAKIRIentity 960813125555
+Jan 26, 2023 1:00:10 PM my.mobypay.creditScore.controller.CcrisController NricRegchecking
+INFO: In [CcrisController:NricRegchecking] = NRIC without - Validation
+Jan 26, 2023 1:00:15 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Inside Controller retrival count if block
+Jan 26, 2023 1:00:16 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Request->UserSearchRequest(clientId=1, name=JON GERYLEY JAKIRI, entityId=960813125555, purchaseAmount=null, serviceName=null, DOB=null, country=MY)
+Jan 26, 2023 1:00:16 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Customer spending limit Response ->CustomerSpendingLimitResponse(isRegistrationAllowed=false, isNricExist=false, isNameNricMatched=false, maximumAllowedInstallments=0, maximumSpendingLimit=0, statusCode=404, errorMessage=401 Unauthorized: [no body]*********Caused By**********null)
+Jan 26, 2023 1:00:36 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Inside CreditCheckOnRegisterUats for user MXXXX FXXXXX XXX XXXXXXentity 700225015391
+Jan 26, 2023 1:00:36 PM my.mobypay.creditScore.controller.CcrisController NricRegchecking
+INFO: In [CcrisController:NricRegchecking] = NRIC without - Validation
+Jan 26, 2023 1:00:40 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Inside Controller retrival count if block
+Jan 26, 2023 1:00:41 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Request->UserSearchRequest(clientId=1, name=MXXXX FXXXXX XXX XXXXXX, entityId=700225015391, purchaseAmount=null, serviceName=null, DOB=null, country=MY)
+Jan 26, 2023 1:00:41 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Customer spending limit Response ->CustomerSpendingLimitResponse(isRegistrationAllowed=false, isNricExist=false, isNameNricMatched=false, maximumAllowedInstallments=0, maximumSpendingLimit=0, statusCode=404, errorMessage=401 Unauthorized: [no body]*********Caused By**********null)
+Jan 26, 2023 1:02:05 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Inside CreditCheckOnRegisterUats for user MXXXX FXXXXX XXX XXXXXXentity 600401105997
+Jan 26, 2023 1:02:05 PM my.mobypay.creditScore.controller.CcrisController NricRegchecking
+INFO: In [CcrisController:NricRegchecking] = NRIC without - Validation
+Jan 26, 2023 1:02:10 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Inside Controller retrival count if block
+Jan 26, 2023 1:02:11 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Request->UserSearchRequest(clientId=1, name=MXXXX FXXXXX XXX XXXXXX, entityId=600401105997, purchaseAmount=null, serviceName=null, DOB=null, country=MY)
+Jan 26, 2023 1:02:11 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Customer spending limit Response ->CustomerSpendingLimitResponse(isRegistrationAllowed=false, isNricExist=false, isNameNricMatched=false, maximumAllowedInstallments=0, maximumSpendingLimit=0, statusCode=404, errorMessage=401 Unauthorized: [no body]*********Caused By**********null)

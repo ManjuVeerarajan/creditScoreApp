@@ -170,10 +170,10 @@ public class CcrisSearchService {
 			}
 
 			CcrisXml responses = ParserUtility.xml2Pojo(responsess, CcrisXml.class);
-			log.info("Experian Token response=========:" + responsess.toString());
+//			log.info("Experian Token response=========:" + responsess.toString());
 			// response = restTemplate.postForEntity(ExperianURLReport, request,
 			// String.class);
-			log.info("Experian ccrisXml response:" + response.getBody());
+			log.info("Experian ccrisXml response:" + response);
 			if (response.getBody().contains("Invalid Input")) {
 				CcrisXml ccrisXml = new CcrisXml();
 				ccrisXml.setCode("401");

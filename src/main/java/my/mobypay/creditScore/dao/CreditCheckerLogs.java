@@ -43,6 +43,7 @@ public class CreditCheckerLogs {
     private Date timestamp;
     @Column( name = "nric")
     private String nric;
+    @Lob
     @Column(name = "experianRequest")
     private String experianRequest;
 

@@ -1,0 +1,4 @@
+Jan 30, 2023 12:26:26 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Inside CreditCheckOnRegisterUats for user JON GERYLEY JAKIRIentity 960813125555
+Jan 30, 2023 12:26:30 PM my.mobypay.creditScore.controller.CcrisController NricRegchecking
+INFO: In [CcrisController:NricRegchecking] = NRIC without - Validation

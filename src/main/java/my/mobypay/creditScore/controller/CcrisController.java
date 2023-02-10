@@ -383,7 +383,8 @@ public class CcrisController {
 				String regexexpression = Nric.replaceAll("-", "");
 				ispresent = retrieveNricFromDB(regexexpression);
 				log.info("In [CcrisController:processReports] = ispresent flag value " + ispresent);
-				if (ispresent == true) {
+//				if (ispresent != true) {      // To run testcases in local
+				if (ispresent == true) { 
 					String inputResponse = customerCreditReportsRepository.find(userSearchRequest.getName(),
 							regexexpression);
 
@@ -614,6 +615,11 @@ public class CcrisController {
 								triggersleeptime, triggerreconnectCount, retivalCount);
 						log.info("In [CcrisController:processReports] = Inside Controller retrival count if block ");
 						logger.info("In [CcrisController:processReports] = Inside Controller retrival count if block");
+						CreditCheckerLogs logForCrisReport =new CreditCheckerLogs();
+						logForCrisReport.setExperianRequest(userSearchRequest.toString()+"***"+reportFlag);
+						logForCrisReport.setNric(userSearchRequest.getEntityId());
+						logForCrisReport.setResponse(utilityEntities.toString());
+						saveLogsToDB(logForCrisReport, userSearchRequest);
 					} else {
 						utilityEntities = ccrisUnifiedService.getCcrisReport(userSearchRequest, reportFlag,
 								triggersleeptime, triggerreconnectCount, 0);
@@ -1367,7 +1373,8 @@ public class CcrisController {
 					 * if(valuePresent != null) { ispresent = true; }
 					 */
 					log.info("In [CcrisController:RequestdownloadFile] = ispresent value " + ispresent);
-					if (ispresent == true) {
+					if (ispresent != true) {       // To test in local
+//					if (ispresent == true) {
 						String response = customerCreditReportsRepository.find(name, regexexpression);
 						String inputResponse = customerCreditReportsRepository.find(userSearchRequest.getName(),
 								regexexpression);
@@ -2526,8 +2533,8 @@ public class CcrisController {
 				response.setIsRegistrationAllowed(true);
 				response.setIsNricExist(true);
 				response.setIsNameNricMatched(true);
-				response.setMaximumAllowedInstallments(3);
-				response.setMaximumSpendingLimit(150);
+				response.setMaximumAllowedInstallments(2);
+				response.setMaximumSpendingLimit(300);
 				response.setStatusCode("05");
 				response.setErrorMessage("No Ccris Info found");
 
@@ -2799,8 +2806,12 @@ public class CcrisController {
 				clientName = creditCheckerAuthRepository.findClientNameFromKey(key);
 			} else {
 				if (userSearchRequest != null && userSearchRequest.getClientId() != null) {
+					try {
 					clientName = creditCheckerAuthRepository
 							.findClientnameById(userSearchRequest.getClientId().toString());
+					}catch(Exception e) {
+						log.info("In [CcrisController:saveLogsToDB] = Exception in fetching clientName" + e);
+					}
 				}
 			}
 			ccLogs.setIp_address(ipAddress);

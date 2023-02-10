@@ -121,6 +121,10 @@
 		<sqlFile dbms="mysql"
 			path="/db/changelog/creditReportAddColumn.sql" />
 	</changeSet>
-	
+	<changeSet author="manjuv"
+		id="ccAlterColumnExperianReq280123">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/alterCcLogColumnExperianReq.sql" />
+	</changeSet>
 </databaseChangeLog>
 

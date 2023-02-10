@@ -1,0 +1,16 @@
+Jan 27, 2023 2:23:22 PM my.mobypay.creditScore.controller.CcrisController RequestdownloadFile
+INFO: In [CcrisController:RequestdownloadFile] = Inside ExperianReport for user :HAXXXXX XXX XXXXXentity 740805135433
+Jan 27, 2023 2:23:22 PM my.mobypay.creditScore.controller.CcrisController NricRegchecking
+INFO: In [CcrisController:NricRegchecking] = NRIC without - Validation
+Jan 27, 2023 2:23:25 PM my.mobypay.creditScore.controller.CcrisController RequestdownloadFile
+SEVERE: In [CcrisController:RequestdownloadFile] = Response ->could not execute statement; SQL [n/a]; nested exception is org.hibernate.exception.DataException: could not execute statement
+Jan 27, 2023 2:23:41 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Inside CreditCheckOnRegisterUats for user NG SUET THENGentity 970925085016
+Jan 27, 2023 2:23:41 PM my.mobypay.creditScore.controller.CcrisController NricRegchecking
+INFO: In [CcrisController:NricRegchecking] = NRIC without - Validation
+Jan 27, 2023 2:23:46 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Inside Controller retrival count if block
+Jan 27, 2023 2:23:46 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Request->UserSearchRequest(clientId=1, name=NG SUET THENG, entityId=970925085016, purchaseAmount=null, serviceName=null, DOB=null, country=MY)
+Jan 27, 2023 2:23:46 PM my.mobypay.creditScore.controller.CcrisController processReports
+INFO: In [CcrisController:processReports] = Customer spending limit Response ->CustomerSpendingLimitResponse(isRegistrationAllowed=false, isNricExist=false, isNameNricMatched=false, maximumAllowedInstallments=0, maximumSpendingLimit=0, statusCode=404, errorMessage=401 Unauthorized: [no body]*********Caused By**********null)
