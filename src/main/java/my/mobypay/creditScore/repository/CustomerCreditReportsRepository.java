@@ -21,31 +21,31 @@ public interface CustomerCreditReportsRepository extends JpaRepository<CustomerC
 	// String findByDate(@Param("nric") String paramString);
 
 	@Query("SELECT p.nric from CustomerCreditReports p WHERE  p.nric= :nric")
-	String findByName(@Param("nric") String paramString);
+	List<String> findByName(@Param("nric") String paramString);
 
 	@Query("SELECT p.name,p.nric from CustomerCreditReports p WHERE p.name = :name and p.nric= :nric")
 	List<String> find(@Param("name") String paramString1, @Param("nric") String paramString2);
 
 	@Query("SELECT p.name,p.nric from CustomerCreditReports p WHERE p.nric= :nric")
-	Object findByNricName(@Param("nric") String paramString1);
+	List<Object> findByNricName(@Param("nric") String paramString1);
 
 	@Query("SELECT p.jsonString from CustomerCreditReports p WHERE p.nric= :nric")
-	String findbynameandnric(@Param("nric") String paramString2);
+	List<String> findbynameandnric(@Param("nric") String paramString2);
 
 	@Query("SELECT p.filepath from CustomerCreditReports p WHERE p.nric= :nric")
-	String findbydownloadpath(@Param("nric") String regexexpression);
+	List<String> findbydownloadpath(@Param("nric") String regexexpression);
 
 	@Query("SELECT p.xmlString from CustomerCreditReports p WHERE p.nric= :nric")
-	String findbyXMLpath(@Param("nric") String regexexpression);
+	List<String> findbyXMLpath(@Param("nric") String regexexpression);
 
 	@Query("SELECT p from CustomerCreditReports p WHERE p.nric= :nric")
 	List<CustomerCreditReports> findbynrics(@Param("nric") String nricnumber);
 
 	@Query("SELECT p from CustomerCreditReports p WHERE p.nric= :nric")
-	CustomerCreditReports findbynric(@Param("nric") String nricnumber);
+	List<CustomerCreditReports> findbynric(@Param("nric") String nricnumber);
 
 	@Query("SELECT p.bankruptcyCount from CustomerCreditReports p WHERE p.nric= :nric")
-	Integer findbybankruptcyCount(@Param("nric") String regexexpression);
+	List<Integer> findbybankruptcyCount(@Param("nric") String regexexpression);
 
 	/*
 	 * @Query("UPDATE CustomerCreditReports p set p.name = :name,p.nric= :nric,p.bankruptcyCount = :bankruptcyCount,p.createdAt = :createdAt,p.updatedAt =:updatedAt, p.bankingCreditApprovedAmount = :bankingCreditApprovedAmount, p.bankingCreditApprovedCount =:bankingCreditApprovedCount,"

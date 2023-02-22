@@ -62,7 +62,6 @@ public class EkycService {
 
 
 	public OpenApiClient setValuesToOpenApiHardCoded(HashMap<String,String> dbvalues) {
-		log.info("Hard coded..!!");
 		openApiClient.setHostUrl(dbvalues.get(GlobalConstants.ZOLO_SERVER));
 		openApiClient.setClientId(dbvalues.get(GlobalConstants.ZOLO_CLIENTID));
 		openApiClient.setMerchantPrivateKey(dbvalues.get(GlobalConstants.ZOLO_MERCHANT_PRIVATE_KEY));

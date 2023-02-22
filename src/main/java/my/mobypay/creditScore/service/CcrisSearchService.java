@@ -107,7 +107,9 @@ public class CcrisSearchService {
 			ccrisXml.setRequest(ccrisSearchRequest);
 
 			xmlRequest = xmlMapper.writeValueAsString(ccrisXml);
+			ccLogs.setRequest(ccrisSearchRequest.toString());
 			ccLogs.setExperianRequest(xmlRequest);
+			ccLogs.setNric(userSearchRequest.getEntityId());
 			System.out.println("***********request**************");
 			System.out.println(xmlRequest);
 			log.info("Experian ccris search request:" + xmlRequest);
@@ -133,14 +135,15 @@ public class CcrisSearchService {
 			Creditcheckersysconfig expUrlReportFromRedis = dbconfig.getDataFromRedis(GlobalConstants.EXP_URL_REPORT);
 			ExperianURLReport = expUrlReportFromRedis.getValue();
 			System.out.println("request************"+request.toString());
-			CustomerCreditReports findbynric = creditReportsRepo.findbynric(userSearchRequest.getEntityId());
-			if(findbynric != null && findbynric.getExperianRequest()==null) {
-				findbynric.setExperianRequest(request.toString());
+			List<CustomerCreditReports> findbynric = creditReportsRepo.findbynric(userSearchRequest.getEntityId());
+			if(findbynric != null && findbynric.get(0).getExperianRequest()==null) {
+				findbynric.get(0).setExperianRequest(request.toString());
 			}
 			ResponseEntity<String> response = restTemplate.postForEntity(ExperianURLReport, request, String.class);
 			
 			ccLogs.setNric(userSearchRequest.getEntityId());
 			ccLogs.setRequest(userSearchRequest.toString());
+			ccLogs.setExperianRequest(request.toString());
 			ccLogs.setResponse(response.toString());
 			saveLogsToDB(ccLogs, userSearchRequest);
 			String responsess = response.getBody().trim().replaceAll("[ ]{2,}", " ");
@@ -244,7 +247,9 @@ public class CcrisSearchService {
 
 			CcrisRequestXml ccrisXml = new CcrisRequestXml();
 			ccrisXml.setRequest(confirmCcrisEntityRequest);
-
+			ccLogs.setRequest(confirmCcrisEntityRequest.toString());
+			ccLogs.setExperianRequest(ccrisXml.toString());
+			ccLogs.setNric(userConfirmCCRISEntityRequest.getEntityKey());
 			xmlRequest = xmlMapper.writeValueAsString(ccrisXml);
 			System.out.println("***********request**************");
 			System.out.println(xmlRequest);
@@ -270,8 +275,6 @@ public class CcrisSearchService {
 		 */
 		
 		
-		ccLogs.setRequest(userConfirmCCRISEntityRequest.toString());
-		ccLogs.setExperianRequest(xmlRequest);
 		
 		try {
 			ResponseEntity<String> response = restTemplate.postForEntity(ExperianURLReport, request, String.class);
