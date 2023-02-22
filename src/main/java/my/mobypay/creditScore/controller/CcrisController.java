@@ -9,10 +9,12 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -97,7 +99,7 @@ public class CcrisController {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Autowired
 	UserRequestEntityRepository userRequestRepository;
 
@@ -196,35 +198,59 @@ public class CcrisController {
 		Session session = null;
 		Transaction transaction = null;
 		String decrypted = null;
+		Creditcheckersysconfig dataFromRedis = dbconfig.getDataFromRedis("daysExpire");
+		String daysExpire = dataFromRedis.getValue();
 		try {
-			Configuration config = new Configuration();
-			config.configure();
-
-			SessionFactory factory = new Configuration().configure("hibernate.cfg.xml")
-					.addAnnotatedClass(CustomerCreditReports.class).buildSessionFactory();
-			session = factory.openSession();
-
-			transaction = session.beginTransaction();
-//			String daysExpire = dbvalues.get("daysExpire");
-			Creditcheckersysconfig dataFromRedis = dbconfig.getDataFromRedis("daysExpire");
-			String daysExpire = dataFromRedis.getValue();
-			log.info("daysExpire " + daysExpire);
-			String hqlQuery = "SELECT p.nric from cc_customerCreditReports p WHERE p.nric = " + nric
-					+ " AND p.UpdatedAt >= date_sub(now(),interval " + daysExpire + ")";
-			org.hibernate.query.Query query = session.createSQLQuery(hqlQuery);
-			log.info("Query Response" + query.getResultList());
-			if (!query.getResultList().isEmpty()) {
+//			Configuration config = new Configuration();
+//			config.configure();
+//
+//			SessionFactory factory = new Configuration().configure("hibernate.cfg.xml")
+//					.addAnnotatedClass(CustomerCreditReports.class).buildSessionFactory();
+//			session = factory.openSession();
+//
+//			transaction = session.beginTransaction();
+////			String daysExpire = dbvalues.get("daysExpire");
+//			
+//			
+//			log.info("daysExpire " + daysExpire);
+//			String hqlQuery = "SELECT p.nric from cc_customerCreditReports p WHERE p.nric = " + nric
+//					+ " AND p.UpdatedAt >= date_sub(now(),interval " + daysExpire + ")";
+//			org.hibernate.query.Query query = session.createSQLQuery(hqlQuery);
+			
+			
+			List<CustomerCreditReports> intervalData = customerCreditReportsRepository.findReportsbynric(nric);
+			String[] split = daysExpire.split(" ");
+			Integer days = Integer.valueOf(split[0]);
+			Date today = new Date();
+			Calendar cal = new GregorianCalendar();
+			cal.setTime(today);
+			cal.add(Calendar.DAY_OF_MONTH, -days);
+			Date today30 = cal.getTime();
+			System.out.println(today30);
+			List<String> nricIn30DayInterval = new ArrayList<>();
+			if (!intervalData.isEmpty()) {
+				for (CustomerCreditReports customerCreditReports : intervalData) {
+					if (customerCreditReports.getUpdatedAt() != null
+							&& customerCreditReports.getUpdatedAt().after(today30)) {
+						nricIn30DayInterval.add(customerCreditReports.getNric());
+					}
+				}
+			}
+			
+//			log.info("Query Response" + query.getResultList());
+			log.info("Query Response at retrieveNricFromDB---->"+nricIn30DayInterval);
+			if (!nricIn30DayInterval.isEmpty()) {
 				log.info("Query Response not NUll");
 				ispresent = true;
-			} else if (query.getResultList().isEmpty()) {
+			} else if (nricIn30DayInterval.isEmpty()) {
 				log.info("Query Response NUll");
 				ispresent = false;
 			}
 
-			transaction.commit();
+//			transaction.commit();
 		} catch (Exception e) {
 			System.out.println("exception " + e);
-		} finally {
+		}finally {
 			if (session != null) {
 				log.info("session " + session.toString());
 				// session.close();
@@ -285,12 +311,14 @@ public class CcrisController {
 	@PostMapping("/creditchecker/CreditCheckOnRegisterUats")
 	public Object processReports(@RequestBody UserSearchRequest userSearchRequest) throws Exception {
 		Error error = new Error();
-		log.info("In [CcrisController:processReports] = Inside CreditCheckOnRegisterUats for user " + userSearchRequest.getName() + "entity "
-				+ userSearchRequest.getEntityId());
-		logger.info("In [CcrisController:processReports] = Inside CreditCheckOnRegisterUats for user " + userSearchRequest.getName() + "entity "
-				+ userSearchRequest.getEntityId());
+		log.info("In [CcrisController:processReports] = Inside CreditCheckOnRegisterUats for user "
+				+ userSearchRequest.getName() + "entity " + userSearchRequest.getEntityId());
+		logger.info("In [CcrisController:processReports] = Inside CreditCheckOnRegisterUats for user "
+				+ userSearchRequest.getName() + "entity " + userSearchRequest.getEntityId());
 		CustomerSpendingLimitResponse jsonresponse = new CustomerSpendingLimitResponse();
 		boolean reportFlag = false;
+		Creditcheckersysconfig clientValueFromRedis = dbconfig
+				.getDataFromRedis(userSearchRequest.getClientId().toString());
 		CreditCheckResponse checkcreditscoreResponse = null;
 		Creditcheckersysconfig triggerTimeFromRedis = dbconfig.getDataFromRedis("experian-trigger-time");
 		String triggerTime = triggerTimeFromRedis.getValue();
@@ -333,7 +361,8 @@ public class CcrisController {
 					CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 					ccLogs.setRequest(userSearchRequest.toString());
 					ccLogs.setResponse(res.toString());
-					saveLogsToDB(ccLogs);
+					ccLogs.setNric(userSearchRequest.getEntityId());
+					saveLogsToDB(ccLogs, userSearchRequest);
 					logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
 					logger.info("In [CcrisController:processReports] = Response from Simulator ->" + res.toString());
 					return res;
@@ -380,15 +409,16 @@ public class CcrisController {
 				String regexexpression = Nric.replaceAll("-", "");
 				ispresent = retrieveNricFromDB(regexexpression);
 				log.info("In [CcrisController:processReports] = ispresent flag value " + ispresent);
-				if (ispresent == true) {
-					String inputResponse = customerCreditReportsRepository.find(userSearchRequest.getName(),
+//				if (ispresent != true) {      // To run testcases in local
+				if (ispresent == true) { 
+					List<String> inputResponse = customerCreditReportsRepository.find(userSearchRequest.getName(),
 							regexexpression);
 
 					// Object inputResponseName = retrieveNameNricFromDB(regexexpression);
-					Object inputResponseName = customerCreditReportsRepository.findByNricName(regexexpression);
-					String response = customerCreditReportsRepository.find(name, regexexpression);
+					List<Object> inputResponseName = customerCreditReportsRepository.findByNricName(regexexpression);
+					List<String> response = customerCreditReportsRepository.find(name, regexexpression);
 					if (response != null) {
-						String splits[] = response.split(",");
+						String splits[] = response.get(0).split(",");
 						String responseName = splits[0].toString();
 						String responseNric = splits[1].toString();
 						userSearchRequest.setName(name);
@@ -398,24 +428,29 @@ public class CcrisController {
 
 						log.info("In [CcrisController:processReports] = ResponseNric " + responseNric);
 						log.info("In [CcrisController:processReports] = Regexexpression " + regexexpression);
-
+						List<String> xmlresponse = customerCreditReportsRepository.findbyXMLpath(regexexpression);
 						if (responseName.equalsIgnoreCase(name) && responseNric.equalsIgnoreCase(regexexpression)) {
 							log.info("In [CcrisController:processReports] = Name and NRIC Matched!!");
-							String xmlresponse = customerCreditReportsRepository.findbyXMLpath(regexexpression);
-							String jsonString = customerCreditReportsRepository.findbynameandnric(regexexpression);
+
+							List<String> jsonString = customerCreditReportsRepository.findbynameandnric(regexexpression);
 							if (xmlresponse != null) {
 								CustomerSpendingLimitResponse spendingLimitResponse = new ObjectMapper()
-										.readValue(jsonString, CustomerSpendingLimitResponse.class);
-								log.info("In [CcrisController:processReports] = Customer already exist so returning json response");
+										.readValue(jsonString.get(0), CustomerSpendingLimitResponse.class);
+								log.info(
+										"In [CcrisController:processReports] = Customer already exist so returning json response");
 
 								// To add logs in DB
 
 								CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 								ccLogs.setRequest(userSearchRequest.toString());
 								ccLogs.setResponse(spendingLimitResponse.toString());
-								saveLogsToDB(ccLogs);
-								logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
-								logger.info("In [CcrisController:processReports] = Name & NRIC Matched Response ->" + spendingLimitResponse.toString());
+								ccLogs.setNric(userSearchRequest.getEntityId());
+								ccLogs.setExperianRequest(xmlresponse.get(0));
+								saveLogsToDB(ccLogs, userSearchRequest);
+								logger.info("In [CcrisController:processReports] = Request->"
+										+ userSearchRequest.toString());
+								logger.info("In [CcrisController:processReports] = Name & NRIC Matched Response ->"
+										+ spendingLimitResponse.toString());
 								return spendingLimitResponse;
 							} else {
 								log.info("In [CcrisController:processReports] = Xmlresponse is empty!!: ");
@@ -428,16 +463,19 @@ public class CcrisController {
 								jsonxmlresponse.setStatusCode("1");
 								jsonxmlresponse.setErrorMessage(
 										"We are sorry,We are unable to provide AiraPay services to you. Upon our internal checks and verifications, we regret to inform you that you did not meet certain requirements we are looking for to enable the instalment payments under AiraPay for your account.");
-								// SavetoCreditCheckErrorwithResponsefromExperian(customerSpendingLimitResponse,name,regexexpression);
+//								 SavetoCreditCheckErrorwithResponsefromExperian(jsonxmlresponse,name,regexexpression);
 
 								// To add logs in DB
 
 								CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 								ccLogs.setRequest(userSearchRequest.toString());
 								ccLogs.setResponse(jsonxmlresponse.toString());
-								saveLogsToDB(ccLogs);
-								logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
-								logger.severe("In [CcrisController:processReports] = Empty XML response ->" + jsonxmlresponse.toString());
+								ccLogs.setNric(userSearchRequest.getEntityId());
+								saveLogsToDB(ccLogs, userSearchRequest);
+								logger.info("In [CcrisController:processReports] = Request->"
+										+ userSearchRequest.toString());
+								logger.severe("In [CcrisController:processReports] = Empty XML response ->"
+										+ jsonxmlresponse.toString());
 								return jsonxmlresponse;
 							}
 
@@ -452,14 +490,17 @@ public class CcrisController {
 
 							invalidResponse.setErrorMessage("Invalid Input"); // 10-05
 							SavetoCreditCheckError(invalidResponse.getStatusCode(), invalidResponse.getErrorMessage(),
-									name, regexexpression, 0);
+									name, regexexpression, 0, xmlresponse.get(0));
 							// To add logs in DB
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(invalidResponse.toString());
-							saveLogsToDB(ccLogs);
-							logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
-							logger.severe("In [CcrisController:processReports] = Invalid Response" + invalidResponse.toString());
+							ccLogs.setNric(userSearchRequest.getEntityId());
+							saveLogsToDB(ccLogs, userSearchRequest);
+							logger.info(
+									"In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
+							logger.severe("In [CcrisController:processReports] = Invalid Response"
+									+ invalidResponse.toString());
 							return invalidResponse;
 						} else {
 							log.info("In [CcrisController:processReports] = Name and NRIC not Matched!!");
@@ -472,31 +513,36 @@ public class CcrisController {
 							unmatchedResponse.setStatusCode("400");
 							unmatchedResponse.setErrorMessage("Invalid Input"); // 10-05
 							SavetoCreditCheckError(unmatchedResponse.getStatusCode(),
-									unmatchedResponse.getErrorMessage(), name, regexexpression, 0);
+									unmatchedResponse.getErrorMessage(), name, regexexpression, 0, xmlresponse.get(0));
 							// To add logs in DB
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(unmatchedResponse.toString());
-							saveLogsToDB(ccLogs);
-							logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
-							logger.severe("In [CcrisController:processReports] = Name & NRIC not matched Response ->" + unmatchedResponse.toString());
+							ccLogs.setNric(userSearchRequest.getEntityId());
+							saveLogsToDB(ccLogs, userSearchRequest);
+							logger.info(
+									"In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
+							logger.severe("In [CcrisController:processReports] = Name & NRIC not matched Response ->"
+									+ unmatchedResponse.toString());
 							return unmatchedResponse;
 						}
 					} else if (inputResponse != null) {
 
-						String splits[] = inputResponse.split(",");
+						String splits[] = inputResponse.get(0).split(",");
 						String responseName = splits[0].toString();
 						String responseNric = splits[1].toString();
 						if (responseName.equalsIgnoreCase(userSearchRequest.getName())
 								&& responseNric.equalsIgnoreCase(regexexpression)) {
-							String xmlresponse = customerCreditReportsRepository.findbyXMLpath(regexexpression);
-							String jsonString = customerCreditReportsRepository.findbynameandnric(regexexpression);
+							List<String> xmlresponse = customerCreditReportsRepository.findbyXMLpath(regexexpression);
+							List<String> jsonString = customerCreditReportsRepository.findbynameandnric(regexexpression);
 							if (xmlresponse != null) {
-								CustomerSpendingLimitResponse xmlResponseNull = new ObjectMapper().readValue(jsonString,
+								CustomerSpendingLimitResponse xmlResponseNull = new ObjectMapper().readValue(jsonString.get(0),
 										CustomerSpendingLimitResponse.class);
-								log.info("In [CcrisController:processReports] = Customer already exist so returning json response");
-								logger.info("In [CcrisController:processReports] = customer already exist so returning json response ->"
-										+ xmlResponseNull.toString());
+								log.info(
+										"In [CcrisController:processReports] = Customer already exist so returning json response");
+								logger.info(
+										"In [CcrisController:processReports] = customer already exist so returning json response ->"
+												+ xmlResponseNull.toString());
 								return xmlResponseNull;
 							} else {
 								CustomerSpendingLimitResponse errResponse = new CustomerSpendingLimitResponse();
@@ -512,9 +558,13 @@ public class CcrisController {
 								CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 								ccLogs.setRequest(userSearchRequest.toString());
 								ccLogs.setResponse(errResponse.toString());
-								saveLogsToDB(ccLogs);
-								logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
-								logger.severe("In [CcrisController:processReports] = Name & NRIC not matched Response ->" + errResponse.toString());
+								ccLogs.setNric(userSearchRequest.getEntityId());
+								saveLogsToDB(ccLogs, userSearchRequest);
+								logger.info("In [CcrisController:processReports] = Request->"
+										+ userSearchRequest.toString());
+								logger.severe(
+										"In [CcrisController:processReports] = Name & NRIC not matched Response ->"
+												+ errResponse.toString());
 								return errResponse;
 							}
 						} else {
@@ -527,17 +577,20 @@ public class CcrisController {
 							notFoundResponse.setStatusCode("400");
 							notFoundResponse.setErrorMessage("Invalid Input"); // 10-05
 							SavetoCreditCheckError(notFoundResponse.getStatusCode(), notFoundResponse.getErrorMessage(),
-									name, regexexpression, 0);
+									name, regexexpression, 0, null);
 							// To add logs in DB
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(notFoundResponse.toString());
-							saveLogsToDB(ccLogs);
-							logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
-							logger.severe("In [CcrisController:processReports] = Not Found Response ->" + notFoundResponse.toString());
+							ccLogs.setNric(userSearchRequest.getEntityId());
+							saveLogsToDB(ccLogs, userSearchRequest);
+							logger.info(
+									"In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
+							logger.severe("In [CcrisController:processReports] = Not Found Response ->"
+									+ notFoundResponse.toString());
 							return notFoundResponse;
 						}
-					} else if (inputResponseName != null && !inputResponseName.equals(userSearchRequest.getName())) {
+					} else if (inputResponseName != null && !inputResponseName.get(0).equals(userSearchRequest.getName())) {
 						CustomerSpendingLimitResponse mismatchResponse = new CustomerSpendingLimitResponse();
 						mismatchResponse.setIsNricExist(false);
 						mismatchResponse.setIsNameNricMatched(false);
@@ -547,14 +600,16 @@ public class CcrisController {
 						mismatchResponse.setStatusCode("404");
 						mismatchResponse.setErrorMessage("Name mismatch"); // 10-05
 						SavetoCreditCheckError(mismatchResponse.getStatusCode(), mismatchResponse.getErrorMessage(),
-								name, regexexpression, 0);
+								name, regexexpression, 0, null);
 						// To add logs in DB
 						CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 						ccLogs.setRequest(userSearchRequest.toString());
 						ccLogs.setResponse(mismatchResponse.toString());
-						saveLogsToDB(ccLogs);
+						ccLogs.setNric(userSearchRequest.getEntityId());
+						saveLogsToDB(ccLogs, userSearchRequest);
 						logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
-						logger.severe("In [CcrisController:processReports] = Mismatch Response ->" + mismatchResponse.toString());
+						logger.severe("In [CcrisController:processReports] = Mismatch Response ->"
+								+ mismatchResponse.toString());
 						return mismatchResponse;
 					} else {
 						CustomerSpendingLimitResponse invalidInputResponse = new CustomerSpendingLimitResponse();
@@ -566,14 +621,16 @@ public class CcrisController {
 						invalidInputResponse.setStatusCode("400");
 						invalidInputResponse.setErrorMessage("Invalid input"); // 10-05
 						SavetoCreditCheckError(invalidInputResponse.getStatusCode(),
-								invalidInputResponse.getErrorMessage(), name, regexexpression, 0);
+								invalidInputResponse.getErrorMessage(), name, regexexpression, 0, null);
 						// To add logs in DB
 						CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 						ccLogs.setRequest(userSearchRequest.toString());
 						ccLogs.setResponse(invalidInputResponse.toString());
-						saveLogsToDB(ccLogs);
+						ccLogs.setNric(userSearchRequest.getEntityId());
+						saveLogsToDB(ccLogs, userSearchRequest);
 						logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
-						logger.severe("In [CcrisController:processReports] = Invalid Input Response ->" + invalidInputResponse.toString());
+						logger.severe("In [CcrisController:processReports] = Invalid Input Response ->"
+								+ invalidInputResponse.toString());
 						return invalidInputResponse;
 					}
 				} else {
@@ -584,11 +641,17 @@ public class CcrisController {
 								triggersleeptime, triggerreconnectCount, retivalCount);
 						log.info("In [CcrisController:processReports] = Inside Controller retrival count if block ");
 						logger.info("In [CcrisController:processReports] = Inside Controller retrival count if block");
+						CreditCheckerLogs logForCrisReport =new CreditCheckerLogs();
+						logForCrisReport.setExperianRequest(userSearchRequest.toString()+"***"+reportFlag);
+						logForCrisReport.setNric(userSearchRequest.getEntityId());
+						logForCrisReport.setResponse(utilityEntities.toString());
+						saveLogsToDB(logForCrisReport, userSearchRequest);
 					} else {
 						utilityEntities = ccrisUnifiedService.getCcrisReport(userSearchRequest, reportFlag,
 								triggersleeptime, triggerreconnectCount, 0);
 						log.info("In [CcrisController:processReports] = Inside controller retrival count else block ");
-						logger.info("In [CcrisController:processReports] = Inside controller retrival count else block");
+						logger.info(
+								"In [CcrisController:processReports] = Inside controller retrival count else block");
 					}
 					// utilityEntities = ccrisUnifiedService.getCcrisReport();
 					customercreditreportrequest = utilityEntities.getCreditReportRequest();
@@ -627,7 +690,7 @@ public class CcrisController {
 							customerSpendingLimitResponse.setMaximumSpendingLimit(maximumspeedlimit);
 							if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 								customerSpendingLimitResponse.setStatusCode(utilityEntities.getCodes());
-								customerSpendingLimitResponse.setErrorMessage(ServerDownError);
+								customerSpendingLimitResponse.setErrorMessage(utilityEntities.getErrorMsg());
 							} else {
 								customerSpendingLimitResponse.setStatusCode(statuscode);
 								customerSpendingLimitResponse.setErrorMessage(errormessage);
@@ -635,15 +698,18 @@ public class CcrisController {
 							log.info("In [CcrisController:processReports] = Added new customer to database");
 							saveResponseToDB(customercreditreportrequest, customerSpendingLimitResponse,
 									userSearchRequest, "", false, nricnumber, ispresent);
-							log.info("In [CcrisController:processReports] = Added new customer to database1: " + customercreditreportrequest.getNric());
+							log.info("In [CcrisController:processReports] = Added new customer to database1: "
+									+ customercreditreportrequest.getNric());
 							// To add logs in DB
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(customerSpendingLimitResponse.toString());
-							saveLogsToDB(ccLogs);
-							logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
+							ccLogs.setNric(userSearchRequest.getEntityId());
+							saveLogsToDB(ccLogs, userSearchRequest);
 							logger.info(
-									"In [CcrisController:processReports] = Customer spending limit Response ->" + customerSpendingLimitResponse.toString());
+									"In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
+							logger.info("In [CcrisController:processReports] = Customer spending limit Response ->"
+									+ customerSpendingLimitResponse.toString());
 							return customerSpendingLimitResponse;
 						} else if (CrissFlag != null && CrissFlag == true) {
 							log.info("In [CcrisController:processReports] = CrissFlag============================");
@@ -665,10 +731,12 @@ public class CcrisController {
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(customerSpendingLimitResponse.toString());
-							saveLogsToDB(ccLogs);
-							logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
+							ccLogs.setNric(userSearchRequest.getEntityId());
+							saveLogsToDB(ccLogs, userSearchRequest);
 							logger.info(
-									"In [CcrisController:processReports] = Customer spending limit Response ->" + customerSpendingLimitResponse.toString());
+									"In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
+							logger.info("In [CcrisController:processReports] = Customer spending limit Response ->"
+									+ customerSpendingLimitResponse.toString());
 							return customerSpendingLimitResponse;
 						} else if (checkcreditscoreResponse.getLowScoreCheck() != null
 								&& checkcreditscoreResponse.getLowScoreCheck() == true) {
@@ -690,10 +758,12 @@ public class CcrisController {
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(customerSpendingLimitResponse.toString());
-							saveLogsToDB(ccLogs);
-							logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
+							ccLogs.setNric(userSearchRequest.getEntityId());
+							saveLogsToDB(ccLogs, userSearchRequest);
 							logger.info(
-									"In [CcrisController:processReports] = Customer spending limit Response ->" + customerSpendingLimitResponse.toString());
+									"In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
+							logger.info("In [CcrisController:processReports] = Customer spending limit Response ->"
+									+ customerSpendingLimitResponse.toString());
 							return customerSpendingLimitResponse;
 						} else if (checkcreditscoreResponse.getIsBelowscoreFlag() == true) {
 							checkcreditscoreResponse = ccrisUnifiedService.getCreditScore(
@@ -718,10 +788,13 @@ public class CcrisController {
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(customerSpendingLimitResponse.toString());
-							saveLogsToDB(ccLogs);
-							logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
+							ccLogs.setNric(userSearchRequest.getEntityId());
+							saveLogsToDB(ccLogs, userSearchRequest);
+							logger.info(
+									"In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
 							logger.severe(
-									"In [CcrisController:processReports] = Customer spending limit Response(404) ->" + customerSpendingLimitResponse.toString());
+									"In [CcrisController:processReports] = Customer spending limit Response(404) ->"
+											+ customerSpendingLimitResponse.toString());
 							return customerSpendingLimitResponse;
 						} else {
 							error.setErrorcode(utilityEntities.getCodes());
@@ -729,10 +802,12 @@ public class CcrisController {
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(error.toString());
-							saveLogsToDB(ccLogs);
-							logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
-							logger.severe(
-									"In [CcrisController:processReports] = Customer spending limit Response ->" + customerSpendingLimitResponse.toString());
+							ccLogs.setNric(userSearchRequest.getEntityId());
+							saveLogsToDB(ccLogs, userSearchRequest);
+							logger.info(
+									"In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
+							logger.severe("In [CcrisController:processReports] = Customer spending limit Response ->"
+									+ customerSpendingLimitResponse.toString());
 							return error;
 						}
 					} else if (utilityEntities.getInvalidUserFlag() != null
@@ -745,7 +820,7 @@ public class CcrisController {
 						customerSpendingLimitResponse.setMaximumSpendingLimit(0);
 						if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 							customerSpendingLimitResponse.setStatusCode(utilityEntities.getCodes());
-							customerSpendingLimitResponse.setErrorMessage(ServerDownError);
+							customerSpendingLimitResponse.setErrorMessage(utilityEntities.getErrorMsg());
 						} else if (utilityEntities.getErrorMsg().equals("Invalid Input")) {
 							customerSpendingLimitResponse.setStatusCode("400");
 							customerSpendingLimitResponse.setErrorMessage(utilityEntities.getErrorMsg());
@@ -758,9 +833,11 @@ public class CcrisController {
 						CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 						ccLogs.setRequest(userSearchRequest.toString());
 						ccLogs.setResponse(customerSpendingLimitResponse.toString());
-						saveLogsToDB(ccLogs);
+						ccLogs.setNric(userSearchRequest.getEntityId());
+						saveLogsToDB(ccLogs, userSearchRequest);
 						logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
-						logger.info("In [CcrisController:processReports] = Customer spending limit Response ->" + customerSpendingLimitResponse.toString());
+						logger.info("In [CcrisController:processReports] = Customer spending limit Response ->"
+								+ customerSpendingLimitResponse.toString());
 						return customerSpendingLimitResponse;
 					} else if (utilityEntities.getExperianServerFlag() != null
 							&& utilityEntities.getExperianServerFlag() == true) {
@@ -782,7 +859,7 @@ public class CcrisController {
 						customerSpendingLimitResponse.setMaximumSpendingLimit(maximumspeedlimit);
 						if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 							customerSpendingLimitResponse.setStatusCode(utilityEntities.getCodes());
-							customerSpendingLimitResponse.setErrorMessage(ServerDownError);
+							customerSpendingLimitResponse.setErrorMessage(utilityEntities.getErrorMsg());
 						} else {
 							customerSpendingLimitResponse.setStatusCode(statuscode);
 							customerSpendingLimitResponse.setErrorMessage(errormessage);
@@ -790,8 +867,10 @@ public class CcrisController {
 						CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 						ccLogs.setRequest(userSearchRequest.toString());
 						ccLogs.setResponse(customerSpendingLimitResponse.toString());
+						ccLogs.setNric(userSearchRequest.getEntityId());
 						logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
-						logger.info("In [CcrisController:processReports] = Experian Controller ->" + customerSpendingLimitResponse.toString());
+						logger.info("In [CcrisController:processReports] = Experian Controller ->"
+								+ customerSpendingLimitResponse.toString());
 						return customerSpendingLimitResponse;
 					} else if (utilityEntities.getInvalidUsernameflag() != null
 							&& utilityEntities.getInvalidUsernameflag() == true) {
@@ -802,7 +881,7 @@ public class CcrisController {
 						customerSpendingLimitResponse.setMaximumSpendingLimit(0);
 						if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 							customerSpendingLimitResponse.setStatusCode(utilityEntities.getCodes());
-							customerSpendingLimitResponse.setErrorMessage(ServerDownError);
+							customerSpendingLimitResponse.setErrorMessage(utilityEntities.getErrorMsg());
 						} else {
 							customerSpendingLimitResponse.setStatusCode("404");
 							customerSpendingLimitResponse.setErrorMessage(utilityEntities.getErrorMsg());
@@ -812,9 +891,11 @@ public class CcrisController {
 						CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 						ccLogs.setRequest(userSearchRequest.toString());
 						ccLogs.setResponse(customerSpendingLimitResponse.toString());
-						saveLogsToDB(ccLogs);
+						ccLogs.setNric(userSearchRequest.getEntityId());
+						saveLogsToDB(ccLogs, userSearchRequest);
 						logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
-						logger.severe("In [CcrisController:processReports] = Internal Server Error(500) Response ->" + customerSpendingLimitResponse.toString());
+						logger.severe("In [CcrisController:processReports] = Internal Server Error(500) Response ->"
+								+ customerSpendingLimitResponse.toString());
 						return customerSpendingLimitResponse;
 					} else {
 						log.info("In [CcrisController:processReports] = Errorcode=================================");
@@ -833,7 +914,7 @@ public class CcrisController {
 						customerSpendingLimitResponse.setMaximumSpendingLimit(maximumspeedlimit);
 						if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 							customerSpendingLimitResponse.setStatusCode(utilityEntities.getCodes());
-							customerSpendingLimitResponse.setErrorMessage(ServerDownError);
+							customerSpendingLimitResponse.setErrorMessage(utilityEntities.getErrorMsg());
 						} else {
 							customerSpendingLimitResponse.setStatusCode(statuscode);
 							customerSpendingLimitResponse.setErrorMessage(errormessage);
@@ -841,9 +922,11 @@ public class CcrisController {
 						CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 						ccLogs.setRequest(userSearchRequest.toString());
 						ccLogs.setResponse(customerSpendingLimitResponse.toString());
-						saveLogsToDB(ccLogs);
+						ccLogs.setNric(userSearchRequest.getEntityId());
+						saveLogsToDB(ccLogs, userSearchRequest);
 						logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
-						logger.severe("In [CcrisController:processReports] = Internal Server Error(500) Response ->" + customerSpendingLimitResponse.toString());
+						logger.severe("In [CcrisController:processReports] = Internal Server Error(500) Response ->"
+								+ customerSpendingLimitResponse.toString());
 						return customerSpendingLimitResponse;
 					}
 				}
@@ -861,9 +944,11 @@ public class CcrisController {
 				CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 				ccLogs.setRequest(userSearchRequest.toString());
 				ccLogs.setResponse(nricLengthResponse.toString());
-				saveLogsToDB(ccLogs);
+				ccLogs.setNric(userSearchRequest.getEntityId());
+				saveLogsToDB(ccLogs, userSearchRequest);
 				logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
-				logger.severe("In [CcrisController:processReports] = NRIC lenght is not 14 Response ->" + nricLengthResponse.toString());
+				logger.severe("In [CcrisController:processReports] = NRIC lenght is not 14 Response ->"
+						+ nricLengthResponse.toString());
 				return nricLengthResponse;
 			}
 		}
@@ -879,7 +964,8 @@ public class CcrisController {
 		CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 		ccLogs.setRequest(userSearchRequest.toString());
 		ccLogs.setResponse(jsonresponse.toString());
-		saveLogsToDB(ccLogs);
+		ccLogs.setNric(userSearchRequest.getEntityId());
+		saveLogsToDB(ccLogs, userSearchRequest);
 		logger.info("In [CcrisController:processReports] = Request->" + userSearchRequest.toString());
 		logger.info("In [CcrisController:processReports] = Simulator response is null ->" + jsonresponse.toString());
 		return jsonresponse;
@@ -887,7 +973,7 @@ public class CcrisController {
 	}
 
 	private void SavetoCreditCheckError(String statusCode, String errorMessage, String name, String regexexpression,
-			int retrival) {
+			int retrival, String xmlStringResponse) {
 		log.info("In [CcrisController:SavetoCreditCheckError] = Retival COunt: " + retrival);
 		CustomerCreditError checkError = new CustomerCreditError();
 		// int i=0;
@@ -900,6 +986,7 @@ public class CcrisController {
 		checkError.setRetrivalCount(retrival++);
 		checkError.setCreatedAt(new Date());
 		checkError.setUpdatedAt(new Date());
+		checkError.setExperianRequest(xmlStringResponse);
 		creditCheckErrorRepository.save(checkError);
 
 	}
@@ -920,39 +1007,16 @@ public class CcrisController {
 			String regexexpression, int retrival) {
 
 		try {
-			/*
-			 * CreditCheckError checkError=new CreditCheckError();
-			 * log.info("Saving Error Database=============="+utilityEntities);
-			 * checkError=creditCheckErrorRepository.findbyAll(regexexpression); // int i =
-			 * 0;
-			 * 
-			 * 
-			 * //checkError.setId(i+1); if(checkError!=null) {
-			 * 
-			 * DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss");
-			 * LocalDateTime now = LocalDateTime.now(); String updatedDate=dtf.format(now);
-			 * SimpleDateFormat sdfIn1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); Date
-			 * date = sdfIn1.parse(updatedDate);
-			 * log.info("Checking the user database==============");
-			 * log.info("checking date"+date);
-			 * creditCheckErrorRepository.updateRetivalCount(retrival,regexexpression,date);
-			 * }else { log.info("adding the user database=============="); CreditCheckError
-			 * checkError1=new CreditCheckError(); if(utilityEntities.getDBMessage()!=null){
-			 * checkError1.setErrorStatus(utilityEntities.getDBMessage()); }else {
-			 * 
-			 * 
-			 * log.info("i count=============="+retrival);
-			 * checkError1.setErrorStatus(utilityEntities.getErrorMsg());
-			 * log.info("New user database=============="+checkError1);
-			 * checkError1.setErrorCode(utilityEntities.getCodes());
-			 * checkError1.setName(name); checkError1.setNric(regexexpression);
-			 * checkError1.setRetrivalCount(retrival); checkError1.setCreatedAt(new Date());
-			 * checkError1.setUpdatedAt(new Date());
-			 */
-
-			// }
-			// creditCheckErrorRepository.save(checkError1);
-			// }
+			String request = null;
+			List<CreditCheckerLogs> reqByNric = creditCheckerLogRepository.findbyNric(regexexpression);
+			if (!reqByNric.isEmpty() && reqByNric != null) {
+				for (CreditCheckerLogs creditCheckerLogs : reqByNric) {
+					if (creditCheckerLogs.getExperianRequest() != null) {
+						request = creditCheckerLogs.getExperianRequest();
+						break;
+					}
+				}
+			}
 			CustomerCreditError checkError = new CustomerCreditError();
 			checkError.setErrorCode(utilityEntities.getCodes());
 			if (utilityEntities.getDBMessage() != null) {
@@ -965,11 +1029,17 @@ public class CcrisController {
 			checkError.setRetrivalCount(retrival);
 			checkError.setCreatedAt(new Date());
 			checkError.setUpdatedAt(new Date());
+			if (utilityEntities.getCreditReportRequest() != null) {
+				checkError.setExperianRequest(utilityEntities.getCreditReportRequest().getXmlString());
+			} else {
+				checkError.setExperianRequest(request);
+			}
 			creditCheckErrorRepository.save(checkError);
 
 		} catch (Exception e) {
 			System.out.println(e.getLocalizedMessage());
-			logger.severe("In [CcrisController:SavetoCreditCheckErrorwithResponsefromExperian] = exception"+e.getLocalizedMessage());
+			logger.severe("In [CcrisController:SavetoCreditCheckErrorwithResponsefromExperian] = exception"
+					+ e.getLocalizedMessage());
 		}
 
 	}
@@ -978,7 +1048,7 @@ public class CcrisController {
 		StringBuffer buffer = new StringBuffer();
 		if (entityId.length() == 14 && entityId.contains("-")) {
 			log.info("nric with - validation" + entityId);
-			logger.info("In [CcrisController:NricRegchecking] = NRIC with - Validation"+entityId);
+			logger.info("In [CcrisController:NricRegchecking] = NRIC with - Validation" + entityId);
 			return entityId;
 		} else {
 			if (entityId.length() == 12) {
@@ -1037,7 +1107,8 @@ public class CcrisController {
 				customerCreditReports.setXmlString(customercreditreportrequest.getXmlString());
 				customerCreditReports.setJsonString(jsonStr);
 				log.info("Cliend id from request" + userSearchRequest.getClientId());
-				logger.info("In [CcrisController:saveResponseToDB] = Cliend id from request" + userSearchRequest.getClientId());
+				logger.info("In [CcrisController:saveResponseToDB] = Cliend id from request"
+						+ userSearchRequest.getClientId());
 				customerCreditReports.setCustomerId(userSearchRequest.getClientId());
 				customerCreditReports.setFilepath(customercreditreportrequest.getDownaloadfilepath());
 				customerCreditReports.setBase64_pdf(customercreditreportrequest.getBase64_pdf());
@@ -1155,7 +1226,8 @@ public class CcrisController {
 					// customerCreditReports.getBankruptcyCount(),
 					// customerCreditReports.getCreatedAt(), customerCreditReports.getUpdatedAt());
 					log.info("Data updated " + customerCreditReports.getNric());
-					logger.info("In [CcrisController:saveResponseToDB] = Data updated " + customerCreditReports.getNric());
+					logger.info(
+							"In [CcrisController:saveResponseToDB] = Data updated " + customerCreditReports.getNric());
 				} else if (!RetriveCustomerDetails(customerCreditReports.getNric())) {
 					log.info("Inserting into DB");
 					customerCreditReportsRepository.save(customerCreditReports);
@@ -1170,8 +1242,8 @@ public class CcrisController {
 			customerSpendingLimitResponse.setErrorMessage(errormessage);
 			System.out.println("history already exist" + e);
 			logger.severe("In [CcrisController:saveResponseToDB] = Exception " + e);
-			 EmailUtility emailUtility = new EmailUtility();
-			 emailUtility.sentEmail(e.getLocalizedMessage(),dbconfig);
+			EmailUtility emailUtility = new EmailUtility();
+			emailUtility.sentEmail(e.getLocalizedMessage(), dbconfig);
 			return customerSpendingLimitResponse;
 		}
 		return null;
@@ -1218,10 +1290,10 @@ public class CcrisController {
 			CustomerSpendingLimitResponse customerSpendingLimitResponse = new CustomerSpendingLimitResponse();
 			CreditCheckResponse checkcreditscoreResponse = null;
 
-			log.info("In [CcrisController:RequestdownloadFile] = Inside ExperianReport for user :" + userSearchRequest.getName() + "entity "
-					+ userSearchRequest.getEntityId().trim());
-			logger.info("In [CcrisController:RequestdownloadFile] = Inside ExperianReport for user :" + userSearchRequest.getName() + "entity "
-					+ userSearchRequest.getEntityId().trim());
+			log.info("In [CcrisController:RequestdownloadFile] = Inside ExperianReport for user :"
+					+ userSearchRequest.getName() + "entity " + userSearchRequest.getEntityId().trim());
+			logger.info("In [CcrisController:RequestdownloadFile] = Inside ExperianReport for user :"
+					+ userSearchRequest.getName() + "entity " + userSearchRequest.getEntityId().trim());
 			// String simulator =
 			// creditScoreConfigRepository.findValueFromName("simulator.call");
 //		simulator = dbvalues.get("simulator.call");
@@ -1238,7 +1310,8 @@ public class CcrisController {
 
 //		String triggerTime = dbvalues.get("experian-trigger-time");
 //		String triggerCount = dbvalues.get("experian-trigger-count");
-			log.info("In [CcrisController:RequestdownloadFile] = Experian trigger :" + triggerTime + " Count- " + triggerCount);
+			log.info("In [CcrisController:RequestdownloadFile] = Experian trigger :" + triggerTime + " Count- "
+					+ triggerCount);
 			String triggersleeptime = triggerTime;
 			String triggerreconnectCount = triggerCount;
 			System.out.println(triggersleeptime + "========" + triggerreconnectCount);
@@ -1269,7 +1342,9 @@ public class CcrisController {
 						CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 						ccLogs.setRequest(userSearchRequest.toString());
 						ccLogs.setResponse(experianreportResponse.toString());
-						saveLogsToDB(ccLogs);
+						ccLogs.setNric(userSearchRequest.getEntityId());
+						ccLogs.setExperianRequest(experianreportResponse.getRefxml());
+						saveLogsToDB(ccLogs, userSearchRequest);
 						logger.info("In [CcrisController:RequestdownloadFile] = Returning response from Simulator");
 						return experianreportResponse;
 					}
@@ -1277,7 +1352,8 @@ public class CcrisController {
 				}
 			}
 			if (experianreportResponse != null && experianreportResponse.getResponseCode() == null) {
-				log.info("In [CcrisController:RequestdownloadFile] = Normal flow as response is not available from simulator");
+				log.info(
+						"In [CcrisController:RequestdownloadFile] = Normal flow as response is not available from simulator");
 				String nricnumber = NricRegchecking(userSearchRequest.getEntityId());
 				// Integer retivalCount =
 				// creditCheckErrorRepository.findbynric(userSearchRequest.getEntityId());
@@ -1323,58 +1399,63 @@ public class CcrisController {
 					 * if(valuePresent != null) { ispresent = true; }
 					 */
 					log.info("In [CcrisController:RequestdownloadFile] = ispresent value " + ispresent);
+//					if (ispresent != true) {       // To test in local
 					if (ispresent == true) {
-						String response = customerCreditReportsRepository.find(name, regexexpression);
-						String inputResponse = customerCreditReportsRepository.find(userSearchRequest.getName(),
+						List<String> response = customerCreditReportsRepository.find(name, regexexpression);
+						List<String> inputResponse = customerCreditReportsRepository.find(userSearchRequest.getName(),
 								regexexpression);
 						// Object inputResponseName = retrieveNameNricFromDB(regexexpression);
-						Object inputResponseName = customerCreditReportsRepository.findByNricName(regexexpression);
+						List<Object> inputResponseName = customerCreditReportsRepository.findByNricName(regexexpression);
 						if (response != null) {
-							String splits[] = response.split(",");
+							String splits[] = response.get(0).split(",");
 							String responseName = splits[0].toString();
 							String responseNric = splits[1].toString();
 							if (responseName.equalsIgnoreCase(name) && responseNric.equalsIgnoreCase(regexexpression)) {
-								String filepathResponse = customerCreditReportsRepository
+								List<String> filepathResponse = customerCreditReportsRepository
 										.findbydownloadpath(regexexpression);
-								String xmlPathResponse = customerCreditReportsRepository.findbyXMLpath(regexexpression);
-								CustomerCreditReports cc = customerCreditReportsRepository.findbynric(regexexpression);
+								List<String> xmlPathResponse = customerCreditReportsRepository.findbyXMLpath(regexexpression);
+								List<CustomerCreditReports> cc = customerCreditReportsRepository.findbynric(regexexpression);
 								boolean flag = filepathResponse.isEmpty() && filepathResponse != null;
 								System.out.println("path" + flag);
 								if (filepathResponse != null && flag == false && cc != null
 										&& xmlPathResponse != null) {
 									experianreportResponse.setResponseCode("00");
 									experianreportResponse.setResponseMsg("Success");
-									experianreportResponse.setURL(filepathResponse);
-									experianreportResponse.setBankruptcyCount(cc.getBankruptcyCount());
-									experianreportResponse.setLegalSuitCount(cc.getLegalSuitCount());
-									experianreportResponse.setTradeBureauCount(cc.getTradeBureauCount());
-									experianreportResponse.setIScore(cc.getIScore());
-									experianreportResponse.setIScoreRiskGrade(cc.getIScoreRiskGrade());
-									experianreportResponse.setIScoreGradeFormat(cc.getIScoreGradeFormat());
-									experianreportResponse.setLegalActionBankingCount(cc.getLegalActionBankingCount());
-									experianreportResponse.setBorrowerOutstanding(cc.getBorrowerOutstanding());
+									experianreportResponse.setURL(filepathResponse.get(0));
+									experianreportResponse.setBankruptcyCount(cc.get(0).getBankruptcyCount());
+									experianreportResponse.setLegalSuitCount(cc.get(0).getLegalSuitCount());
+									experianreportResponse.setTradeBureauCount(cc.get(0).getTradeBureauCount());
+									experianreportResponse.setIScore(cc.get(0).getIScore());
+									experianreportResponse.setIScoreRiskGrade(cc.get(0).getIScoreRiskGrade());
+									experianreportResponse.setIScoreGradeFormat(cc.get(0).getIScoreGradeFormat());
+									experianreportResponse.setLegalActionBankingCount(cc.get(0).getLegalActionBankingCount());
+									experianreportResponse.setBorrowerOutstanding(cc.get(0).getBorrowerOutstanding());
 									experianreportResponse
-											.setBankingCreditApprovedCount(cc.getBankingCreditApprovedCount());
+											.setBankingCreditApprovedCount(cc.get(0).getBankingCreditApprovedCount());
 									experianreportResponse
-											.setBankingCreditApprovedAmount(cc.getBankingCreditApprovedAmount());
+											.setBankingCreditApprovedAmount(cc.get(0).getBankingCreditApprovedAmount());
 									experianreportResponse
-											.setBankingCreditPendingCount(cc.getBankingCreditPendingCount());
+											.setBankingCreditPendingCount(cc.get(0).getBankingCreditPendingCount());
 									experianreportResponse
-											.setBankingCreditPendingAmount(cc.getBankingCreditPendingAmount());
-									experianreportResponse.setRefxml(xmlPathResponse);
-									experianreportResponse.setBase64_pdf(cc.getBase64_pdf());
-									log.info("In [CcrisController:RequestdownloadFile] = customer already exist so returning jsonsss response");
+											.setBankingCreditPendingAmount(cc.get(0).getBankingCreditPendingAmount());
+									experianreportResponse.setRefxml(xmlPathResponse.get(0));
+									experianreportResponse.setBase64_pdf(cc.get(0).getBase64_pdf());
+									log.info(
+											"In [CcrisController:RequestdownloadFile] = customer already exist so returning jsonsss response");
 									// To add logs in DB
 									CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 									ccLogs.setRequest(userSearchRequest.toString());
 									ccLogs.setResponse(experianreportResponse.toString());
-									saveLogsToDB(ccLogs);
-									logger.info("In [CcrisController:RequestdownloadFile] = Customer already exist ->" + experianreportResponse.toString());
+									ccLogs.setNric(userSearchRequest.getEntityId());
+									ccLogs.setExperianRequest(cc.get(0).getXmlString());
+									saveLogsToDB(ccLogs, userSearchRequest);
+									logger.info("In [CcrisController:RequestdownloadFile] = Customer already exist ->"
+											+ experianreportResponse.toString());
 									return experianreportResponse;
 								} else {
 
 									XmlFormatter formatter = new XmlFormatter();
-									String xmlResponse = formatter.format(xmlPathResponse);
+									String xmlResponse = formatter.format(xmlPathResponse.get(0));
 									String nricNumber = StringUtils.substringBetween(xmlResponse, "<new_ic>",
 											"</new_ic>");
 									System.out.println(nricNumber + "============");
@@ -1387,15 +1468,19 @@ public class CcrisController {
 									// TODO
 									experianreportResponse
 											.setBase64_pdf(Base64.getEncoder().encodeToString(filepath.getBytes()));
-									log.info("In [CcrisController:RequestdownloadFile] = customer already exist but no file genrated");
+									log.info(
+											"In [CcrisController:RequestdownloadFile] = customer already exist but no file genrated");
 									Savedownloadpathforexistingcustomer(filepath, regexexpression);
 									// To add logs in DB
 									CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 									ccLogs.setRequest(userSearchRequest.toString());
 									ccLogs.setResponse(experianreportResponse.toString());
-									saveLogsToDB(ccLogs);
-									logger.info("In [CcrisController:RequestdownloadFile] = Customer already exist but no File genrated ->"
-											+ experianreportResponse.toString());
+									ccLogs.setNric(userSearchRequest.getEntityId());
+									ccLogs.setExperianRequest(cc.get(0).getXmlString());
+									saveLogsToDB(ccLogs, userSearchRequest);
+									logger.info(
+											"In [CcrisController:RequestdownloadFile] = Customer already exist but no File genrated ->"
+													+ experianreportResponse.toString());
 									return experianreportResponse;
 								}
 
@@ -1425,9 +1510,12 @@ public class CcrisController {
 								CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 								ccLogs.setRequest(userSearchRequest.toString());
 								ccLogs.setResponse(experianreportResponse.toString());
-								saveLogsToDB(ccLogs);
-								logger.info("In [CcrisController:RequestdownloadFile] = Customer already exist but no file genrated ->"
-										+ experianreportResponse.toString());
+								ccLogs.setNric(userSearchRequest.getEntityId());
+								ccLogs.setExperianRequest(experianreportResponse.getResponseMsg());
+								saveLogsToDB(ccLogs, userSearchRequest);
+								logger.info(
+										"In [CcrisController:RequestdownloadFile] = Customer already exist but no file genrated ->"
+												+ experianreportResponse.toString());
 								return experianreportResponse;
 
 							}
@@ -1458,15 +1546,18 @@ public class CcrisController {
 								CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 								ccLogs.setRequest(userSearchRequest.toString());
 								ccLogs.setResponse(experianreportResponse.toString());
-								saveLogsToDB(ccLogs);
-								logger.severe("In [CcrisController:RequestdownloadFile] = Not found(404) response ->" + experianreportResponse.toString());
+								ccLogs.setNric(userSearchRequest.getEntityId());
+								ccLogs.setExperianRequest(experianreportResponse.getResponseMsg());
+								saveLogsToDB(ccLogs, userSearchRequest);
+								logger.severe("In [CcrisController:RequestdownloadFile] = Not found(404) response ->"
+										+ experianreportResponse.toString());
 								EmailUtility emailUtility = new EmailUtility();
-								emailUtility.sentEmail(experianreportResponse.toString(),dbconfig);
+								emailUtility.sentEmail(experianreportResponse.toString(), dbconfig);
 								return experianreportResponse;
 							}
 						} else if (inputResponseName != null) {
 
-							if (!inputResponseName.equals(userSearchRequest.getName())) {
+							if (!inputResponseName.get(0).equals(userSearchRequest.getName())) {
 								experianreportResponse.setResponseCode("404");
 								experianreportResponse.setResponseMsg("Name mismatch");
 								experianreportResponse.setURL(null);
@@ -1491,8 +1582,11 @@ public class CcrisController {
 								CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 								ccLogs.setRequest(userSearchRequest.toString());
 								ccLogs.setResponse(experianreportResponse.toString());
-								saveLogsToDB(ccLogs);
-								logger.severe("In [CcrisController:RequestdownloadFile] = Name Mismatch response ->" + experianreportResponse.toString());
+								ccLogs.setNric(userSearchRequest.getEntityId());
+								ccLogs.setExperianRequest(experianreportResponse.getResponseMsg());
+								saveLogsToDB(ccLogs, userSearchRequest);
+								logger.severe("In [CcrisController:RequestdownloadFile] = Name Mismatch response ->"
+										+ experianreportResponse.toString());
 								return experianreportResponse;
 							} else
 								experianreportResponse.setResponseCode("404");
@@ -1520,8 +1614,11 @@ public class CcrisController {
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(experianreportResponse.toString());
-							saveLogsToDB(ccLogs);
-							logger.severe("In [CcrisController:RequestdownloadFile] = Not found response ->" + experianreportResponse.toString());
+							ccLogs.setNric(userSearchRequest.getEntityId());
+							ccLogs.setExperianRequest(experianreportResponse.getResponseMsg());
+							saveLogsToDB(ccLogs, userSearchRequest);
+							logger.severe("In [CcrisController:RequestdownloadFile] = Not found response ->"
+									+ experianreportResponse.toString());
 							return experianreportResponse;
 
 						} else {
@@ -1555,8 +1652,11 @@ public class CcrisController {
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(experianreportResponse.toString());
-							saveLogsToDB(ccLogs);
-							logger.severe("In [CcrisController:RequestdownloadFile] = Not found response ->" + experianreportResponse.toString());
+							ccLogs.setNric(userSearchRequest.getEntityId());
+							ccLogs.setExperianRequest(experianreportResponse.getResponseMsg());
+							saveLogsToDB(ccLogs, userSearchRequest);
+							logger.severe("In [CcrisController:RequestdownloadFile] = Not found response ->"
+									+ experianreportResponse.toString());
 							return experianreportResponse;
 
 						}
@@ -1592,7 +1692,8 @@ public class CcrisController {
 							boolean CrissFlag = customercreditreportrequest.isCriss();
 							String specialAttentionAccount = customercreditreportrequest.getSpecialAttentionAccount();
 							String facility = customercreditreportrequest.getFacility();
-							log.info(CrissFlag + "In [CcrisController:RequestdownloadFile] = checking the pending Criss FLAG");
+							log.info(CrissFlag
+									+ "In [CcrisController:RequestdownloadFile] = checking the pending Criss FLAG");
 							checkcreditscoreResponse = ccrisUnifiedService.getCreditScore(
 									customercreditreportrequest.getIScore(), caseSettled, casewithdraw, paymentaging,
 									pendingflag, legalsuitcount, bankruptcycount, CrissFlag, tradeBureauCount,
@@ -1647,7 +1748,8 @@ public class CcrisController {
 								log.info("In [CcrisController:RequestdownloadFile] = added new customer to database");
 								saveResponseToDB(customercreditreportrequest, customerSpendingLimitResponse,
 										userSearchRequest, "", reportFlag, nricnumber, ispresent);
-								log.info("In [CcrisController:RequestdownloadFile] = added new customer to database: " + customercreditreportrequest.getNric());
+								log.info("In [CcrisController:RequestdownloadFile] = added new customer to database: "
+										+ customercreditreportrequest.getNric());
 								return experianreportResponse;
 							} else if (checkcreditscoreResponse.getIsBelowscoreFlag() == true
 									&& customercreditreportrequest.getDownaloadfilepath() == null
@@ -1656,9 +1758,9 @@ public class CcrisController {
 								log.info("In [CcrisController:RequestdownloadFile] = Error 1==============");
 								if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 									experianreportResponse.setResponseCode("500");
-									experianreportResponse.setResponseMsg(ServerDownError);
+									experianreportResponse.setResponseMsg(utilityEntities.getErrorMsg());
 									EmailUtility emailUtility = new EmailUtility();
-									emailUtility.sentEmail(ServerDownError,dbconfig);
+									emailUtility.sentEmail(ServerDownError, dbconfig);
 								} else {
 									experianreportResponse.setResponseCode("01");
 									experianreportResponse.setResponseMsg("File Not Found For the Customer !!!");
@@ -1684,10 +1786,12 @@ public class CcrisController {
 								CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 								ccLogs.setRequest(userSearchRequest.toString());
 								ccLogs.setResponse(experianreportResponse.toString());
-								saveLogsToDB(ccLogs);
-								logger.severe("In [CcrisController:RequestdownloadFile] = 500 response ->" + experianreportResponse.toString());
+								ccLogs.setNric(userSearchRequest.getEntityId());
+								saveLogsToDB(ccLogs, userSearchRequest);
+								logger.severe("In [CcrisController:RequestdownloadFile] = 500 response ->"
+										+ experianreportResponse.toString());
 								EmailUtility emailUtility = new EmailUtility();
-								emailUtility.sentEmail(experianreportResponse.toString(),dbconfig);
+								emailUtility.sentEmail(experianreportResponse.toString(), dbconfig);
 								return experianreportResponse;
 							} else if (CrissFlag == true) {
 								boolean nricExist = checkcreditscoreResponse.getIsNricExist();
@@ -1709,8 +1813,10 @@ public class CcrisController {
 								CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 								ccLogs.setRequest(userSearchRequest.toString());
 								ccLogs.setResponse(experianreportResponse.toString());
-								saveLogsToDB(ccLogs);
-								logger.severe("In [CcrisController:RequestdownloadFile] = Response ->" + experianreportResponse.toString());
+								ccLogs.setNric(userSearchRequest.getEntityId());
+								saveLogsToDB(ccLogs, userSearchRequest);
+								logger.severe("In [CcrisController:RequestdownloadFile] = Response ->"
+										+ experianreportResponse.toString());
 								return customerSpendingLimitResponse;
 							} else if (checkcreditscoreResponse.getIsBelowscoreFlag() != null
 									&& checkcreditscoreResponse.getIsBelowscoreFlag() == true) {
@@ -1769,13 +1875,16 @@ public class CcrisController {
 								CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 								ccLogs.setRequest(userSearchRequest.toString());
 								ccLogs.setResponse(experianreportResponse.toString());
-								saveLogsToDB(ccLogs);
-								logger.severe("In [CcrisController:RequestdownloadFile] = Response ->" + experianreportResponse.toString());
+								ccLogs.setNric(userSearchRequest.getEntityId());
+								saveLogsToDB(ccLogs, userSearchRequest);
+								logger.severe("In [CcrisController:RequestdownloadFile] = Response ->"
+										+ experianreportResponse.toString());
 								return experianreportResponse;
 							} else {
 								error.setErrorcode(utilityEntities.getCodes());
 								error.setErrormessage(utilityEntities.getErrorMsg());
-								logger.severe("In [CcrisController:RequestdownloadFile] = Response ->" + utilityEntities.toString());
+								logger.severe("In [CcrisController:RequestdownloadFile] = Response ->"
+										+ utilityEntities.toString());
 								// SavetoCreditCheckErrorR(error,name,regexexpression);
 								return error;
 							}
@@ -1783,17 +1892,17 @@ public class CcrisController {
 								&& utilityEntities.getInvalidUserFlag() == true) {
 							log.info("In [CcrisController:RequestdownloadFile] = Error 3==============");
 							if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
-								experianreportResponse.setResponseCode("500");
-								experianreportResponse.setResponseMsg(ServerDownError);
+								experianreportResponse.setResponseCode(utilityEntities.getCodes());
+								experianreportResponse.setResponseMsg(utilityEntities.getErrorMsg());
 								EmailUtility emailUtility = new EmailUtility();
-								emailUtility.sentEmail(ServerDownError,dbconfig);
+								emailUtility.sentEmail(ServerDownError, dbconfig);
 							} else {
-								experianreportResponse.setResponseCode("400");
+								experianreportResponse.setResponseCode(utilityEntities.getCodes());
 								// experianreportResponse.setResponseMsg(utilityEntities.getErrorMsg());
 								// 10-05
-								experianreportResponse.setResponseMsg("Invalid Input");
+								experianreportResponse.setResponseMsg(utilityEntities.getErrorMsg());
 								EmailUtility emailUtility = new EmailUtility();
-								emailUtility.sentEmail("Invalid Input",dbconfig);
+								emailUtility.sentEmail("Invalid Input", dbconfig);
 							}
 
 							experianreportResponse.setURL(null);
@@ -1813,20 +1922,26 @@ public class CcrisController {
 							experianreportResponse.setBase64_pdf(null);
 
 							// log.info("Checking namemistach"+utilityEntities.getRetrivalCount());
-							log.info("In [CcrisController:RequestdownloadFile] = Checking Name Mismatch==============" + utilityEntities.getRetrivalCount());
+							log.info("In [CcrisController:RequestdownloadFile] = Checking Name Mismatch=============="
+									+ utilityEntities.getRetrivalCount());
 							SavetoCreditCheckErrorwithResponsefromExperian(utilityEntities, name, regexexpression, 0);
 
 							// To add logs in DB
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(experianreportResponse.toString());
-							saveLogsToDB(ccLogs);
-							logger.severe("In [CcrisController:RequestdownloadFile] = Checking Name Mismatch Response ->" + experianreportResponse.toString());
+							ccLogs.setNric(userSearchRequest.getEntityId());
+//							ccLogs.setExperianRequest(regexexpression)
+							saveLogsToDB(ccLogs, userSearchRequest);
+							logger.severe(
+									"In [CcrisController:RequestdownloadFile] = Checking Name Mismatch Response ->"
+											+ experianreportResponse.toString());
 							return experianreportResponse;
 
 						} else if (utilityEntities.getExperianServerFlag() != null
 								&& utilityEntities.getExperianServerFlag() == true) {
-							log.info("In [CcrisController:RequestdownloadFile] = Error 46==============" + utilityEntities.getRetrivalCount());
+							log.info("In [CcrisController:RequestdownloadFile] = Error 46=============="
+									+ utilityEntities.getRetrivalCount());
 							checkcreditscoreResponse = ccrisUnifiedService.ExperianServerDown();
 							// int retrival=customercreditreportrequest.getRetrivalCount();
 							// log.info("Coming Inside Experian with total count"+retrival);
@@ -1835,14 +1950,14 @@ public class CcrisController {
 							log.info("In [CcrisController:RequestdownloadFile] = Errormessage " + errormessage);
 							if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 								experianreportResponse.setResponseCode("500");
-								experianreportResponse.setResponseMsg(ServerDownError);
+								experianreportResponse.setResponseMsg(utilityEntities.getErrorMsg());
 								EmailUtility emailUtility = new EmailUtility();
-								emailUtility.sentEmail(ServerDownError,dbconfig);
+								emailUtility.sentEmail(ServerDownError, dbconfig);
 							} else {
 								experianreportResponse.setResponseCode("102");
 								experianreportResponse.setResponseMsg(errormessage);
 								EmailUtility emailUtility = new EmailUtility();
-								emailUtility.sentEmail(errormessage,dbconfig);
+								emailUtility.sentEmail(errormessage, dbconfig);
 							}
 							experianreportResponse.setURL(null);
 							experianreportResponse.setRefxml(null);
@@ -1870,22 +1985,24 @@ public class CcrisController {
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(experianreportResponse.toString());
-							saveLogsToDB(ccLogs);
-							logger.severe("In [CcrisController:RequestdownloadFile] = Response ->" + experianreportResponse.toString());
+							ccLogs.setNric(userSearchRequest.getEntityId());
+							saveLogsToDB(ccLogs, userSearchRequest);
+							logger.severe("In [CcrisController:RequestdownloadFile] = Response ->"
+									+ experianreportResponse.toString());
 							return experianreportResponse;
 
 						} else if (utilityEntities.getInvalidUsernameflag() == true) {
 							log.info("In [CcrisController:RequestdownloadFile] = Error 4==============");
 							if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 								experianreportResponse.setResponseCode("500");
-								experianreportResponse.setResponseMsg(ServerDownError);
+								experianreportResponse.setResponseMsg(utilityEntities.getErrorMsg());
 								EmailUtility emailUtility = new EmailUtility();
-								emailUtility.sentEmail(ServerDownError,dbconfig);
+								emailUtility.sentEmail(ServerDownError, dbconfig);
 							} else {
 								experianreportResponse.setResponseCode("02");
 								experianreportResponse.setResponseMsg(utilityEntities.getErrorMsg());
 								EmailUtility emailUtility = new EmailUtility();
-								emailUtility.sentEmail(utilityEntities.getErrorMsg(),dbconfig);
+								emailUtility.sentEmail(utilityEntities.getErrorMsg(), dbconfig);
 							}
 							experianreportResponse.setURL(null);
 							experianreportResponse.setRefxml(null);
@@ -1908,8 +2025,10 @@ public class CcrisController {
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(experianreportResponse.toString());
-							saveLogsToDB(ccLogs);
-							logger.severe("In [CcrisController:RequestdownloadFile] = Response ->" + experianreportResponse.toString());
+							ccLogs.setNric(userSearchRequest.getEntityId());
+							saveLogsToDB(ccLogs, userSearchRequest);
+							logger.severe("In [CcrisController:RequestdownloadFile] = Response ->"
+									+ experianreportResponse.toString());
 							return experianreportResponse;
 
 						} else {
@@ -1918,14 +2037,14 @@ public class CcrisController {
 							String errormessage = checkcreditscoreResponse.getErrorMessage();
 							if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 								experianreportResponse.setResponseCode("500");
-								experianreportResponse.setResponseMsg(ServerDownError);
+								experianreportResponse.setResponseMsg(utilityEntities.getErrorMsg());
 								EmailUtility emailUtility = new EmailUtility();
-								emailUtility.sentEmail(ServerDownError,dbconfig);
+								emailUtility.sentEmail(ServerDownError, dbconfig);
 							} else {
 								experianreportResponse.setResponseCode("02");
 								experianreportResponse.setResponseMsg(errormessage);
 								EmailUtility emailUtility = new EmailUtility();
-								emailUtility.sentEmail(errormessage,dbconfig);
+								emailUtility.sentEmail(errormessage, dbconfig);
 							}
 
 							experianreportResponse.setURL(null);
@@ -1949,8 +2068,10 @@ public class CcrisController {
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
 							ccLogs.setResponse(experianreportResponse.toString());
-							saveLogsToDB(ccLogs);
-							logger.severe("In [CcrisController:RequestdownloadFile] = Response ->" + experianreportResponse.toString());
+							ccLogs.setNric(userSearchRequest.getEntityId());
+							saveLogsToDB(ccLogs, userSearchRequest);
+							logger.severe("In [CcrisController:RequestdownloadFile] = Response ->"
+									+ experianreportResponse.toString());
 							return experianreportResponse;
 						}
 
@@ -1988,8 +2109,10 @@ public class CcrisController {
 					CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 					ccLogs.setRequest(userSearchRequest.toString());
 					ccLogs.setResponse(experianreportResponse.toString());
-					saveLogsToDB(ccLogs);
-					logger.severe("In [CcrisController:RequestdownloadFile] = Response ->" + experianreportResponse.toString());
+					ccLogs.setNric(userSearchRequest.getEntityId());
+					saveLogsToDB(ccLogs, userSearchRequest);
+					logger.severe("In [CcrisController:RequestdownloadFile] = Response ->"
+							+ experianreportResponse.toString());
 					return experianreportResponse;
 				}
 			}
@@ -2017,22 +2140,23 @@ public class CcrisController {
 			CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 			ccLogs.setRequest(userSearchRequest.toString());
 			ccLogs.setResponse(experianreportResponse.toString());
-			saveLogsToDB(ccLogs);
+			ccLogs.setNric(userSearchRequest.getEntityId());
+			saveLogsToDB(ccLogs, userSearchRequest);
 			logger.severe("In [CcrisController:RequestdownloadFile] = Response ->" + experianreportResponse.toString());
 		} catch (Exception e) {
-			log.error("In [CcrisController:RequestdownloadFile] = Exception"+e.getMessage());
+			log.error("In [CcrisController:RequestdownloadFile] = Exception" + e.getMessage());
 			CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 			ccLogs.setRequest(userSearchRequest.toString());
 			ccLogs.setResponse(e.getMessage());
-			saveLogsToDB(ccLogs);
+			ccLogs.setNric(userSearchRequest.getEntityId());
+			saveLogsToDB(ccLogs, userSearchRequest);
 			logger.severe("In [CcrisController:RequestdownloadFile] = Response ->" + e.getMessage());
 			EmailUtility emailUtility = new EmailUtility();
-			emailUtility.sentEmail(e.getLocalizedMessage(),dbconfig);
+			emailUtility.sentEmail(e.getLocalizedMessage(), dbconfig);
 		}
 		return experianreportResponse;
 	}
 
-	
 	private void SavetoCreditCheckErrors(String responseCode, String responseMsg, String name, String regexexpression,
 			int retival) {
 		try {
@@ -2110,10 +2234,14 @@ public class CcrisController {
 		// openApiClient = setValuesToOpenApi();
 		openApiClient = ekycService.setValuesToOpenApiHardCoded(dbvalues);
 		log.info("In [CcrisController:realIdInit] = OpenApiClient " + openApiClient);
-		log.info("In [CcrisController:realIdInit] = MerchantPublicKey set to openApi in initialize " + openApiClient.getOpenApiPublicKey());
-		log.info("In [CcrisController:realIdInit] = Host url set to openApi in initialize  " + openApiClient.getHostUrl());
-		log.info("In [CcrisController:realIdInit] = ClientId set to openApi in initialize " + openApiClient.getClientId());
-		logger.severe("In [CcrisController:realIdInit] = OpenApiClient Details ->" + openApiClient.getOpenApiPublicKey()+"-"+openApiClient.getHostUrl()+"-"+openApiClient.getClientId());
+		log.info("In [CcrisController:realIdInit] = MerchantPublicKey set to openApi in initialize "
+				+ openApiClient.getOpenApiPublicKey());
+		log.info("In [CcrisController:realIdInit] = Host url set to openApi in initialize  "
+				+ openApiClient.getHostUrl());
+		log.info("In [CcrisController:realIdInit] = ClientId set to openApi in initialize "
+				+ openApiClient.getClientId());
+		logger.severe("In [CcrisController:realIdInit] = OpenApiClient Details ->" + openApiClient.getOpenApiPublicKey()
+				+ "-" + openApiClient.getHostUrl() + "-" + openApiClient.getClientId());
 		Creditcheckersysconfig zolosFromRedis = dbconfig.getDataFromRedis("zolos.initialize");
 		initializeApi = zolosFromRedis.getValue();
 //		initializeApi = dbvalues.get("zolos.initialize");
@@ -2123,7 +2251,7 @@ public class CcrisController {
 
 			response = new JSONObject(apiResp);
 //			log.info("In [CcrisController:realIdInit] = Response=" + apiRespStr);
-			logger.info("In [CcrisController:realIdInit] = Response ->"+apiRespStr);
+			logger.info("In [CcrisController:realIdInit] = Response ->" + apiRespStr);
 		} else {
 			response = new JSONObject();
 			response.put("errorMsg", "Zoloc response is null");
@@ -2137,14 +2265,14 @@ public class CcrisController {
 	public JSONObject realIdCheck(@RequestBody JSONObject request) {
 		JSONObject response = null;
 		log.info("In [CcrisController:realIdCheck] = Inside checkresult =" + request);
-		logger.severe("In [CcrisController:realIdCheck] = Request ->"+request);
+		logger.severe("In [CcrisController:realIdCheck] = Request ->" + request);
 		HashMap<String, String> dbvalues = dbconfig.getValueFromDB();
 		// openApiClient = setValuesToOpenApi();
 		openApiClient = ekycService.setValuesToOpenApiHardCoded(dbvalues);
 		Creditcheckersysconfig zoloCheckResultFromRedis = dbconfig.getDataFromRedis("zolos.checkresult");
 		String checkResultApi = zoloCheckResultFromRedis.getValue();
 		log.info("In [CcrisController:realIdCheck] = OpenApiClient " + openApiClient);
-		logger.info("In [CcrisController:realIdCheck] = openApiClient ->"+openApiClient);
+		logger.info("In [CcrisController:realIdCheck] = openApiClient ->" + openApiClient);
 		String apiRespStr = ekycService.callCheckStatusOpenApi(request, checkResultApi);
 
 		if (apiRespStr != null) {
@@ -2183,13 +2311,13 @@ public class CcrisController {
 			List<String> nameConstantsList = Arrays.asList(nameConstantsArr);
 			Boolean namematched = Boolean.FALSE;
 			for (String string : nameConstantsList) {
-				if(name.equalsIgnoreCase(string)) {
+				if (name.equalsIgnoreCase(string)) {
 					namematched = Boolean.TRUE;
 				}
 			}
 //			if ((name.equals("WRONG NAME") || name.equals("ABDULLAH BIN MALIK") || name.equals("LARRY HENG")
 //					|| name.equals("BILL CLINTON") || name.equals("DEVI THANAPAKIAM"))) {
-			if(namematched) {
+			if (namematched) {
 				String error = "Oops, maybe it is us and not you, but we can\\u2019t seem to validate this MyKad number\\/name! Probably it was not in a correct format. For MyKad No, please key in the 12 digits number (without any space\\/dash) 95XXXXXXXXXX. For name, please ensure the name is keyed in exactly as per your MyKad i.e with Bin\\/Binti\\/ A\\/L \\/ A\\/P and without any abbreviations.";
 				log.info("In [CcrisController:creditCheckerSimulatorForSpendingLimit] = Inside validate name ");
 				response.setIsRegistrationAllowed(false);
@@ -2238,19 +2366,26 @@ public class CcrisController {
 				// generateExperianReportForSuccess(experianreportResponse, null,name,entityId);
 			}
 
-			log.info("In [CcrisController:creditCheckerSimulatorForSpendingLimit] = Request.get(\"serviceName\") " + request.get("serviceName"));
+			log.info("In [CcrisController:creditCheckerSimulatorForSpendingLimit] = Request.get(\"serviceName\") "
+					+ request.get("serviceName"));
 			if (request.get("serviceName") == null) {
-				log.info("In [CcrisController:creditCheckerSimulatorForSpendingLimit] = building finalResponse for response " + response);
+				log.info(
+						"In [CcrisController:creditCheckerSimulatorForSpendingLimit] = building finalResponse for response "
+								+ response);
 				finalResponse = response;
 			} else if (request.get("serviceName") != null
 					&& request.get("serviceName").toString().equals("GetReport")) {
-				log.info("In [CcrisController:creditCheckerSimulatorForSpendingLimit] = Building Final Response for experianreportResponse " + experianreportResponse);
-				logger.info("In [CcrisController:creditCheckerSimulatorForSpendingLimit] = Building Final Response for experianreportResponse " + experianreportResponse);
+				log.info(
+						"In [CcrisController:creditCheckerSimulatorForSpendingLimit] = Building Final Response for experianreportResponse "
+								+ experianreportResponse);
+				logger.info(
+						"In [CcrisController:creditCheckerSimulatorForSpendingLimit] = Building Final Response for experianreportResponse "
+								+ experianreportResponse);
 				finalResponse = experianreportResponse;
 			}
 		} catch (Exception e) {
 			log.error("In [CcrisController:creditCheckerSimulatorForSpendingLimit] = Exception in simulator " + e);
-			logger.severe("In [CcrisController:creditCheckerSimulatorForSpendingLimit] = Exception ->"+e);
+			logger.severe("In [CcrisController:creditCheckerSimulatorForSpendingLimit] = Exception ->" + e);
 			response.setErrorMessage(e.getLocalizedMessage());
 			return response;
 		}
@@ -2288,7 +2423,7 @@ public class CcrisController {
 				logger.info("In [CcrisController:creditCheckerSimulatorForReport] = Inside validate name ");
 				experianreportResponse = generateExperianReport(experianreportResponse, error, "404");
 				EmailUtility emailUtility = new EmailUtility();
-				emailUtility.sentEmail(error,dbconfig);
+				emailUtility.sentEmail(error, dbconfig);
 			} else if (entityId.contains("501230")) {
 				Thread.sleep(25000);
 				log.info("In [CcrisController:creditCheckerSimulatorForReport] = Thread sleeping for 25seconds");
@@ -2303,7 +2438,7 @@ public class CcrisController {
 				String error = "We try to connect with Experian API 4 times if it is not connecting we will be throwing the status code.";
 				Thread.sleep(25000);
 				EmailUtility emailUtility = new EmailUtility();
-				emailUtility.sentEmail(error,dbconfig);
+				emailUtility.sentEmail(error, dbconfig);
 				log.info("In [CcrisController:creditCheckerSimulatorForReport] = Thread sleeping for 25seconds");
 				experianreportResponse = generateExperianReport(experianreportResponse, error, "102");
 			} else {
@@ -2316,13 +2451,14 @@ public class CcrisController {
 				// generateExperianReportForSuccess(experianreportResponse, null,name,entityId);
 			}
 
-			log.info("In [CcrisController:creditCheckerSimulatorForReport] = request.get(\"serviceName\") " + request.get("serviceName"));
+			log.info("In [CcrisController:creditCheckerSimulatorForReport] = request.get(\"serviceName\") "
+					+ request.get("serviceName"));
 		} catch (Exception e) {
 			log.error("In [CcrisController:creditCheckerSimulatorForReport] = Exception in simulator " + e);
 			logger.severe("In [CcrisController:creditCheckerSimulatorForReport] = Exception in simulator " + e);
 			experianreportResponse.setResponseMsg(e.getLocalizedMessage());
 			EmailUtility emailUtility = new EmailUtility();
-			emailUtility.sentEmail(e.getLocalizedMessage(),dbconfig);
+			emailUtility.sentEmail(e.getLocalizedMessage(), dbconfig);
 			return experianreportResponse;
 		}
 
@@ -2336,6 +2472,7 @@ public class CcrisController {
 		UserSearchRequest userSearchRequest = new UserSearchRequest();
 		userSearchRequest.setServiceName("GetReport");
 		String to = null;
+
 		try {
 			CustomerCreditReportRequest cc = ccrisReportRetrievalService.processReport(xml, false, true,
 					userSearchRequest, 0, to);
@@ -2358,13 +2495,20 @@ public class CcrisController {
 			experianreportResponse.setBankingCreditPendingAmount(cc.getBankingCreditPendingAmount());
 			experianreportResponse.setRefxml(cc.getXmlString());
 			experianreportResponse.setBase64_pdf(cc.getBase64_pdf());
+			CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 		} catch (Exception e) {
-			log.error("In [CcrisController:generateExperianReportForSuccess] = Exception in generateExperianReportForSuccess " + e);
-			logger.severe("In [CcrisController:generateExperianReportForSuccess] = Exception in generateExperianReportForSuccess " + e);
+			log.error(
+					"In [CcrisController:generateExperianReportForSuccess] = Exception in generateExperianReportForSuccess "
+							+ e);
+			logger.severe(
+					"In [CcrisController:generateExperianReportForSuccess] = Exception in generateExperianReportForSuccess "
+							+ e);
 			experianreportResponse.setResponseMsg(e.getLocalizedMessage());
 		}
-		log.info("In [CcrisController:generateExperianReportForSuccess] = experianreportResponse " + experianreportResponse);
-		logger.info("In [CcrisController:generateExperianReportForSuccess] = experianreportResponse " + experianreportResponse);
+		log.info("In [CcrisController:generateExperianReportForSuccess] = experianreportResponse "
+				+ experianreportResponse);
+		logger.info("In [CcrisController:generateExperianReportForSuccess] = experianreportResponse "
+				+ experianreportResponse);
 		return experianreportResponse;
 	}
 
@@ -2415,8 +2559,8 @@ public class CcrisController {
 				response.setIsRegistrationAllowed(true);
 				response.setIsNricExist(true);
 				response.setIsNameNricMatched(true);
-				response.setMaximumAllowedInstallments(3);
-				response.setMaximumSpendingLimit(150);
+				response.setMaximumAllowedInstallments(2);
+				response.setMaximumSpendingLimit(300);
 				response.setStatusCode("05");
 				response.setErrorMessage("No Ccris Info found");
 
@@ -2670,7 +2814,7 @@ public class CcrisController {
 		return openApiClient;
 	}
 
-	public void saveLogsToDB(CreditCheckerLogs ccLogs) {
+	public void saveLogsToDB(CreditCheckerLogs ccLogs, UserSearchRequest userSearchRequest) {
 		Creditcheckersysconfig platformAuthFromRedis = dbconfig.getDataFromRedis(GlobalConstants.PLATFORM_LOG_ENABLE);
 		String authEnableOrDisable = platformAuthFromRedis.getValue();
 		if (StringUtils.isNotEmpty(authEnableOrDisable) && StringUtils.equalsIgnoreCase(authEnableOrDisable, "1")) {
@@ -2684,7 +2828,30 @@ public class CcrisController {
 				log.info("In [CcrisController:saveLogsToDB] = Exception " + e);
 			}
 			log.info("In [CcrisController:saveLogsToDB] = key " + key);
-			clientName = creditCheckerAuthRepository.findClientNameFromKey(key);
+			if (key != null) {
+				clientName = creditCheckerAuthRepository.findClientNameFromKey(key);
+			} else {
+				if (userSearchRequest != null && userSearchRequest.getClientId() != null) {
+					try {
+					clientName = creditCheckerAuthRepository
+							.findClientnameById(userSearchRequest.getClientId().toString());
+					}catch(Exception e) {
+						log.info("In [CcrisController:saveLogsToDB] = Exception in fetching clientName" + e);
+					}
+				}
+			}
+			ccLogs.setIp_address(ipAddress);
+			ccLogs.setClient_id(clientName);
+			log.info("In [CcrisController:saveLogsToDB] = ClientName " + clientName);
+			Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+			ccLogs.setTimestamp(timestamp);
+			creditCheckerLogRepository.save(ccLogs);
+		} else {
+			String ipAddress = null;
+			String clientName = null;
+			if (userSearchRequest != null) {
+				clientName = creditCheckerAuthRepository.findClientnameById(userSearchRequest.getClientId().toString());
+			}
 			ccLogs.setIp_address(ipAddress);
 			ccLogs.setClient_id(clientName);
 			log.info("In [CcrisController:saveLogsToDB] = ClientName " + clientName);
@@ -2743,5 +2910,5 @@ public class CcrisController {
 
 		return returnStr;
 	}
-	
+
 }

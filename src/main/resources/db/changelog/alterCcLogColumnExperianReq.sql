@@ -1,0 +1,1 @@
+ALTER TABLE cc_log MODIFY COLUMN experianRequest LONGTEXT
