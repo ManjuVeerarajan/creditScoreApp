@@ -66,4 +66,7 @@ public class CustomerCreditReports {
     @Lob
     @Column(name = "base64_pdf")
     private String base64_pdf;
+    @Lob
+    @Column(name = "experianRequest")
+    private String experianRequest;
 }

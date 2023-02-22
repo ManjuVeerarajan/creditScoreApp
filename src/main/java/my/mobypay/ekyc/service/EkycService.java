@@ -1,6 +1,12 @@
 package my.mobypay.ekyc.service;
 
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,9 +43,25 @@ public class EkycService {
 	RestTemplate restTemplate = new RestTemplate();
 
 	private OpenApiClient openApiClient = new OpenApiClient();
+	
+	public static Logger logger;
+	
+	static {
+		try {
+			boolean append = true;
+			SimpleDateFormat format = new SimpleDateFormat("M-d_HHmmss");
+			FileHandler fh = new FileHandler("LogFile_" + format.format(Calendar.getInstance().getTime()) + ".log",
+					append);
+			fh.setFormatter(new SimpleFormatter());
+			logger = Logger.getLogger("LogFile_" + format.format(Calendar.getInstance().getTime()));
+			logger.addHandler(fh);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 
 	public OpenApiClient setValuesToOpenApiHardCoded(HashMap<String,String> dbvalues) {
-		log.info("Hard coded..!!");
 		openApiClient.setHostUrl(dbvalues.get(GlobalConstants.ZOLO_SERVER));
 		openApiClient.setClientId(dbvalues.get(GlobalConstants.ZOLO_CLIENTID));
 		openApiClient.setMerchantPrivateKey(dbvalues.get(GlobalConstants.ZOLO_MERCHANT_PRIVATE_KEY));
@@ -51,6 +73,10 @@ public class EkycService {
 		log.info("clientId set to openApi " + openApiClient.getClientId());
 		log.info("merchantPrivatekey url set to openApi " + openApiClient.getMerchantPrivateKey());
 		log.info("merchantPublicKey set to openApi " + openApiClient.getOpenApiPublicKey());
+		logger.info("Host url set to openApi " + openApiClient.getHostUrl());
+		logger.info("clientId set to openApi " + openApiClient.getClientId());
+		logger.info("merchantPrivatekey url set to openApi " + openApiClient.getMerchantPrivateKey());
+		logger.info("merchantPublicKey set to openApi " + openApiClient.getOpenApiPublicKey());
 
 		return openApiClient;
 	}
@@ -70,7 +96,8 @@ public class EkycService {
 	}
 
 	public String callInitializeOpenApi(JSONObject request, String url) {
-
+		logger.info("In [EkycService:callInitializeOpenApi] - ZOLOZ initialize Request " + request);
+		log.info("In [EkycService:callInitializeOpenApi] - ZOLOZ initialize Request  " + request);
 		JSONObject apiReq = new JSONObject();
 		if (request.getString("bizId") != null) {
 			String businessId = request.getString("bizId");
@@ -104,16 +131,21 @@ public class EkycService {
 			String operationMode = request.getString("operationMode");
 			apiReq.put("operationMode", operationMode);
 		}
-		log.info("apiReq " + apiReq);
+		if (request.getString("productConfig") != null) {
+			JSONObject operationMode = request.getJSONObject("productConfig");
+			apiReq.put("productConfig", operationMode);
+		}
 		String apiRespStr = openApiClient.callOpenApi(url, JSON.toJSONString(apiReq));
 
-		log.info("apiRespStr " + apiRespStr);
+//		log.info("In [EkycService:callInitializeOpenApi] -ZOLOZ Response " + apiRespStr);
+//		logger.info("In [EkycService:callInitializeOpenApi] -ZOLOZ Response " + apiRespStr);
 		return apiRespStr;
 
 	}
 
 	public String callCheckStatusOpenApi(JSONObject request, String checkResultApi) {
-
+		logger.info("In [EkycService:callCheckStatusOpenApi] -ZOLOZ checkResult Request " + request);
+		log.info("In [EkycService:callCheckStatusOpenApi] -ZOLOZ checkResult Request " + request);
 		JSONObject apiReq = new JSONObject();
 
 		if (request.getString("bizId") != null) {
@@ -130,6 +162,8 @@ public class EkycService {
 		}
 
 		String apiRespStr = openApiClient.callOpenApi(checkResultApi, JSON.toJSONString(apiReq));
+//		logger.info("In [EkycService:callCheckStatusOpenApi] -ZOLOZ checkResult Response "+apiRespStr);
+//		log.info("In [EkycService:callCheckStatusOpenApi] -ZOLOZ checkResult Response "+apiRespStr);
 		return apiRespStr;
 	}
 

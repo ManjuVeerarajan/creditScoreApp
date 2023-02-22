@@ -1,5 +1,6 @@
 package my.mobypay.creditScore.dao;
 
+import java.io.Serializable;
 import java.sql.Date;
 
 import javax.persistence.Column;
@@ -14,9 +15,13 @@ import lombok.Data;
 @Entity
 @Table(name = "creditchecker_auth")
 @Data
-public class CreditCheckerAuthDao {
+public class CreditCheckerAuthDao  implements Serializable{
 	
-	   @Id
+	   /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	@Id
 	   @Column(name = "id")
 	    private String id;
 	    @Column(name = "client_name")

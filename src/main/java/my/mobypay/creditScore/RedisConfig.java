@@ -44,6 +44,7 @@ public class RedisConfig {
 	public void flushDb() {
 		Jedis jedis = new Jedis(host, port);
 		jedis.auth(username,password);
+//		jedis.auth(password);   //for local
 		Set<String> keys = jedis.keys("creditChecker/*");
 		for (String key : keys) {
 			jedis.del(key);

@@ -2,8 +2,11 @@ package my.mobypay.creditScore.service;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
+import my.mobypay.creditScore.APIKeyAuthFilter;
 import my.mobypay.creditScore.DBConfig;
+import my.mobypay.creditScore.controller.EmailUtility;
 import my.mobypay.creditScore.controller.GlobalConstants;
+import my.mobypay.creditScore.dao.CreditCheckerLogs;
 import my.mobypay.creditScore.dao.CreditScoreConfigRepository;
 import my.mobypay.creditScore.dao.CreditScorepPDFFilesrepo;
 import my.mobypay.creditScore.dao.CreditcheckerPDFFiles;
@@ -21,7 +24,8 @@ import my.mobypay.creditScore.dto.response.Error;
 import my.mobypay.creditScore.dto.response.Report;
 import my.mobypay.creditScore.dto.response.Tokens;
 import my.mobypay.creditScore.repository.CreditCheckErrorRepository;
-import my.mobypay.creditScore.utility.EmailUtility;
+import my.mobypay.creditScore.repository.CreditCheckerAuthRepository;
+import my.mobypay.creditScore.repository.CreditCheckerLogRepository;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.io.FileUtils;
@@ -91,6 +95,7 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -100,6 +105,7 @@ import java.nio.file.StandardCopyOption;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -166,6 +172,12 @@ public class CcrisReportRetrievalService {
 
 	public static final String RESOURCES_DIR;
 	public static final String OUTPUT_DIR;
+	
+	@Autowired
+	CreditCheckerLogRepository creditCheckerLogRepository;
+	
+	@Autowired
+	CreditCheckerAuthRepository creditCheckerAuthRepository;
 
 	static {
 		RESOURCES_DIR = "src//main//resources//";
@@ -228,9 +240,17 @@ public class CcrisReportRetrievalService {
 				Creditcheckersysconfig expUrlFromRedis = dbconfig.getDataFromRedis(GlobalConstants.EXPERIAN_URL_XML);
 				ExperianURLXML = expUrlFromRedis.getValue();
 				response = restTemplate.postForEntity(ExperianURLXML, request, String.class);
+				CreditCheckerLogs logs = new CreditCheckerLogs();
+				logs.setExperianRequest(xmlRequest.toString());
+				logs.setNric(userSearchRequest.getEntityId());
+				logs.setResponse(response.toString());
+				logs.setRequest(xmlRequest.toString());
+				saveLogsToDB(logs, userSearchRequest);
 				System.out.println("***********response**************");
 				System.out.println(response.getBody());
 				log.info("Experian Report response:" + response.getBody());
+				EmailUtility emailUtility = new EmailUtility();
+				emailUtility.sentEmail("Experian Report response:" + response.getBody(),dbconfig);
 				String checkcode = response.getBody().toString();
 				Boolean check = response.getBody().toString().contains("Result is processing");
 				log.info("Experian Report response:" + check);
@@ -333,6 +353,8 @@ public class CcrisReportRetrievalService {
 		System.out.println("***********response**************");
 		System.out.println(response.getBody());
 		log.info("Experian Report response:" + response.getBody());
+		EmailUtility emailUtility = new EmailUtility();
+		emailUtility.sentEmail("Experian Report response:" + response.getBody(),dbconfig);
 		String checkcode = response.getBody().toString();
 		Boolean check = response.getBody().toString().contains("Result is processing");
 		log.info("Experian Report response:" + check);
@@ -1453,7 +1475,7 @@ public class CcrisReportRetrievalService {
 		} catch (Exception e) {
 			e.printStackTrace();
 			EmailUtility emailUtility = new EmailUtility();
-			emailUtility.sentEmail(e.getLocalizedMessage(), to);
+			emailUtility.sentEmail(e.getLocalizedMessage(),dbconfig);
 
 		}
 		return report;
@@ -1684,5 +1706,47 @@ public class CcrisReportRetrievalService {
 		return null;
 	}
 	
+	public void saveLogsToDB(CreditCheckerLogs ccLogs, UserSearchRequest userSearchRequest) {
+		Creditcheckersysconfig platformAuthFromRedis = dbconfig.getDataFromRedis(GlobalConstants.PLATFORM_LOG_ENABLE);
+		String authEnableOrDisable = platformAuthFromRedis.getValue();
+		if (StringUtils.isNotEmpty(authEnableOrDisable) && StringUtils.equalsIgnoreCase(authEnableOrDisable, "1")) {
+			String ipAddress = null;
+			String clientName = null;
+			String key = APIKeyAuthFilter.setKeyAndValue().get("headerKey");
+			try {
+				InetAddress inetAddress = InetAddress.getLocalHost();
+				ipAddress = inetAddress.getHostAddress();
+			} catch (Exception e) {
+				log.info("In [CcrisController:saveLogsToDB] = Exception " + e);
+			}
+			log.info("In [CcrisController:saveLogsToDB] = key " + key);
+			if (key != null) {
+				clientName = creditCheckerAuthRepository.findClientNameFromKey(key);
+			} else {
+				if (userSearchRequest != null && userSearchRequest.getClientId() != null) {
+					clientName = creditCheckerAuthRepository
+							.findClientnameById(userSearchRequest.getClientId().toString());
+				}
+			}
+			ccLogs.setIp_address(ipAddress);
+			ccLogs.setClient_id(clientName);
+			log.info("In [CcrisController:saveLogsToDB] = ClientName " + clientName);
+			Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+			ccLogs.setTimestamp(timestamp);
+			creditCheckerLogRepository.save(ccLogs);
+		} else {
+			String ipAddress = null;
+			String clientName = null;
+			if (userSearchRequest != null) {
+				clientName = creditCheckerAuthRepository.findClientnameById(userSearchRequest.getClientId().toString());
+			}
+			ccLogs.setIp_address(ipAddress);
+			ccLogs.setClient_id(clientName);
+			log.info("In [CcrisController:saveLogsToDB] = ClientName " + clientName);
+			Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+			ccLogs.setTimestamp(timestamp);
+			creditCheckerLogRepository.save(ccLogs);
+		}
+	}
 	
 	}

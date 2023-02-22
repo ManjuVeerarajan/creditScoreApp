@@ -46,7 +46,7 @@
 		</preConditions>
 		<dropTable tableName="application_settings" />
 	</changeSet>
-	
+
 	<changeSet author="manjuv" id="appSettings_to_sysConfig"
 		runOnChange="true">
 		<preConditions onFail="MARK_RAN">
@@ -59,6 +59,72 @@
 		<sqlFile dbms="mysql"
 			path="/db/changelog/app_settings_to_syconfig.sql" />
 	</changeSet>
-
+	<changeSet author="manjuv" id="nameConstants_to_sysConfig"
+		runOnChange="true">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="0">
+				SELECT COUNT(*) FROM
+				creditchecker_sysconfig WHERE name='name-constants';
+			</sqlCheck>
+		</preConditions>
+		<sqlFile dbms="mysql"
+			path="/db/changelog/nameConstantsToSysConfig.sql" />
+	</changeSet>
+	
+	<changeSet author="manjuv"
+		id="alter_creditChecker_settings">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/alterSysConfigTable.sql" />
+	</changeSet>
+	
+	<changeSet author="manjuv"
+		id="insert_logenabling_creditChecker_settings">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/sysconfig-logenabling-insert.sql" />
+	</changeSet>
+	
+	<changeSet author="manjuv" id="mailGunProps"
+		runOnChange="true">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="0">
+				SELECT COUNT(*) FROM
+				creditchecker_sysconfig WHERE name='platform.email.mailgun.MAIL_DRIVER' OR
+				name='platform.email.mailgun.MAILGUN_DOMAIN' OR name='platform.email.mailgun.MAILGUN_HOST' OR name='platform.email.mailgun.MAILGUN_SECRET'
+				OR name ='platform.email.mailgun.MAILGUN_FROM' OR name='platform.email.notification.experian_fail';
+			</sqlCheck>
+		</preConditions>
+		<sqlFile dbms="mysql"
+			path="/db/changelog/mailGunProps.sql" />
+	</changeSet>
+	<changeSet author="manjuv"
+		id="creditReportError-addColumn-XmlString">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/creditReportError.sql" />
+	</changeSet>
+	<changeSet author="manjuv"
+		id="ccLogAddNewColumns">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/ccLogAddColumns.sql" />
+	</changeSet>
+	<changeSet author="manjuv"
+		id="ccLogAlterColumns">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/alterCCLogTable.sql" />
+	</changeSet>
+	<changeSet author="manjuv"
+		id="creditErrorAlterColumns">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/alterCreditErrorTable.sql" />
+	</changeSet>
+	<changeSet author="manjuv"
+		id="creditReportAddColumns">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/creditReportAddColumn.sql" />
+	</changeSet>
+	<changeSet author="manjuv"
+		id="ccAlterColumnExperianReq280123">
+		<sqlFile dbms="mysql"
+			path="/db/changelog/alterCcLogColumnExperianReq.sql" />
+	</changeSet>
 </databaseChangeLog>
 

@@ -27,4 +27,10 @@ public class GlobalConstants {
 	public static final String SANDBOX_SERVER = "sandbox.server";
 	public static final String EXP_URL_REPORT = "ExperianURLReport";
 	public static final String EXP_ERRMAIL_CC = "experian-erroremail-cc";
+	public static final String MAILGUN_DOMAIN = "platform.email.mailgun.MAILGUN_DOMAIN";
+	public static final String MAILGUN_API_KEY = "platform.email.mailgun.MAILGUN_SECRET";
+	public static final String MAILGUN_TO_EMAILS = "platform.email.notification.experian_fail";
+	public static final String MAILGUN_FROM_EMAILS = "platform.email.mailgun.MAILGUN_FROM";
+	public static final String MAILGUN_MAIL_TEMPLATE = "platform.email.notification.experian_fail.template";
+	public static final String PLATFORM_LOG_ENABLE = "platform.log.enable";
 }
