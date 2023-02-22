@@ -1,4 +1,0 @@
-Jan 11, 2023 5:45:55 PM my.mobypay.creditScore.controller.CcrisController RequestdownloadFile
-INFO: In [CcrisController:RequestdownloadFile] = Inside ExperianReport for user :MXXXXXXX XXXXX MXXXXXentity 720517125558
-Jan 11, 2023 5:45:55 PM my.mobypay.creditScore.controller.CcrisController NricRegchecking
-INFO: In [CcrisController:NricRegchecking] = NRIC without - Validation

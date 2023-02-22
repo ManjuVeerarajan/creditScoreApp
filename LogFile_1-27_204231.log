@@ -1,4 +1,0 @@
-Jan 27, 2023 8:42:52 PM my.mobypay.creditScore.controller.CcrisController processReports
-INFO: In [CcrisController:processReports] = Inside CreditCheckOnRegisterUats for user MOHD GHAZALI MOHAMMAD SHAFFIEentity 850704-10-5179
-Jan 27, 2023 8:42:52 PM my.mobypay.creditScore.controller.CcrisController NricRegchecking
-INFO: In [CcrisController:NricRegchecking] = NRIC with - Validation850704-10-5179

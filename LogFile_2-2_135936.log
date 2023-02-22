@@ -1,4 +1,0 @@
-Feb 02, 2023 2:08:14 PM my.mobypay.creditScore.controller.CcrisController processReports
-INFO: In [CcrisController:processReports] = Inside CreditCheckOnRegisterUats for user  XXXX BIN XXXXXentity 531110125879
-Feb 02, 2023 2:08:19 PM my.mobypay.creditScore.controller.CcrisController NricRegchecking
-INFO: In [CcrisController:NricRegchecking] = NRIC without - Validation

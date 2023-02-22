@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xml>
-  <report_date>10 Feb 2023</report_date>
+  <report_date>20 Feb 2023</report_date>
   <summary>
     <input_request>
-      <search_name>MXXX XXXXXXXXX XXX XXXXXXXXXX</search_name>
+      <search_name>JXXXXX XXXX XXXX XXXX</search_name>
       <old_ic/>
-      <new_ic>790509-11-5425</new_ic>
+      <new_ic>740516-12-5116</new_ic>
       <product_code>IRISS</product_code>
       <nationality>MY</nationality>
     </input_request>
     <ccris_individual_info>
-      <name>MXXX XXXXXXXXX XXX XXXXXXXXXX</name>
-      <new_ic>790509-11-5425</new_ic>
+      <name>JXXXXX XXXX XXXX XXXX</name>
+      <new_ic>740516-12-5116</new_ic>
     </ccris_individual_info>
     <ccris_individual_addresses/>
     <info_summary>
@@ -19,7 +19,7 @@
       <credit_pending_count>0</credit_pending_count>
       <special_attention_account_count>0</special_attention_account_count>
       <legal_action_banking_count>0</legal_action_banking_count>
-      <existing_facility_count>1</existing_facility_count>
+      <existing_facility_count>2</existing_facility_count>
       <bankruptcy_count>0</bankruptcy_count>
       <legal_suit_count>0</legal_suit_count>
       <trade_bureau_count>0</trade_bureau_count>
@@ -27,10 +27,13 @@
       <interest_count>0</interest_count>
     </info_summary>
     <i_score>
-      <i_score>736</i_score>
-      <risk_grade>9</risk_grade>
-      <key_factor/>
-      <grade_format>STRONG</grade_format>
+      <i_score>300</i_score>
+      <risk_grade>1</risk_grade>
+      <key_factor>
+        <item>Time Since Most Recent Delinquency</item>
+        <item>Accounts with Delinquency Status</item>
+      </key_factor>
+      <grade_format>WEAK</grade_format>
       <legend_iscore_ccris_gen2/>
       <i_score_risk_grade_format_consumer/>
     </i_score>
@@ -39,10 +42,10 @@
   </summary>
   <banking_info>
     <ccris_selected_by_you>
-      <entity_name>MXXX XXXXXXXXX XXX XXXXXXXXXX</entity_name>
+      <entity_name>JXXXXX XXXX XXXX XXXX</entity_name>
       <entity_id2/>
-      <entity_id>790509-11-5425</entity_id>
-      <entity_key>1042736</entity_key>
+      <entity_id>740516-12-5116</entity_id>
+      <entity_key>2712736</entity_key>
     </ccris_selected_by_you>
     <ccris_banking_warning/>
     <ccris_banking_summary>
@@ -55,7 +58,7 @@
       <summary_liabilities>
         <borrower>
           <outstanding>0</outstanding>
-          <total_limit>100000</total_limit>
+          <total_limit>200000</total_limit>
           <fec_limit>0</fec_limit>
         </borrower>
         <legal_action_taken>N</legal_action_taken>
@@ -83,7 +86,7 @@
         <item>
           <master>
             <item>
-              <master_id>8729593</master_id>
+              <master_id>7637211</master_id>
               <date>01/01/2000</date>
               <capacity>OWN</capacity>
               <lender_type>CB</lender_type>
@@ -118,8 +121,54 @@
                   <item>0</item>
                   <item>0</item>
                   <item>0</item>
+                  <item>1</item>
                   <item>0</item>
-                  <item>0</item>
+                </credit_position>
+                <collateral_type_code/>
+              </item>
+            </item>
+          </sub_account>
+        </item>
+        <item>
+          <master>
+            <item>
+              <master_id>9098358</master_id>
+              <date>01/01/2000</date>
+              <capacity>OWN</capacity>
+              <lender_type>CB</lender_type>
+              <limit>100000</limit>
+              <legal_status/>
+              <legal_status_date/>
+              <collateral_type/>
+              <financial_group_resident_status>F</financial_group_resident_status>
+              <collateral_type_code/>
+            </item>
+          </master>
+          <sub_account>
+            <item>
+              <item>
+                <status>O</status>
+                <restructure_reschedule_date/>
+                <facility>HSLNFNCE</facility>
+                <total_outstanding_balance>0</total_outstanding_balance>
+                <total_outstanding_balance_bnm>0</total_outstanding_balance_bnm>
+                <balance_updated_date>31/01/2023</balance_updated_date>
+                <installment_amount>0</installment_amount>
+                <principle_repayment_term>MTH</principle_repayment_term>
+                <collateral_type/>
+                <credit_position>
+                  <item/>
+                  <item>12</item>
+                  <item>11</item>
+                  <item>10</item>
+                  <item>9</item>
+                  <item>8</item>
+                  <item>7</item>
+                  <item>6</item>
+                  <item>5</item>
+                  <item>4</item>
+                  <item>3</item>
+                  <item>2</item>
                 </credit_position>
                 <collateral_type_code/>
               </item>
@@ -130,6 +179,10 @@
       <credit_application/>
       <special_attention_account/>
       <facilities_remark>
+        <item>
+          <code>HSLNFNCE</code>
+          <desc>HOUSING LOANS/FINANCING</desc>
+        </item>
         <item>
           <code>CRDTCARD</code>
           <desc>CREDIT CARD</desc>
@@ -279,9 +332,9 @@
   <end>
     <subscriber_name>MOBY MONEY UAT</subscriber_name>
     <username>MOBY MONEY UAT</username>
-    <order_date>2023-02-10</order_date>
-    <order_time>12:33:03</order_time>
+    <order_date>2023-02-20</order_date>
+    <order_time>18:52:20</order_time>
     <userid>MOBYUAT1</userid>
-    <order_id>119062219</order_id>
+    <order_id>119068894</order_id>
   </end>
 </xml>

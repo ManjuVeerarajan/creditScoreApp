@@ -9,10 +9,12 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -196,35 +198,59 @@ public class CcrisController {
 		Session session = null;
 		Transaction transaction = null;
 		String decrypted = null;
+		Creditcheckersysconfig dataFromRedis = dbconfig.getDataFromRedis("daysExpire");
+		String daysExpire = dataFromRedis.getValue();
 		try {
-			Configuration config = new Configuration();
-			config.configure();
-
-			SessionFactory factory = new Configuration().configure("hibernate.cfg.xml")
-					.addAnnotatedClass(CustomerCreditReports.class).buildSessionFactory();
-			session = factory.openSession();
-
-			transaction = session.beginTransaction();
-//			String daysExpire = dbvalues.get("daysExpire");
-			Creditcheckersysconfig dataFromRedis = dbconfig.getDataFromRedis("daysExpire");
-			String daysExpire = dataFromRedis.getValue();
-			log.info("daysExpire " + daysExpire);
-			String hqlQuery = "SELECT p.nric from cc_customerCreditReports p WHERE p.nric = " + nric
-					+ " AND p.UpdatedAt >= date_sub(now(),interval " + daysExpire + ")";
-			org.hibernate.query.Query query = session.createSQLQuery(hqlQuery);
-			log.info("Query Response" + query.getResultList());
-			if (!query.getResultList().isEmpty()) {
+//			Configuration config = new Configuration();
+//			config.configure();
+//
+//			SessionFactory factory = new Configuration().configure("hibernate.cfg.xml")
+//					.addAnnotatedClass(CustomerCreditReports.class).buildSessionFactory();
+//			session = factory.openSession();
+//
+//			transaction = session.beginTransaction();
+////			String daysExpire = dbvalues.get("daysExpire");
+//			
+//			
+//			log.info("daysExpire " + daysExpire);
+//			String hqlQuery = "SELECT p.nric from cc_customerCreditReports p WHERE p.nric = " + nric
+//					+ " AND p.UpdatedAt >= date_sub(now(),interval " + daysExpire + ")";
+//			org.hibernate.query.Query query = session.createSQLQuery(hqlQuery);
+			
+			
+			List<CustomerCreditReports> intervalData = customerCreditReportsRepository.findReportsbynric(nric);
+			String[] split = daysExpire.split(" ");
+			Integer days = Integer.valueOf(split[0]);
+			Date today = new Date();
+			Calendar cal = new GregorianCalendar();
+			cal.setTime(today);
+			cal.add(Calendar.DAY_OF_MONTH, -days);
+			Date today30 = cal.getTime();
+			System.out.println(today30);
+			List<String> nricIn30DayInterval = new ArrayList<>();
+			if (!intervalData.isEmpty()) {
+				for (CustomerCreditReports customerCreditReports : intervalData) {
+					if (customerCreditReports.getUpdatedAt() != null
+							&& customerCreditReports.getUpdatedAt().after(today30)) {
+						nricIn30DayInterval.add(customerCreditReports.getNric());
+					}
+				}
+			}
+			
+//			log.info("Query Response" + query.getResultList());
+			log.info("Query Response at retrieveNricFromDB---->"+nricIn30DayInterval);
+			if (!nricIn30DayInterval.isEmpty()) {
 				log.info("Query Response not NUll");
 				ispresent = true;
-			} else if (query.getResultList().isEmpty()) {
+			} else if (nricIn30DayInterval.isEmpty()) {
 				log.info("Query Response NUll");
 				ispresent = false;
 			}
 
-			transaction.commit();
+//			transaction.commit();
 		} catch (Exception e) {
 			System.out.println("exception " + e);
-		} finally {
+		}finally {
 			if (session != null) {
 				log.info("session " + session.toString());
 				// session.close();
@@ -385,14 +411,14 @@ public class CcrisController {
 				log.info("In [CcrisController:processReports] = ispresent flag value " + ispresent);
 //				if (ispresent != true) {      // To run testcases in local
 				if (ispresent == true) { 
-					String inputResponse = customerCreditReportsRepository.find(userSearchRequest.getName(),
+					List<String> inputResponse = customerCreditReportsRepository.find(userSearchRequest.getName(),
 							regexexpression);
 
 					// Object inputResponseName = retrieveNameNricFromDB(regexexpression);
 					Object inputResponseName = customerCreditReportsRepository.findByNricName(regexexpression);
-					String response = customerCreditReportsRepository.find(name, regexexpression);
+					List<String> response = customerCreditReportsRepository.find(name, regexexpression);
 					if (response != null) {
-						String splits[] = response.split(",");
+						String splits[] = response.get(0).split(",");
 						String responseName = splits[0].toString();
 						String responseNric = splits[1].toString();
 						userSearchRequest.setName(name);
@@ -502,7 +528,7 @@ public class CcrisController {
 						}
 					} else if (inputResponse != null) {
 
-						String splits[] = inputResponse.split(",");
+						String splits[] = inputResponse.get(0).split(",");
 						String responseName = splits[0].toString();
 						String responseNric = splits[1].toString();
 						if (responseName.equalsIgnoreCase(userSearchRequest.getName())
@@ -1373,15 +1399,15 @@ public class CcrisController {
 					 * if(valuePresent != null) { ispresent = true; }
 					 */
 					log.info("In [CcrisController:RequestdownloadFile] = ispresent value " + ispresent);
-					if (ispresent != true) {       // To test in local
-//					if (ispresent == true) {
-						String response = customerCreditReportsRepository.find(name, regexexpression);
-						String inputResponse = customerCreditReportsRepository.find(userSearchRequest.getName(),
+//					if (ispresent != true) {       // To test in local
+					if (ispresent == true) {
+						List<String> response = customerCreditReportsRepository.find(name, regexexpression);
+						List<String> inputResponse = customerCreditReportsRepository.find(userSearchRequest.getName(),
 								regexexpression);
 						// Object inputResponseName = retrieveNameNricFromDB(regexexpression);
 						Object inputResponseName = customerCreditReportsRepository.findByNricName(regexexpression);
 						if (response != null) {
-							String splits[] = response.split(",");
+							String splits[] = response.get(0).split(",");
 							String responseName = splits[0].toString();
 							String responseNric = splits[1].toString();
 							if (responseName.equalsIgnoreCase(name) && responseNric.equalsIgnoreCase(regexexpression)) {

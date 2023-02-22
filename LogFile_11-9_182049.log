@@ -1,6 +1,0 @@
-Nov 09, 2022 6:22:05 PM my.mobypay.creditScore.controller.CcrisController RequestdownloadFile
-SEVERE: In [CcrisController:RequestdownloadFile] = Response ->Mail server connection failed; nested exception is javax.mail.MessagingException: Unknown SMTP host: https://api.mailgun.net/v3/mg2.airapay.my/messages;
-  nested exception is:
-	java.net.UnknownHostException: https://api.mailgun.net/v3/mg2.airapay.my/messages. Failed messages: javax.mail.MessagingException: Unknown SMTP host: https://api.mailgun.net/v3/mg2.airapay.my/messages;
-  nested exception is:
-	java.net.UnknownHostException: https://api.mailgun.net/v3/mg2.airapay.my/messages
