@@ -402,7 +402,7 @@ public static String convertToPDF(String nricNumber, String xmlResponse) throws 
 	System.out.println("" + url);
 
 	String filename = "D:\\var\\tmp\\PDF\\" + nricNumber + "test.pdf";
-	System.out.println("=========" + filename);
+	System.out.println("FileName = " + filename);
 	System.out.println(filename);
 	OutputStream out;
 	out = new java.io.FileOutputStream(filename);

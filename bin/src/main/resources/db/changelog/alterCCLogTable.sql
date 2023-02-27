@@ -1,0 +1,1 @@
+ALTER TABLE cc_log  RENAME COLUMN xmlString to experianRequest;

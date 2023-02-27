@@ -532,9 +532,7 @@ public class CcrisUnifiedService {
 			emailSending = expErrCCFromRedis.getValue();
 		}else {
 			emailSending = valueFromDB.get(GlobalConstants.EXP_ERRMAIL_CC);
-			System.out.println("*****************************Redis Not Read***********************************");
 		}
-		System.out.println(emailSending + "=========");
 	
 		CcrisXml ccrisXml = ccrisSearchService.ccrisSearch(userSearchRequest, emailSending);
 		CreditCheckerLogs logs = new CreditCheckerLogs();
@@ -653,7 +651,7 @@ public class CcrisUnifiedService {
 				 */
 				log.info("Wait for report retrieval API");
 				int triggertime = Integer.parseInt(triggersleeptime);
-				log.info("getting triggertimeeeeeeeeee" + triggertime);
+				log.info("[Time trigger - ]" + triggertime);
 				delay(triggertime);
 				report = ccrisReportRetrievalService.retrieveReport(userTokensRequest, reportFlag, userSearchRequest,
 						triggerreconnectCount, triggersleeptime, emailSending); // //
@@ -689,7 +687,6 @@ public class CcrisUnifiedService {
 					utilityEntities.setErrorMsg(error);
 					utilityEntities.setRetrivalCount(retrival);
 				} else if (report.getError() != null && report.getExperianServerFlag() == true) {
-					log.info("EXPERIAN FLAG IS PRESENT===============================================");
 					log.info("total count in retival service class" + report.getRetrivalCount());
 					String code = report.getCode();
 					String error = report.getError();

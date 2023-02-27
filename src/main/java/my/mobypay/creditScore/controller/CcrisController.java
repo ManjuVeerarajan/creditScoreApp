@@ -175,7 +175,7 @@ public class CcrisController {
 	CustomerCreditReportRequest customercreditreportrequest = null;
 
 	private boolean RetriveCustomerDetails(String Nric) {
-		ispresent = customerCreditReportsRepository.findByName(Nric) != null;
+		ispresent = (customerCreditReportsRepository.findByName(Nric) != null && !customerCreditReportsRepository.findByName(Nric).isEmpty());
 		return ispresent;
 	}
 
@@ -238,7 +238,7 @@ public class CcrisController {
 			}
 			
 //			log.info("Query Response" + query.getResultList());
-			log.info("Query Response at retrieveNricFromDB---->"+nricIn30DayInterval);
+			log.info("Query Response at retrieveNricFromDB->"+nricIn30DayInterval);
 			if (!nricIn30DayInterval.isEmpty()) {
 				log.info("Query Response not NUll");
 				ispresent = true;
@@ -326,10 +326,9 @@ public class CcrisController {
 		String triggerCount = triggerCountFromRedis.getValue();
 //		String triggerTime = dbvalues.get("experian-trigger-time");
 //		String triggerCount = dbvalues.get("experian-trigger-count");
-		log.info("In [CcrisController:processReports] = Experian trigger :" + triggerTime + " Count- " + triggerCount);
+		log.info("In [CcrisController:processReports] = [ Experian trigger ]" + triggerTime + " Count- " + triggerCount);
 		String triggersleeptime = triggerTime;
 		String triggerreconnectCount = triggerCount;
-		System.out.println(triggersleeptime + "========" + triggerreconnectCount);
 		log.info("In [CcrisController:processReports] = Request :" + userSearchRequest.toString());
 		String nricnumber = NricRegchecking(userSearchRequest.getEntityId());
 		Integer retivalCount = 0;
@@ -433,9 +432,12 @@ public class CcrisController {
 							log.info("In [CcrisController:processReports] = Name and NRIC Matched!!");
 
 							List<String> jsonString = customerCreditReportsRepository.findbynameandnric(regexexpression);
-							if (xmlresponse != null) {
-								CustomerSpendingLimitResponse spendingLimitResponse = new ObjectMapper()
+							if (xmlresponse != null && !xmlresponse.isEmpty()) {
+								CustomerSpendingLimitResponse spendingLimitResponse = null;
+								if(!jsonString.isEmpty() && jsonString != null) {
+								spendingLimitResponse = new ObjectMapper()
 										.readValue(jsonString.get(0), CustomerSpendingLimitResponse.class);
+								}
 								log.info(
 										"In [CcrisController:processReports] = Customer already exist so returning json response");
 
@@ -489,8 +491,12 @@ public class CcrisController {
 							invalidResponse.setStatusCode("404");
 
 							invalidResponse.setErrorMessage("Invalid Input"); // 10-05
+							String xmlResp = null;
+							if(!xmlresponse.isEmpty() && xmlresponse != null) {
+								xmlResp = xmlresponse.get(0);
+							}
 							SavetoCreditCheckError(invalidResponse.getStatusCode(), invalidResponse.getErrorMessage(),
-									name, regexexpression, 0, xmlresponse.get(0));
+									name, regexexpression, 0, xmlResp);
 							// To add logs in DB
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
@@ -512,8 +518,12 @@ public class CcrisController {
 							unmatchedResponse.setMaximumSpendingLimit(0);
 							unmatchedResponse.setStatusCode("400");
 							unmatchedResponse.setErrorMessage("Invalid Input"); // 10-05
+							String xmlResp = null;
+							if(!xmlresponse.isEmpty() && xmlresponse != null) {
+								xmlResp = xmlresponse.get(0);
+							}
 							SavetoCreditCheckError(unmatchedResponse.getStatusCode(),
-									unmatchedResponse.getErrorMessage(), name, regexexpression, 0, xmlresponse.get(0));
+									unmatchedResponse.getErrorMessage(), name, regexexpression, 0, xmlResp);
 							// To add logs in DB
 							CreditCheckerLogs ccLogs = new CreditCheckerLogs();
 							ccLogs.setRequest(userSearchRequest.toString());
@@ -526,7 +536,7 @@ public class CcrisController {
 									+ unmatchedResponse.toString());
 							return unmatchedResponse;
 						}
-					} else if (inputResponse != null) {
+					} else if (inputResponse != null && !inputResponse.isEmpty()) {
 
 						String splits[] = inputResponse.get(0).split(",");
 						String responseName = splits[0].toString();
@@ -535,9 +545,11 @@ public class CcrisController {
 								&& responseNric.equalsIgnoreCase(regexexpression)) {
 							List<String> xmlresponse = customerCreditReportsRepository.findbyXMLpath(regexexpression);
 							List<String> jsonString = customerCreditReportsRepository.findbynameandnric(regexexpression);
-							if (xmlresponse != null) {
-								CustomerSpendingLimitResponse xmlResponseNull = new ObjectMapper().readValue(jsonString.get(0),
-										CustomerSpendingLimitResponse.class);
+							if (xmlresponse != null && !xmlresponse.isEmpty()) {
+								CustomerSpendingLimitResponse xmlResponseNull = null;
+								if(!jsonString.isEmpty()) {
+								xmlResponseNull = new ObjectMapper().readValue(jsonString.get(0),
+										CustomerSpendingLimitResponse.class); }
 								log.info(
 										"In [CcrisController:processReports] = Customer already exist so returning json response");
 								logger.info(
@@ -590,7 +602,7 @@ public class CcrisController {
 									+ notFoundResponse.toString());
 							return notFoundResponse;
 						}
-					} else if (inputResponseName != null && !inputResponseName.get(0).equals(userSearchRequest.getName())) {
+					} else if (!inputResponseName.isEmpty() && inputResponseName != null && !inputResponseName.get(0).equals(userSearchRequest.getName())) {
 						CustomerSpendingLimitResponse mismatchResponse = new CustomerSpendingLimitResponse();
 						mismatchResponse.setIsNricExist(false);
 						mismatchResponse.setIsNameNricMatched(false);
@@ -712,7 +724,7 @@ public class CcrisController {
 									+ customerSpendingLimitResponse.toString());
 							return customerSpendingLimitResponse;
 						} else if (CrissFlag != null && CrissFlag == true) {
-							log.info("In [CcrisController:processReports] = CrissFlag============================");
+							log.info("In [CcrisController:processReports] = CrissFlag");
 							boolean nricExist = checkcreditscoreResponse.getIsNricExist();
 							boolean isnamenricmatched = checkcreditscoreResponse.getIsNameNricMatched();
 							boolean isregistrationAllowed = checkcreditscoreResponse.getIsRegistrationAllowed();
@@ -898,7 +910,7 @@ public class CcrisController {
 								+ customerSpendingLimitResponse.toString());
 						return customerSpendingLimitResponse;
 					} else {
-						log.info("In [CcrisController:processReports] = Errorcode=================================");
+						log.info("In [CcrisController:processReports] = Errorcode");
 						checkcreditscoreResponse = ccrisUnifiedService.errorMethodCalling();
 						boolean nricExist = checkcreditscoreResponse.getIsNricExist();
 						boolean isnamenricmatched = checkcreditscoreResponse.getIsNameNricMatched();
@@ -1070,10 +1082,7 @@ public class CcrisController {
 			String string, boolean reportFlag, String regexexpression, boolean isPresent)
 			throws JsonProcessingException {
 		customercreditreportrequest = customercreditreportrequest2;
-		log.info("Saving to airapay");
-		System.out.println(customercreditreportrequest.getIScore() + "===================================");
-		// String userName=userRequestRepository.findbyUserRequestName(regexexpression);
-		// System.out.println(userName+"==================");
+		System.out.println(customercreditreportrequest.getIScore());
 		try {
 			if (reportFlag == false && isPresent == true) {
 				ObjectMapper Obj = new ObjectMapper();
@@ -1119,7 +1128,7 @@ public class CcrisController {
 				 * ObjectMapper Obj = new ObjectMapper(); String jsonStr =
 				 * Obj.writeValueAsString(customerSpendingLimitResponse);
 				 */
-				System.out.println(customercreditreportrequest.getIScore() + "=====================================");
+				System.out.println("Iscore = "+customercreditreportrequest.getIScore());
 				/*
 				 * CustomerCreditReports customerCreditReports = new CustomerCreditReports();
 				 * customerCreditReports.setName(customercreditreportrequest.getName());
@@ -1310,11 +1319,10 @@ public class CcrisController {
 
 //		String triggerTime = dbvalues.get("experian-trigger-time");
 //		String triggerCount = dbvalues.get("experian-trigger-count");
-			log.info("In [CcrisController:RequestdownloadFile] = Experian trigger :" + triggerTime + " Count- "
-					+ triggerCount);
+			log.info("In [CcrisController:RequestdownloadFile] = [ Experian trigger :" + triggerTime + " Count- "
+					+ triggerCount+"]");
 			String triggersleeptime = triggerTime;
 			String triggerreconnectCount = triggerCount;
-			System.out.println(triggersleeptime + "========" + triggerreconnectCount);
 			Integer retivalCount = 0;
 			Object simulatorResponse = null;
 			if (simulator.equals("true")) {
@@ -1406,7 +1414,7 @@ public class CcrisController {
 								regexexpression);
 						// Object inputResponseName = retrieveNameNricFromDB(regexexpression);
 						List<Object> inputResponseName = customerCreditReportsRepository.findByNricName(regexexpression);
-						if (response != null) {
+						if (response != null && !response.isEmpty()) {
 							String splits[] = response.get(0).split(",");
 							String responseName = splits[0].toString();
 							String responseNric = splits[1].toString();
@@ -1417,7 +1425,7 @@ public class CcrisController {
 								List<CustomerCreditReports> cc = customerCreditReportsRepository.findbynric(regexexpression);
 								boolean flag = filepathResponse.isEmpty() && filepathResponse != null;
 								System.out.println("path" + flag);
-								if (filepathResponse != null && flag == false && cc != null
+								if (filepathResponse != null && !filepathResponse.isEmpty() && flag == false && cc != null && !cc.isEmpty()
 										&& xmlPathResponse != null) {
 									experianreportResponse.setResponseCode("00");
 									experianreportResponse.setResponseMsg("Success");
@@ -1458,7 +1466,6 @@ public class CcrisController {
 									String xmlResponse = formatter.format(xmlPathResponse.get(0));
 									String nricNumber = StringUtils.substringBetween(xmlResponse, "<new_ic>",
 											"</new_ic>");
-									System.out.println(nricNumber + "============");
 									String filepath = ccrisReportRetrievalService
 											.FilepathdownloadforExisitingCustomer(xmlResponse, nricNumber);
 									experianreportResponse.setResponseCode("00");
@@ -1476,7 +1483,11 @@ public class CcrisController {
 									ccLogs.setRequest(userSearchRequest.toString());
 									ccLogs.setResponse(experianreportResponse.toString());
 									ccLogs.setNric(userSearchRequest.getEntityId());
-									ccLogs.setExperianRequest(cc.get(0).getXmlString());
+									String ccResp = null;
+									if(!cc.isEmpty() && cc != null) {
+										ccResp = cc.get(0).getXmlString();
+									}
+									ccLogs.setExperianRequest(ccResp);
 									saveLogsToDB(ccLogs, userSearchRequest);
 									logger.info(
 											"In [CcrisController:RequestdownloadFile] = Customer already exist but no File genrated ->"
@@ -1555,7 +1566,7 @@ public class CcrisController {
 								emailUtility.sentEmail(experianreportResponse.toString(), dbconfig);
 								return experianreportResponse;
 							}
-						} else if (inputResponseName != null) {
+						} else if (inputResponseName != null && !inputResponseName.isEmpty()) {
 
 							if (!inputResponseName.get(0).equals(userSearchRequest.getName())) {
 								experianreportResponse.setResponseCode("404");
@@ -1755,7 +1766,6 @@ public class CcrisController {
 									&& customercreditreportrequest.getDownaloadfilepath() == null
 									&& customercreditreportrequest.getDownaloadfilepath().isEmpty() == true) {
 
-								log.info("In [CcrisController:RequestdownloadFile] = Error 1==============");
 								if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
 									experianreportResponse.setResponseCode("500");
 									experianreportResponse.setResponseMsg(utilityEntities.getErrorMsg());
@@ -1820,7 +1830,6 @@ public class CcrisController {
 								return customerSpendingLimitResponse;
 							} else if (checkcreditscoreResponse.getIsBelowscoreFlag() != null
 									&& checkcreditscoreResponse.getIsBelowscoreFlag() == true) {
-								log.info("In [CcrisController:RequestdownloadFile] = Error 2==============");
 								experianreportResponse.setResponseCode("01");
 								experianreportResponse.setResponseMsg(checkcreditscoreResponse.getErrorMessage());
 								experianreportResponse.setURL(customercreditreportrequest.getDownaloadfilepath());
@@ -2032,7 +2041,6 @@ public class CcrisController {
 							return experianreportResponse;
 
 						} else {
-							log.info("In [CcrisController:RequestdownloadFile] = Error 5==============");
 							checkcreditscoreResponse = ccrisUnifiedService.errorMethodCalling();
 							String errormessage = checkcreditscoreResponse.getErrorMessage();
 							if (utilityEntities.getCodes() != null && utilityEntities.getCodes().contains("500")) {
@@ -2168,7 +2176,6 @@ public class CcrisController {
 			 * LocalDateTime.now(); String updatedDate=dtf.format(now); SimpleDateFormat
 			 * sdfIn1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); Date date =
 			 * sdfIn1.parse(updatedDate);
-			 * log.info("Checking the user database==============");
 			 * log.info("checking date"+date);
 			 * creditCheckErrorRepository.updateRetivalCount(retival,regexexpression,date);
 			 */

@@ -1,0 +1,1 @@
+ALTER TABLE creditchecker_sysconfig MODIFY value LONGTEXT

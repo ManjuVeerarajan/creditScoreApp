@@ -88,8 +88,6 @@ public class CcrisSearchService {
 		Creditcheckersysconfig expPwdFromRedis = dbconfig.getDataFromRedis(GlobalConstants.EXPERIAN_PWD);
 		ExperianUsername = expUsernameFromRedis.getValue();
 		ExperianPassword = expPwdFromRedis.getValue();
-		System.out.println(ExperianUsername + "========" + ExperianPassword);
-		// ResponseEntity<String> response = null;
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_XML);
 		headers.setBasicAuth(ExperianUsername, ExperianPassword);
@@ -134,9 +132,10 @@ public class CcrisSearchService {
 		try {
 			Creditcheckersysconfig expUrlReportFromRedis = dbconfig.getDataFromRedis(GlobalConstants.EXP_URL_REPORT);
 			ExperianURLReport = expUrlReportFromRedis.getValue();
-			System.out.println("request************"+request.toString());
+			System.out.println("***********request**************");
+			System.out.println(request.toString());
 			List<CustomerCreditReports> findbynric = creditReportsRepo.findbynric(userSearchRequest.getEntityId());
-			if(findbynric != null && findbynric.get(0).getExperianRequest()==null) {
+			if(!findbynric.isEmpty() && findbynric != null && findbynric.get(0).getExperianRequest()==null) {
 				findbynric.get(0).setExperianRequest(request.toString());
 			}
 			ResponseEntity<String> response = restTemplate.postForEntity(ExperianURLReport, request, String.class);

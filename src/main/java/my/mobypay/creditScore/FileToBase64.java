@@ -43,13 +43,8 @@ public class FileToBase64 {
 			 baos.toByteArray();
 			 
 			    Base64.Encoder enc = Base64.getEncoder();
-			    System.out.println("Inside convertXmlToBase64 1 ");
 			    byte[] strenc = enc.encode(baos.toByteArray());
-			    System.out.println("Inside convertXmlToBase64 2 ");
 			    xmlBase64 = new String(strenc, "UTF-8");
-			    System.out.println("Inside convertXmlToBase64 3 ");
-			    System.out.println("Converted to xmlBase64 ");
-			    System.out.println("xmlBase64 " +xmlBase64);
 		}catch(Exception ex) {
 			System.out.println("Exception " +ex);
 		}
@@ -87,7 +82,7 @@ public class FileToBase64 {
 		System.out.println("" + url);
 
 		String filename = "D:\\var\\tmp\\PDF\\" + nricNumber + "test.pdf";
-		System.out.println("=========" + filename);
+		System.out.println("FileName = " + filename);
 		System.out.println(filename);
 		OutputStream out;
 		out = new java.io.FileOutputStream(filename);
@@ -349,7 +344,6 @@ public class FileToBase64 {
 			OutputStream response = convertToPDF(nric,xml);
 		System.out.println("response" +response);
 		String responseStr = convertXmlToBase64(response);
-		System.out.println("responseStr" +responseStr);
 		}catch(Exception e) {
 			
 		}

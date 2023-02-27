@@ -1,0 +1,2 @@
+Oct 13, 2022 2:59:22 PM my.mobypay.creditScore.controller.CcrisController RequestdownloadFile
+SEVERE: Checking namemistach Response ->ExperianReportResponse(responseCode=400, responseMsg=Invalid Input, URL=null, BankruptcyCount=0, LegalSuitCount=0, TradeBureauCount=0, IScore=0, IScoreRiskGrade=0, IScoreGradeFormat=null, LegalActionBankingCount=0, BorrowerOutstanding=0.0, BankingCreditApprovedCount=0, BankingCreditApprovedAmount=0.0, BankingCreditPendingCount=0, BankingCreditPendingAmount=0.0, Refxml=null, Base64_pdf=null)

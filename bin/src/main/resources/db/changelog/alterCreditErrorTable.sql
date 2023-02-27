@@ -1,0 +1,1 @@
+ALTER TABLE cc_customerCreditError  RENAME COLUMN xmlString to experianRequest;

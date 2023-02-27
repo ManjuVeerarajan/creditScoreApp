@@ -452,9 +452,7 @@ public class CcrisReportRetrievalService {
 				log.info("check " +check);
 				if ( reportFlag==true &&  check == true) {
 					log.info("Inside reportFlag==true &&  check == true ");
-					// System.out.println(userSearchRequest.getEntityId()+"new report
-					// nric============");
-					System.out.println(nricNumber + "new report nric============");
+					System.out.println(nricNumber + "new report nric");
 
 					String filepath = convertToPDF(nricNumber, xmlResponse);
 					System.out.println(filepath + "file is generated or not");
@@ -1527,7 +1525,7 @@ public class CcrisReportRetrievalService {
 	 */
 
 	public String FilepathdownloadforExisitingCustomer(String xmlResponse, String nricnumber) throws Exception {
-		System.out.println(nricnumber + "==================");
+		System.out.println("Nric = "+nricnumber);
 		String filepaths = "";
 		String filepath = convertToPDF(nricnumber, xmlResponse);
 		System.out.println(filepath);
@@ -1648,7 +1646,7 @@ public class CcrisReportRetrievalService {
 		System.out.println("" + url);
 
 		String filename = nricNumber + ".pdf";
-		System.out.println("=========" + filename);
+		System.out.println("FileName = " + filename);
 		System.out.println(filename);
 		File pdfFile = new File(filename);
 		String absolutePath = pdfFile.getAbsolutePath();
