@@ -416,7 +416,7 @@ public class CcrisController {
 					// Object inputResponseName = retrieveNameNricFromDB(regexexpression);
 					List<Object> inputResponseName = customerCreditReportsRepository.findByNricName(regexexpression);
 					List<String> response = customerCreditReportsRepository.find(name, regexexpression);
-					if (response != null) {
+					if (response != null && !response.isEmpty()) {
 						String splits[] = response.get(0).split(",");
 						String responseName = splits[0].toString();
 						String responseNric = splits[1].toString();
